@@ -12,6 +12,7 @@ export default defineConfig({
   workers: undefined,
   reporter: 'html',
   use: {
+    baseURL: 'https://practicesoftwaretesting.com/#',
     actionTimeout: 0,
     trace: 'retain-on-failure',
     video: 'retain-on-failure',

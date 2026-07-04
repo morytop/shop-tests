@@ -1,14 +1,11 @@
-import { AccountPage } from '../src/pages/account-page';
-import { LoginPage } from '../src/pages/login-page';
+import { test } from '../src/fixtures/main';
 import { testUser1 } from '../src/test-data/user-data';
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 test.describe('Verify login @login', () => {
-  test('login with correct credentials', async ({ page }) => {
+  test('login with correct credentials', async ({ accountPage, loginPage }) => {
     const email = testUser1.email;
     const password = testUser1.password;
-    const loginPage = new LoginPage(page);
-    const accountPage = new AccountPage(page);
 
     await loginPage.goto();
     await loginPage.login(email, password);
@@ -16,10 +13,9 @@ test.describe('Verify login @login', () => {
     await expect(accountPage.title).toHaveText('My account');
   });
 
-  test('reject login with incorrect credentials', async ({ page }) => {
+  test('reject login with incorrect credentials', async ({ loginPage }) => {
     const email = 'wrong@email.com';
     const password = 'wrong-password';
-    const loginPage = new LoginPage(page);
 
     await loginPage.goto();
     await loginPage.login(email, password);

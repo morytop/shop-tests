@@ -14,6 +14,17 @@ export class HomePage extends BasePage {
   readonly paginationNextLink: Locator;
   readonly paginationNextItem: Locator;
   readonly paginationPrevItem: Locator;
+  readonly searchInput: Locator;
+  readonly searchSubmitButton: Locator;
+  readonly searchResetButton: Locator;
+  readonly categoriesGroup: Locator;
+  readonly topLevelCategoryCheckboxes: Locator;
+  readonly childCategoryCheckboxes: Locator;
+  readonly checkedChildCategoryCheckboxes: Locator;
+  readonly brandCheckboxes: Locator;
+  readonly sortSelect: Locator;
+  readonly priceRangeMinHandle: Locator;
+  readonly priceRangeMaxHandle: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -41,27 +52,131 @@ export class HomePage extends BasePage {
     this.paginationPrevItem = this.page
       .locator('[data-test="pagination-prev"]')
       .locator('..');
+    this.searchInput = this.page.locator('[data-test="search-query"]');
+    this.searchSubmitButton = this.page.locator('[data-test="search-submit"]');
+    this.searchResetButton = this.page.locator('[data-test="search-reset"]');
+    this.categoriesGroup = this.page
+      .getByRole('group', { name: 'Categories', exact: true })
+      .first();
+    this.topLevelCategoryCheckboxes = this.categoriesGroup
+      .locator('> div.checkbox > label')
+      .getByRole('checkbox');
+    this.childCategoryCheckboxes = this.categoriesGroup
+      .locator('ul')
+      .getByRole('checkbox');
+    this.checkedChildCategoryCheckboxes = this.childCategoryCheckboxes.and(
+      this.page.locator(':checked'),
+    );
+    this.brandCheckboxes = this.page.locator('[data-test^="brand-"]');
+    this.sortSelect = this.page.locator('[data-test="sort"]');
+    this.priceRangeMinHandle = this.page.getByRole('slider', {
+      name: 'ngx-slider',
+      exact: true,
+    });
+    this.priceRangeMaxHandle = this.page.getByRole('slider', {
+      name: 'ngx-slider-max',
+      exact: true,
+    });
   }
 
   async getProductNames(): Promise<string[]> {
     return this.productCardNames.allTextContents();
   }
 
+  async getProductPrices(): Promise<string[]> {
+    return this.productCardPrices.allTextContents();
+  }
+
+  // Pagination controls are removed from the DOM entirely when the (possibly
+  // filtered) result set fits on a single page, so absence means "last page".
+  async isOnLastPage(): Promise<boolean> {
+    if ((await this.paginationNextItem.count()) === 0) return true;
+    return (
+      (await this.paginationNextItem.getAttribute('class'))?.includes(
+        'disabled',
+      ) ?? true
+    );
+  }
+
+  // Every filter change and page turn re-fetches the grid from GET/QUERY
+  // /products; awaiting that response keeps reads in step with the server
+  // instead of racing the previous result set (which showed up as products
+  // from an unrelated filter leaking into a freshly-collected page).
+  private async triggerAndAwaitProducts(action: Promise<void>): Promise<void> {
+    await Promise.all([
+      this.page.waitForResponse((response) =>
+        new URL(response.url()).pathname.endsWith('/products'),
+      ),
+      action,
+    ]);
+  }
+
+  async filterByChildCategory(index: number): Promise<void> {
+    await this.triggerAndAwaitProducts(
+      this.childCategoryCheckboxes.nth(index).check(),
+    );
+  }
+
+  async clearChildCategoryFilter(index: number): Promise<void> {
+    await this.triggerAndAwaitProducts(
+      this.childCategoryCheckboxes.nth(index).uncheck(),
+    );
+  }
+
+  async filterByBrand(index: number): Promise<void> {
+    await this.triggerAndAwaitProducts(this.brandCheckboxes.nth(index).check());
+  }
+
+  async getAllProductNamesAcrossPages(): Promise<string[]> {
+    const allNames: string[] = [];
+    const maxPages = 50;
+    for (let i = 0; i < maxPages; i++) {
+      allNames.push(...(await this.getProductNames()));
+      if (await this.isOnLastPage()) return allNames;
+      await this.triggerAndAwaitProducts(this.paginationNextLink.click());
+    }
+    return allNames;
+  }
+
+  async search(query: string): Promise<void> {
+    await this.searchInput.fill(query);
+    await this.searchSubmitButton.click();
+  }
+
+  async sortBy(value: string): Promise<void> {
+    await this.sortSelect.selectOption(value);
+  }
+
+  async decreasePriceRangeMax(times: number): Promise<void> {
+    await this.priceRangeMaxHandle.focus();
+    for (let i = 0; i < times; i++) {
+      await this.page.keyboard.press('ArrowLeft');
+    }
+  }
+
+  async increasePriceRangeMin(times: number): Promise<void> {
+    await this.priceRangeMinHandle.focus();
+    for (let i = 0; i < times; i++) {
+      await this.page.keyboard.press('ArrowRight');
+    }
+  }
+
+  async getPriceRangeMaxValue(): Promise<string | null> {
+    return this.priceRangeMaxHandle.getAttribute('aria-valuenow');
+  }
+
+  async getPriceRangeMinValue(): Promise<string | null> {
+    return this.priceRangeMinHandle.getAttribute('aria-valuenow');
+  }
+
   async goToPage(pageNumber: number): Promise<void> {
     await this.page.getByLabel(`Page-${pageNumber}`).click();
   }
 
-  /**
-   * Catalog size (and therefore page count) is shared mutable prod data, so the
-   * last page is reached by clicking "next" until disabled rather than a fixed page number.
-   */
   async goToLastPage(): Promise<void> {
     const maxPages = 50;
     for (let i = 0; i < maxPages; i++) {
-      const isDisabled = (
-        await this.paginationNextItem.getAttribute('class')
-      )?.includes('disabled');
-      if (isDisabled) return;
+      if (await this.isOnLastPage()) return;
       await this.paginationNextLink.click();
     }
   }
@@ -70,21 +185,12 @@ export class HomePage extends BasePage {
     await this.productCards.nth(index).click();
   }
 
-  /**
-   * Stock status is live catalog data, so an out-of-stock card isn't guaranteed
-   * on any given page — pages through the grid until one is found or pages run out.
-   * Leaves the grid positioned on the page where the card was found (if any),
-   * so callers can assert against `outOfStockCard`/`outOfStockLabels` afterwards.
-   */
   async findOutOfStockCardAcrossPages(): Promise<boolean> {
     const maxPages = 50;
     for (let i = 0; i < maxPages; i++) {
       if ((await this.outOfStockCard.count()) > 0) return true;
 
-      const isLastPage = (
-        await this.paginationNextItem.getAttribute('class')
-      )?.includes('disabled');
-      if (isLastPage) return false;
+      if (await this.isOnLastPage()) return false;
       await this.paginationNextLink.click();
     }
     return false;

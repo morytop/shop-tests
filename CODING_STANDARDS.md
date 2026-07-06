@@ -154,6 +154,42 @@ constructor(page: Page) {
 
 Spec files then compose these properties (e.g. `homePage.productCardNames.first()`) instead of writing raw `data-test` selector strings inline.
 
+### Locator Selection Strategy
+
+Prefer `getByRole()` / `getByLabel()` / `getByText()` over CSS selectors, and never write one long compound CSS selector spanning multiple DOM levels (`'#a > b > c > d[data-test^="x"]'`). Chain short steps off a semantically-obtained parent locator instead.
+
+A raw CSS combinator is only acceptable when it encodes something a role/label locator genuinely can't express — e.g. distinguishing depth in a recursively-rendered tree where every level shares the same accessible name. Even then, scope it off a role-based parent and keep each chained step to one DOM level, rather than spelling out the whole path in one string.
+
+Compose conditions with locator methods (`.filter()`, `.and()`) instead of concatenating pseudo-classes or attributes into a selector string — each condition stays legible and independently reusable.
+
+**Bad (compound CSS selectors spanning multiple levels, `:checked` baked into a string):**
+
+```typescript
+this.topLevelCategoryCheckboxes = this.page.locator(
+  '#filters > fieldset > div.checkbox > label > input[data-test^="category-"]',
+);
+this.checkedChildCategoryCheckboxes = this.page.locator(
+  '#filters ul input[data-test^="category-"]:checked',
+);
+```
+
+**Good (role-based parent, short chained steps, composed conditions):**
+
+```typescript
+this.categoriesGroup = this.page
+  .getByRole('group', { name: 'Categories', exact: true })
+  .first();
+this.topLevelCategoryCheckboxes = this.categoriesGroup
+  .locator('> div.checkbox > label')
+  .getByRole('checkbox');
+this.childCategoryCheckboxes = this.categoriesGroup
+  .locator('ul')
+  .getByRole('checkbox');
+this.checkedChildCategoryCheckboxes = this.childCategoryCheckboxes.and(
+  this.page.locator(':checked'),
+);
+```
+
 ### Example
 
 **Page Object (no `expect()`):**

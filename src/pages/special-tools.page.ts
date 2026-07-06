@@ -1,12 +1,10 @@
-import { NavbarComponent } from '../components/navbar';
 import { PAGE_URLS } from '../constants/page-urls';
-import { BasePage } from './base.page';
+import { ProductListPage } from './product-list.page';
 import { Locator, Page } from '@playwright/test';
 
-export class SpecialToolsPage extends BasePage {
+export class SpecialToolsPage extends ProductListPage {
   readonly PAGE_URL = PAGE_URLS.SPECIAL_TOOLS;
   readonly heading: Locator;
-  bookmarks = new NavbarComponent(this.page);
 
   constructor(page: Page) {
     super(page);

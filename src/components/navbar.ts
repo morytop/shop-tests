@@ -28,4 +28,8 @@ export class NavbarComponent {
     this.contactNavLink = this.page.locator('[data-test="nav-contact"]');
     this.signInNavLink = this.page.locator('[data-test="nav-sign-in"]');
   }
+
+  async openCategories(): Promise<void> {
+    await this.categoriesNavDropdown.click();
+  }
 }

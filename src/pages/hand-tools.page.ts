@@ -1,13 +1,15 @@
-import { NavbarComponent } from '../components/navbar';
 import { PAGE_URLS } from '../constants/page-urls';
-import { BasePage } from './base.page';
-import { Page } from '@playwright/test';
+import { ProductListPage } from './product-list.page';
+import { Locator, Page } from '@playwright/test';
 
-export class HandToolsPage extends BasePage {
+export class HandToolsPage extends ProductListPage {
   readonly PAGE_URL = PAGE_URLS.HAND_TOOLS;
-  bookmarks = new NavbarComponent(this.page);
+  readonly heading: Locator;
 
   constructor(page: Page) {
     super(page);
+    this.heading = page.getByRole('heading', {
+      name: 'Category: Hand Tools',
+    });
   }
 }

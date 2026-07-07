@@ -352,3 +352,39 @@ Confirmed stable locators (live exploration): rental listing cards are `[data-te
 - **The `/rentals` listing card is a different component from the overview/category grid.** Each rental is a `div.card.mb-3` wrapping a **`tabindex`-focusable `div[data-test^="product-"]`** (not an `<a>`, no `href`; clicking routes to `/product/<id>`), and shows a **description with no price** — unlike the overview grid's `a.card[data-test^="product-"]` with `product-name`/`product-price`. So `RentalsPage` stays a standalone `BasePage`, not a `ProductListPage` subclass. On the rental detail page the `[data-test="quantity"]` stepper is **absent** (replaced by the duration slider); price shows `$X.XX per hour / (Total $X.XX)` while `[data-test="unit-price"]` remains a bare number.
 
 Deferred (per user scope decision, not gaps): AC4 location discount (unautomatable) and rental price recalc on slider drag (belongs to the deferred §5.3 rental-slider AC).
+
+## 14. Cart core implementation findings (2026-07-07)
+
+Implemented the **core** subset of §5.5 AC1–AC5 (`tests/cart.spec.ts`, extending the existing minimal
+`src/pages/cart.page.ts`). The cart step lives at `/checkout` and is fully exercisable as a **guest** (the cart
+is a per-context localStorage cart, empty per test — deterministic and safe to mutate, §12). Products are
+selected dynamically by card index and prices read back from the DOM — no hard-coded id/name/price (§3, §9).
+
+Confirmed stable locators (one `<table>` on the page): column headers `getByRole('table')` →
+`getByRole('columnheader')`; per-row `[data-test="product-title"]`, `[data-test="product-quantity"]`
+(editable `input[type=number] min=1 max=99`), `[data-test="product-price"]` (unit, `$X.XX`),
+`[data-test="line-price"]` (line total); grand total `[data-test="cart-total"]`; proceed `[data-test="proceed-1"]`.
+Both the quantity-updated and item-deleted confirmations are ngx-toastr `.toast-message` toasts.
+
+**Discrepancies to account for (docs/plan vs. actual):**
+
+- **The 5th "Actions" column header is blank.** Headers are exactly `Item / Quantity / Price / Total / ""` — the
+  documented "Actions" label does not render. The delete control itself is a bare `<a class="btn btn-danger">`
+  with an `aria-hidden` xmark icon: **no `data-test`, no accessible name/role, no `href`** — so it's located via
+  a CSS chain scoped to the cart table (`getByRole('table').locator('a.btn-danger')`), the one case where a raw
+  CSS selector is unavoidable per `CODING_STANDARDS.md`.
+- **Empty-cart copy is "The cart is empty. Nothing to display."**, not the documented "Your shopping cart is
+  empty". It renders as a bare `<p>` (no `data-test`, matched by text). It also appears **only after the cart has
+  been emptied** — a **pristine** cart (nothing ever added) renders neither a table nor the empty message, just
+  the wizard step labels. So the empty-message test adds then deletes an item; the Proceed-gating test uses the
+  pristine empty cart (where `proceed-1` is simply absent, count 0).
+- **Quantity change commits on the input's `change`/blur, not on keystroke.** Typing into `product-quantity`
+  updates only the `line-price` display (ngModel input binding) and **reverts on reload**; the `cart-total`
+  recalculation and the "Product quantity updated." toast fire on blur. `CartPage.updateQuantity` therefore
+  `fill`s **then** `blur`s. Recalculation is exact — line = unit × qty, cart total = Σ lines (asserted via
+  arithmetic read back from the DOM, e.g. qty 1→3 on a $14.15 item → `$42.45`).
+
+Deferred (per user scope decision, not gaps): **AC6** per-item discount badge — the same unautomatable
+server/IP-side `is_location_offer` mechanism as §10/§12; **AC7/AC8** the 15% rental+non-rental combination
+discount and its removal — deterministic and automatable, left for a follow-up pass that would extend the same
+`CartPage`.

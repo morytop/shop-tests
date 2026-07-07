@@ -82,4 +82,16 @@ export class ProductDetailPage extends BasePage {
   async addToCart(): Promise<void> {
     await this.addToCartButton.click();
   }
+
+  /**
+   * Add to cart and wait for the navbar badge to reach `count`. The cart write is
+   * async, so this both confirms the add landed and serialises consecutive adds —
+   * a second add fired before the badge updates is otherwise silently lost.
+   */
+  async addToCartAndAwaitBadge(count: string): Promise<void> {
+    await this.addToCart();
+    await this.bookmarks.cartQuantity
+      .filter({ hasText: new RegExp(`^${count}$`) })
+      .waitFor();
+  }
 }

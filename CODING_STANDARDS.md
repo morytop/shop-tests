@@ -61,6 +61,24 @@ All tests should follow the **Arrange-Act-Assert (AAA)** pattern:
 - No AAA comment markers needed - the structure should be self-evident
 - Keep each section focused and clear
 
+### No conditionals in test bodies
+
+The `playwright/no-conditional-in-test` lint rule (enforced, `--max-warnings=0`) flags `if`/ternary **and** the `?.` / `??` operators inside a `test()` body. When reading text back from a locator, prefer `locator.innerText()` (returns `string`) over `locator.textContent()` (returns `string | null`) so you don't need `?? ''` / `?.` to handle the null:
+
+**Bad (nullish handling trips the lint rule):**
+
+```typescript
+const title = (await cartPage.productTitles.nth(1).textContent())?.trim() ?? '';
+```
+
+**Good (`innerText()` is non-null, no conditional needed):**
+
+```typescript
+const title = (await cartPage.productTitles.nth(1).innerText()).trim();
+```
+
+Push any genuinely nullable handling into a module-level helper or a Page Object method, where the rule doesn't apply, rather than into the test body.
+
 ### Example
 
 ```typescript
@@ -88,6 +106,44 @@ test('should register new user', async ({ page }) => {
 
 - Page Objects: Define locators and action methods
 - Test files: Use Page Objects and add assertions
+
+**3. No helper functions in spec files**
+
+- Spec files contain `test()` blocks only — never module-level helper functions.
+- Any reusable interaction, multi-step flow, or synchronization step belongs in a **method on the relevant Page Object**, not a local function in the spec.
+- If a flow spans pages, express it in the test as a short sequence of existing Page Object method calls (this is the established Arrange pattern — see the repeated `homePage.goto()` → `clickProductCard()` setup across specs), and add a new Page Object method only for the part that isn't already one.
+- The one exception is a **pure, page-agnostic data transform** (e.g. a `parsePrice(text)` string→number utility that touches no locator/page) — it may live at the top of the spec, or move to a shared test-util if reused.
+
+**Bad (helper function drives the page from inside the spec):**
+
+```typescript
+// cart.spec.ts
+async function addProductToCart(homePage, productDetailPage, index, badge) {
+  await homePage.goto();
+  await homePage.clickProductCard(index);
+  await productDetailPage.addToCart();
+  await expect(productDetailPage.bookmarks.cartQuantity).toHaveText(badge);
+}
+```
+
+**Good (the reusable step is a Page Object method; the test composes methods):**
+
+```typescript
+// product-detail.page.ts — the async add + badge sync lives here
+async addToCartAndAwaitBadge(count: string): Promise<void> {
+  await this.addToCart();
+  await this.bookmarks.cartQuantity
+    .filter({ hasText: new RegExp(`^${count}$`) })
+    .waitFor();
+}
+
+// cart.spec.ts — Arrange composes existing methods, no local function
+await homePage.goto();
+await homePage.clickProductCard(0);
+await productDetailPage.addToCartAndAwaitBadge('1');
+```
+
+**Synchronizing without `expect()`:** a Page Object often needs to wait for state (an async write to land, an element to reach a value) before returning — but it must not use `expect()`. Wait with `locator.waitFor()`, narrowing to the target state with `.filter()` / `.and()` (as above) instead of an `expect(...).toHaveText(...)` poll. Assertions on that same state still belong in the spec.
 
 ### Basic Structure
 
@@ -125,6 +181,7 @@ export class PageName {
 - Include `expect()` in Page Objects
 - Add test logic or validations in Page Objects
 - Never mix locator definition styles: locators are always `readonly` properties assigned in the constructor, never returned from a method or a getter
+- Define standalone helper functions in spec files — encapsulate interactions, flows, and waits as Page Object methods instead (see rule 3 above)
 
 ### Locator Definition Strategy
 

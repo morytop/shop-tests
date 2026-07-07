@@ -5,6 +5,7 @@ import { HomePage } from '../pages/home.page';
 import { LoginPage } from '../pages/login.page';
 import { OtherPage } from '../pages/other.page';
 import { PowerToolsPage } from '../pages/power-tools.page';
+import { ProductDetailPage } from '../pages/product-detail.page';
 import { RegisterPage } from '../pages/register.page';
 import { RentalsPage } from '../pages/rentals.page';
 import { SpecialToolsPage } from '../pages/special-tools.page';
@@ -18,6 +19,7 @@ export type Pages = {
   loginPage: LoginPage;
   otherPage: OtherPage;
   powerToolsPage: PowerToolsPage;
+  productDetailPage: ProductDetailPage;
   registerPage: RegisterPage;
   rentalsPage: RentalsPage;
   specialToolsPage: SpecialToolsPage;
@@ -46,6 +48,9 @@ export const pages: ExtendParams = {
   },
   powerToolsPage: async ({ page }, use) => {
     await use(new PowerToolsPage(page));
+  },
+  productDetailPage: async ({ page }, use) => {
+    await use(new ProductDetailPage(page));
   },
   registerPage: async ({ page }, use) => {
     await use(new RegisterPage(page));

@@ -6,6 +6,7 @@ export const PAGE_URLS = {
   LOGIN: '/auth/login',
   OTHER: '/category/other',
   POWER_TOOLS: '/category/power-tools',
+  PRODUCT: '/product',
   REGISTER: '/auth/register',
   RENTALS: '/rentals',
   SPECIAL_TOOLS: '/category/special-tools',

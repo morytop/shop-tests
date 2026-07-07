@@ -11,6 +11,8 @@ export class NavbarComponent {
   readonly rentalsNavLink: Locator;
   readonly contactNavLink: Locator;
   readonly signInNavLink: Locator;
+  readonly cartLink: Locator;
+  readonly cartQuantity: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -27,6 +29,9 @@ export class NavbarComponent {
     this.rentalsNavLink = this.page.locator('[data-test="nav-rentals"]');
     this.contactNavLink = this.page.locator('[data-test="nav-contact"]');
     this.signInNavLink = this.page.locator('[data-test="nav-sign-in"]');
+    // Cart badge is rendered only once the cart is non-empty.
+    this.cartLink = this.page.locator('[data-test="nav-cart"]');
+    this.cartQuantity = this.page.locator('[data-test="cart-quantity"]');
   }
 
   async openCategories(): Promise<void> {

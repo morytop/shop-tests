@@ -388,3 +388,35 @@ Deferred (per user scope decision, not gaps): **AC6** per-item discount badge �
 server/IP-side `is_location_offer` mechanism as §10/§12; **AC7/AC8** the 15% rental+non-rental combination
 discount and its removal — deterministic and automatable, left for a follow-up pass that would extend the same
 `CartPage`.
+
+## 15. Checkout sign-in step implementation findings (2026-07-07)
+
+Implemented §5.6 **AC1 only** (`tests/checkout-signin.spec.ts`, new
+`src/pages/checkout-signin.page.ts` registered in `src/fixtures/pages.ts`): a guest
+proceeding from the cart (`proceed-1`) is shown the login form. The step is reached by
+composing existing page objects (`HomePage` → `ProductDetailPage.addToCartAndAwaitBadge`
+→ `CartPage.proceedToCheckout`); the product is chosen dynamically by card index (§3, §9).
+Like `ProductDetailPage`, `CheckoutSigninPage.PAGE_URL` is only `/checkout` to satisfy
+`BasePage` — `goto()` lands on the cart step, not the sign-in step, so the step is always
+entered via the cart proceed.
+
+**Discrepancy to account for (docs/plan vs. actual):**
+
+- **The sign-in step is a tabbed panel, not a bare login form.** §5.6 AC1 says the guest
+  is "shown a login form (email, password, submit)"; production actually renders a
+  `role="tablist"` with two `role="tab"` links — **"Sign in"** (active by default,
+  `a.nav-link.active`, `href="#signin-tab"`) and **"Continue as Guest"**. The active
+  "Sign in" tab holds the login form. Neither tab has a `data-test`/id (located via
+  `getByRole('tab', {name})`). The "Continue as Guest" tab is the wizard-only marker
+  (absent on `/auth/login`) used to prove the test is on the checkout step, not the
+  standalone login page.
+- The login form reuses the same ids as `/auth/login` — `[data-test="email"]`,
+  `[data-test="password"]`, `[data-test="login-submit"]` — with the submit button
+  **labelled "Login"** and a `<h3>Login</h3>` heading (no data-test). The wizard step
+  indicator marks the active step with `<li class="current">` (no data-test/role).
+
+Deferred (per user scope decision, not gaps): **AC2** TOTP 6-digit prompt (needs a new
+`otplib` dependency + a full 2FA-setup flow that belongs to the not-yet-implemented
+§5.13), **AC3** valid credentials → billing address step, **AC4** already-logged-in copy
+(_"Hello {First} {Last}, you are already logged in..."_ per §9). The new
+`CheckoutSigninPage` is the natural place to extend for all three.

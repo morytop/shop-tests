@@ -22,6 +22,7 @@ export class ProductDetailPage extends BasePage {
   readonly increaseQuantityButton: Locator;
   readonly decreaseQuantityButton: Locator;
   readonly addToCartButton: Locator;
+  readonly durationSlider: Locator;
   readonly outOfStockLabel: Locator;
   readonly relatedProductsHeading: Locator;
   readonly relatedProductCards: Locator;
@@ -49,6 +50,8 @@ export class ProductDetailPage extends BasePage {
       '[data-test="decrease-quantity"]',
     );
     this.addToCartButton = this.page.locator('[data-test="add-to-cart"]');
+    // Rental products replace the quantity stepper with a 1–10h duration slider.
+    this.durationSlider = this.page.getByRole('slider', { name: 'ngx-slider' });
     this.outOfStockLabel = this.page.locator('[data-test="out-of-stock"]');
     this.relatedProductsHeading = this.page.getByRole('heading', {
       name: 'Related products',

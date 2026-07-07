@@ -1,4 +1,5 @@
 import { AccountPage } from '../pages/account.page';
+import { CartPage } from '../pages/cart.page';
 import { ContactPage } from '../pages/contact.page';
 import { HandToolsPage } from '../pages/hand-tools.page';
 import { HomePage } from '../pages/home.page';
@@ -13,6 +14,7 @@ import type { test as base } from '@playwright/test';
 
 export type Pages = {
   accountPage: AccountPage;
+  cartPage: CartPage;
   contactPage: ContactPage;
   handToolsPage: HandToolsPage;
   homePage: HomePage;
@@ -30,6 +32,9 @@ type ExtendParams = Parameters<typeof base.extend<Pages>>[0];
 export const pages: ExtendParams = {
   accountPage: async ({ page }, use) => {
     await use(new AccountPage(page));
+  },
+  cartPage: async ({ page }, use) => {
+    await use(new CartPage(page));
   },
   contactPage: async ({ page }, use) => {
     await use(new ContactPage(page));

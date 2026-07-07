@@ -1,6 +1,7 @@
 export const PAGE_URLS = {
   HOME: '/',
   ACCOUNT: '/account',
+  CHECKOUT: '/checkout',
   CONTACT: '/contact',
   HAND_TOOLS: '/category/hand-tools',
   LOGIN: '/auth/login',

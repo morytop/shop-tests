@@ -339,3 +339,16 @@ Confirmed stable locators: `product-name` (h1), `unit-price`, `product-descripti
 - **No `data-test` on category/brand badges or the related-products section.** Category/brand use `aria-label`; the related section is an `<h2>Related products</h2>` whose cards are plain `a.card` (the listing cards are `a.card[data-test^="product-"]`).
 
 Deferred (per user scope decision, not gaps): discounted-product badge (unautomatable, §10), rental duration slider + price recalc, and favorites (logged-in add/already-added and logged-out Unauthorized) — remaining §5.3 ACs for a follow-up pass.
+
+## 13. Rentals implementation findings (2026-07-07)
+
+Implemented §5.4 AC1–AC3 (`tests/rentals.spec.ts`): the `RentalsPage` stub was fleshed out, `ProductDetailPage` gained a `durationSlider` locator, and a new minimal `CartPage` (`src/pages/cart.page.ts`, `PAGE_URLS.CHECKOUT = /checkout`, registered in `src/fixtures/pages.ts`) models the cart step so §5.5 can extend it. AC4 (location-based rental discount) is **not** implemented — same unautomatable server/IP-side `is_location_offer` mechanism as §10/§5.22. Rentals are selected dynamically (first card), no hard-coded id/name/price (§3, §9).
+
+Confirmed stable locators (live exploration): rental listing cards are `[data-test^="product-"]` with `h5.card-title` (name) and `p.card-text` (description); the rental detail duration slider is `getByRole('slider', { name: 'ngx-slider' })` (1–10h); the cart product name is `[data-test="product-title"]`.
+
+**Discrepancies to account for (docs/plan vs. actual):**
+
+- **AC3 cart label is "Item for rent, price per hour", not the documented "This is a rental item".** It renders on the Cart step of `/checkout` as a bare `<small>` (no `data-test`) beneath the `[data-test="product-title"]` span — matched by text. Assert the actual copy.
+- **The `/rentals` listing card is a different component from the overview/category grid.** Each rental is a `div.card.mb-3` wrapping a **`tabindex`-focusable `div[data-test^="product-"]`** (not an `<a>`, no `href`; clicking routes to `/product/<id>`), and shows a **description with no price** — unlike the overview grid's `a.card[data-test^="product-"]` with `product-name`/`product-price`. So `RentalsPage` stays a standalone `BasePage`, not a `ProductListPage` subclass. On the rental detail page the `[data-test="quantity"]` stepper is **absent** (replaced by the duration slider); price shows `$X.XX per hour / (Total $X.XX)` while `[data-test="unit-price"]` remains a bare number.
+
+Deferred (per user scope decision, not gaps): AC4 location discount (unautomatable) and rental price recalc on slider drag (belongs to the deferred §5.3 rental-slider AC).

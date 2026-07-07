@@ -288,7 +288,7 @@ Explored `https://practicesoftwaretesting.com` directly (page title confirms `To
 **Discrepancies to account for in tests (docs vs. actual):**
 
 - **Language selector has 7 options, not 6** — `DE, EL, EN, ES, FR, NL, TR` (adds Greek "EL", not mentioned in `docs/user-stories/v5.md`). Update §5.23 assertions to the actual option list rather than the documented 6.
-- **Billing address "Country" is a `<select>` dropdown** with a full ISO country list, not a free-text field with a 40-char max as AC1 implies. There is also an extra **"House number"** field not mentioned in the AC. Update §5.7 test cases accordingly (drop the Country max-length boundary test; add House number to the field list).
+- **Billing address "Country" is a `<select>` dropdown** with a full ISO country list, not a free-text field with a 40-char max as AC1 implies. There is also an extra **"House number"** field not mentioned in the AC. Update §5.7 test cases accordingly (drop the Country max-length boundary test; add House number to the field list). **Update 2026-07-07 (see §16):** §5.7 AC5 ("logged-in user's address is pre-filled from account data") is **false in production** — billing renders empty for a logged-in user; the step instead offers a postal-code lookup. The billing form also has no native `maxlength` and no visible validation error text.
 - **Sustainability / CO₂ rating and "Compare" feature are live but undocumented** in v5: product cards and detail pages show a CO₂ rating (A–E) badge, a per-product "Compare" button, and the category sidebar has an "Eco-Friendly Products" filter plus CO₂-rating sort options. None of this is in `docs/user-stories/v5.md`. **Add a new §5.26 "Sustainability / Compare" section** to this plan once the intended behavior is confirmed with the team (docs may be behind an already-shipped feature).
 - Checkout "already logged in" copy is _"Hello {First} {Last}, you are already logged in. You can proceed to checkout."_ — not the documented _"You are already signed in as..."_. Assert on the actual copy.
 - Admin dropdown menu includes an extra **"Settings"** entry (`/admin/settings`) not covered anywhere in the v5 docs — worth at least a smoke-level access check.
@@ -420,3 +420,49 @@ Deferred (per user scope decision, not gaps): **AC2** TOTP 6-digit prompt (needs
 §5.13), **AC3** valid credentials → billing address step, **AC4** already-logged-in copy
 (_"Hello {First} {Last}, you are already logged in..."_ per §9). The new
 `CheckoutSigninPage` is the natural place to extend for all three.
+
+## 16. Checkout billing address implementation findings (2026-07-07)
+
+Implemented **all 5 ACs** of §5.7 (`tests/checkout-address.spec.ts`, new
+`src/pages/checkout-address.page.ts` registered in `src/fixtures/pages.ts`). `CheckoutSigninPage`
+was extended with the guest-continuation and logged-in proceed methods (the guest details form
+lives on the sign-in step). The billing step is reached by composing existing page objects
+(`HomePage` → `ProductDetailPage.addToCartAndAwaitBadge` → `CartPage.proceedToCheckout` →
+`CheckoutSigninPage`); the product is chosen dynamically by card index (§3, §9). Like
+`CheckoutSigninPage`, `CheckoutAddressPage.PAGE_URL` is only `/checkout` to satisfy `BasePage` —
+`goto()` lands on the cart step, so billing is always entered through the wizard.
+
+**Wizard navigation to the billing step (confirmed live):**
+
+- Cart `proceed-1` → **Sign in** step.
+- **Guest path:** the "Continue as Guest" tab is **not** a one-click path to billing — it reveals
+  an intermediate details form (`guest-email` / `guest-first-name` / `guest-last-name` +
+  `guest-submit`), after which a distinct **`proceed-2-guest`** button advances to Billing Address.
+- **Logged-in path:** the sign-in step shows the "already logged in" panel (§9) with a
+  **`proceed-2`** button that advances straight to Billing Address.
+- Billing → Payment button is **`proceed-3`** ("Proceed to checkout").
+
+**Billing form (confirmed live):** fields are `country` (`<select>`; empty default option value
+`""`, option value = ISO code e.g. `DE`, text = full name e.g. "Germany"), `postal_code`,
+`house_number`, `street`, `city`, `state`. All required.
+
+**Discrepancies to account for (docs/plan vs. actual):**
+
+- **AC5 is false — billing is NOT pre-filled from account data.** Registered a fresh user with a
+  saved address (verified stored on `/account/profile`), logged in, and went through checkout
+  twice: the billing fields render **empty** every time. The step instead shows _"Enter country,
+  postal code and house number. We will fill in the rest automatically."_ and performs a
+  **postal-code lookup** — filling country+postal(+house) auto-fills street/city/state from an
+  external geocoding service (nondeterministic values, e.g. DE+12345 → "Schüttegasse" /
+  "Lampertheim" / "Sachsen-Anhalt" — not suitable for a stable assertion, left unautomated). Per
+  user decision the AC5 test pins the **actual** behavior: a logged-in user reaches billing
+  (login recognized via the "already logged in" panel + `proceed-2`) with **empty** fields.
+- **No native `maxlength` attributes and no user-visible validation error text.** Max lengths are
+  enforced by Angular validators surfaced **only** as the field's `ng-invalid` class plus the
+  disabled `proceed-3` button. Verified boundaries: `street` ≤70, `city` ≤40, `state` ≤40,
+  `postal_code` ≤10, `house_number` ≤10 (house number's max is undocumented but real). AC1/AC3
+  therefore assert field presence + the `ng-invalid`/`proceed-3`-disabled behavior rather than a
+  `maxlength` attribute or an error message.
+
+Not deferred — §5.7 is fully covered. AC3 is parametrized per length-limited text field (Country
+excluded, being a dropdown, §9); AC5 documents the pre-fill discrepancy above.

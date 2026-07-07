@@ -1,5 +1,6 @@
 import { AccountPage } from '../pages/account.page';
 import { CartPage } from '../pages/cart.page';
+import { CheckoutAddressPage } from '../pages/checkout-address.page';
 import { CheckoutSigninPage } from '../pages/checkout-signin.page';
 import { ContactPage } from '../pages/contact.page';
 import { HandToolsPage } from '../pages/hand-tools.page';
@@ -16,6 +17,7 @@ import type { test as base } from '@playwright/test';
 export type Pages = {
   accountPage: AccountPage;
   cartPage: CartPage;
+  checkoutAddressPage: CheckoutAddressPage;
   checkoutSigninPage: CheckoutSigninPage;
   contactPage: ContactPage;
   handToolsPage: HandToolsPage;
@@ -37,6 +39,9 @@ export const pages: ExtendParams = {
   },
   cartPage: async ({ page }, use) => {
     await use(new CartPage(page));
+  },
+  checkoutAddressPage: async ({ page }, use) => {
+    await use(new CheckoutAddressPage(page));
   },
   checkoutSigninPage: async ({ page }, use) => {
     await use(new CheckoutSigninPage(page));

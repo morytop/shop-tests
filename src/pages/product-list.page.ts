@@ -22,6 +22,7 @@ export abstract class ProductListPage extends BasePage {
   readonly paginationNextLink: Locator;
   readonly paginationNextItem: Locator;
   readonly paginationPrevItem: Locator;
+  readonly activePageItem: Locator;
   readonly searchInput: Locator;
   readonly searchSubmitButton: Locator;
   readonly searchResetButton: Locator;
@@ -61,6 +62,7 @@ export abstract class ProductListPage extends BasePage {
     this.paginationPrevItem = this.page
       .locator('[data-test="pagination-prev"]')
       .locator('..');
+    this.activePageItem = this.page.locator('ul.pagination li.active');
     this.searchInput = this.page.locator('[data-test="search-query"]');
     this.searchSubmitButton = this.page.locator('[data-test="search-submit"]');
     this.searchResetButton = this.page.locator('[data-test="search-reset"]');
@@ -107,6 +109,16 @@ export abstract class ProductListPage extends BasePage {
     );
   }
 
+  // The grid is rendered by a post-navigation XHR, so a walk started right after
+  // goto() can outrun the first paint: with no cards and no pagination yet,
+  // isOnLastPage() reads "no pagination => last page" and the walk bails on page
+  // one. Wait for the first card before walking a freshly-loaded listing.
+  // (Walks kicked off after a filter change instead already awaited that fetch,
+  // and must not wait here — their result set can legitimately be empty.)
+  private async waitForGrid(): Promise<void> {
+    await this.productCards.first().waitFor();
+  }
+
   // Every filter change and page turn re-fetches the grid from GET/QUERY
   // /products; awaiting that response keeps reads in step with the server
   // instead of racing the previous result set (which showed up as products
@@ -118,6 +130,22 @@ export abstract class ProductListPage extends BasePage {
       ),
       action,
     ]);
+  }
+
+  // Advance exactly one page, awaiting both the re-fetch (QUERY /products) and
+  // the subsequent re-render (the active page number incrementing). The old
+  // fire-and-forget `paginationNextLink.click()` let successive clicks overlap,
+  // so their /products responses could settle out of order and leave the walker
+  // short of — or bouncing off — the true last page; serialising the turn keeps
+  // every caller's next DOM read in step with the page actually shown. Callers
+  // must confirm `!isOnLastPage()` first: clicking a disabled next fires no
+  // request and would hang the awaited response.
+  private async goToNextPage(): Promise<void> {
+    const current = Number((await this.activePageItem.textContent())?.trim());
+    await this.triggerAndAwaitProducts(this.paginationNextLink.click());
+    await this.activePageItem
+      .filter({ hasText: new RegExp(`^${current + 1}$`) })
+      .waitFor();
   }
 
   async filterByChildCategory(index: number): Promise<void> {
@@ -142,7 +170,7 @@ export abstract class ProductListPage extends BasePage {
     for (let i = 0; i < maxPages; i++) {
       allNames.push(...(await this.getProductNames()));
       if (await this.isOnLastPage()) return allNames;
-      await this.triggerAndAwaitProducts(this.paginationNextLink.click());
+      await this.goToNextPage();
     }
     return allNames;
   }
@@ -183,10 +211,11 @@ export abstract class ProductListPage extends BasePage {
   }
 
   async goToLastPage(): Promise<void> {
+    await this.waitForGrid();
     const maxPages = 50;
     for (let i = 0; i < maxPages; i++) {
       if (await this.isOnLastPage()) return;
-      await this.paginationNextLink.click();
+      await this.goToNextPage();
     }
   }
 
@@ -195,12 +224,13 @@ export abstract class ProductListPage extends BasePage {
   }
 
   async findOutOfStockCardAcrossPages(): Promise<boolean> {
+    await this.waitForGrid();
     const maxPages = 50;
     for (let i = 0; i < maxPages; i++) {
       if ((await this.outOfStockCard.count()) > 0) return true;
 
       if (await this.isOnLastPage()) return false;
-      await this.paginationNextLink.click();
+      await this.goToNextPage();
     }
     return false;
   }

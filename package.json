@@ -7,6 +7,7 @@
     "format": "npx prettier --write .",
     "format:check": "npx prettier . --check \"!**.ts\"",
     "lint": "npx eslint . --ext .ts --max-warnings=0",
+    "tsc:check": "tsc --noEmit --strict",
     "prepare": "husky",
     "test": "npx playwright test",
     "test:headed": "npm run test -- --headed",
@@ -29,6 +30,7 @@
     "eslint-plugin-playwright": "^1.5.4",
     "eslint-plugin-prettier": "^5.1.3",
     "husky": "^9.0.11",
-    "prettier": "3.2.5"
+    "prettier": "3.2.5",
+    "typescript": "^5.4.3"
   }
 }

@@ -1,0 +1,12 @@
+import { BasePage } from './base.page';
+import { Locator, Page } from '@playwright/test';
+import { PAGE_URLS } from '@src/ui/constants/page-urls';
+
+export class AccountPage extends BasePage {
+  readonly PAGE_URL = PAGE_URLS.ACCOUNT;
+  readonly title: Locator;
+  constructor(page: Page) {
+    super(page);
+    this.title = this.page.locator('[data-test="page-title"]');
+  }
+}

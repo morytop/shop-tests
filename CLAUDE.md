@@ -17,7 +17,7 @@ npx husky
 cp .env-template .env   # then set BASE_URL, USER_EMAIL, USER_PASSWORD
 ```
 
-`USER_EMAIL`/`USER_PASSWORD` must be a real seeded account (`testUser1` in `src/test-data/user-data.ts`). The shared seeded accounts (`customer@`/`admin@practicesoftwaretesting.com`) are read-only fixtures — never use them in destructive tests; register a fresh user via `@faker-js/faker` instead (see `register.spec.ts`).
+`USER_EMAIL`/`USER_PASSWORD` must be a real seeded account (`testUser1` in `src/ui/test-data/user.data.ts`). The shared seeded accounts (`customer@`/`admin@practicesoftwaretesting.com`) are read-only fixtures — never use them in destructive tests; register a fresh user via `@faker-js/faker` instead (see `register.spec.ts`).
 
 ## Commands
 
@@ -25,7 +25,7 @@ cp .env-template .env   # then set BASE_URL, USER_EMAIL, USER_PASSWORD
 npx playwright test                          # run all tests
 npm run test:headed                          # headed browser
 npm run test:ui                              # Playwright UI mode
-npx playwright test tests/login.spec.ts      # single file
+npx playwright test tests/ui/login.spec.ts   # single file
 npx playwright test -g "reject login"        # single test by name
 npx playwright test --grep @smoke            # by tag
 npm run show-report                          # open last HTML report
@@ -37,14 +37,19 @@ Husky's pre-commit hook runs `lint` and `format:check` — both must pass to com
 
 ## Architecture
 
-- **Page Object Model**: `src/pages/*.page.ts`, one class per page, extending `BasePage` (`src/pages/base.page.ts`). Each declares `readonly PAGE_URL` (from `src/constants/page-urls.ts`) and inherits `goto()`. Shared cross-page pieces (e.g. the nav bar) live in `src/components/`.
-- **Fixtures inject page objects into tests**: `src/fixtures/pages.ts` defines the `Pages` type and instantiates one of each page object per test; `src/fixtures/main.ts` extends Playwright's base `test` with them. Specs import `test` from `../src/fixtures/main` (not `@playwright/test`) to get page objects as fixture args, e.g. `async ({ registerPage, accountPage, loginPage }) => {...}`.
-- **Adding a new page object**: create the `*.page.ts` class, then register it in both the `Pages` type and `pages` export in `src/fixtures/pages.ts` — nothing else needs to change.
-- **Test data**: `src/test-data/user-data.ts` exposes env-backed fixed accounts; ad hoc data is generated per-test with `@faker-js/faker` rather than hard-coded, since tests run against shared production data (no hard-coded product IDs/names/prices, no assumptions about a clean category/brand tree — see `test_plan.md` §3).
+The suite is being refactored toward a layered `src/ui` + `src/api` structure (see `.ai-docs/refactor-layered-architecture-plan.md`). Current state after Phase 1:
+
+- **Path aliases** (`tsconfig.json`): import via `@src/*` (→ `src/*`) and `@config/*` (→ `config/*`), not deep relative paths. Same-directory siblings may stay relative (`./base.page`). Playwright's esbuild resolves these directly.
+- **Config layer** (`config/`): `env.config.ts` loads `.env` (`override: true`) and exports fail-fast, typed `BASE_URL`/`USER_EMAIL`/`USER_PASSWORD` via `requireEnvVariable()`. `global.setup.ts` (wired as `globalSetup`) does a connectivity check against `BASE_URL`.
+- **Page Object Model**: `src/ui/pages/*.page.ts`, one class per page, extending `BasePage` (`src/ui/pages/base.page.ts`). Each declares `readonly PAGE_URL` (from `src/ui/constants/page-urls.ts`) and inherits `goto()`. Shared cross-page pieces (e.g. the nav bar) live in `src/ui/components/` (`navbar.component.ts`).
+- **Fixtures inject page objects into tests**: `src/ui/fixtures/page-object.fixture.ts` defines the `Pages` type and exports `pageObjectTest` (Playwright's base `test` extended with one instance of each page object). `src/merge.fixture.ts` composes fixtures via `mergeTests` (page objects today, API request objects later) and re-exports `expect`. Specs import `{ expect, test }` from `@src/merge.fixture` (not `@playwright/test`) to get page objects as fixture args, e.g. `async ({ registerPage, accountPage, loginPage }) => {...}`.
+- **Adding a new page object**: create the `*.page.ts` class under `src/ui/pages/`, then register it in both the `Pages` type and `pageObjectTest` in `src/ui/fixtures/page-object.fixture.ts` — nothing else needs to change.
+- **Test data**: `src/ui/test-data/user.data.ts` exposes env-backed fixed accounts; ad hoc data is generated per-test with `@faker-js/faker` rather than hard-coded, since tests run against shared production data (no hard-coded product IDs/names/prices, no assumptions about a clean category/brand tree — see `test_plan.md` §3). Extraction of shared utils/factories/models and the `src/api` layer land in later phases.
+- **Specs** live under `tests/ui/` (with `tests/ui/smoke/`); `tests/api/` and `tests/setup/` arrive in later phases.
 
 ## Test framework
 
-Built on **Playwright Test**. Always check `playwright.config.ts` before writing tests — it defines `testDir` (`./tests`), `baseURL` (from `BASE_URL` env var), timeouts, the `chromium` project/device, and trace/video/screenshot-on-failure settings. `src/global-setup.ts` reloads `.env` with `override: true` before the run.
+Built on **Playwright Test**. Always check `playwright.config.ts` before writing tests — it defines `testDir` (`./tests`), `baseURL` (imported from `@config/env.config`), timeouts, the `chromium` project/device, and trace/video/screenshot-on-failure settings. `config/global.setup.ts` runs a connectivity check before the run. Run `npm run tsc:check` to typecheck (`tsc --noEmit --strict`).
 
 ## Coding standards
 

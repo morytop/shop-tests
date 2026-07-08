@@ -2,6 +2,7 @@ import { BasePage } from './base.page';
 import { Page } from '@playwright/test';
 import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { RegisterUser } from '@src/ui/models/user.model';
 
 export class RegisterPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.REGISTER;
@@ -25,32 +26,19 @@ export class RegisterPage extends BasePage {
     super(page);
   }
 
-  async register(
-    firstName: string,
-    lastName: string,
-    dateOfBirth: string,
-    country: string,
-    street: string,
-    postcode: string,
-    houseNumber: string,
-    city: string,
-    state: string,
-    phone: string,
-    email: string,
-    password: string,
-  ): Promise<void> {
-    await this.firstNameInput.fill(firstName);
-    await this.lastNameInput.fill(lastName);
-    await this.dateOfBirthInput.fill(dateOfBirth);
-    await this.countrySelect.selectOption(country);
-    await this.streetInput.fill(street);
-    await this.postcodeInput.fill(postcode);
-    await this.houseInput.fill(houseNumber);
-    await this.cityInput.fill(city);
-    await this.stateInput.fill(state);
-    await this.phoneInput.fill(phone);
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
+  async register(user: RegisterUser): Promise<void> {
+    await this.firstNameInput.fill(user.firstName);
+    await this.lastNameInput.fill(user.lastName);
+    await this.dateOfBirthInput.fill(user.dateOfBirth);
+    await this.countrySelect.selectOption(user.country);
+    await this.streetInput.fill(user.street);
+    await this.postcodeInput.fill(user.postcode);
+    await this.houseInput.fill(user.houseNumber);
+    await this.cityInput.fill(user.city);
+    await this.stateInput.fill(user.state);
+    await this.phoneInput.fill(user.phone);
+    await this.emailInput.fill(user.email);
+    await this.passwordInput.fill(user.password);
     await this.registerButton.click();
   }
 }

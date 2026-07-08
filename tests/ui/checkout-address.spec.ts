@@ -1,5 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@src/merge.fixture';
+import { makeValidAddress } from '@src/ui/factories/address.factory';
+import { prepareRandomUser } from '@src/ui/factories/user.factory';
 import { AddressTextField } from '@src/ui/models/address.model';
 import { ADDRESS_MAX_LENGTHS } from '@src/ui/test-data/address.data';
 
@@ -15,14 +17,7 @@ import { ADDRESS_MAX_LENGTHS } from '@src/ui/test-data/address.data';
 // logged-in user (§9/§16); that test pins the actual behavior. Products are chosen
 // dynamically by card index (§3, §9); see .ai-docs/checkout-address-plan.md.
 
-const validAddress = {
-  country: 'Germany',
-  postalCode: '12345',
-  houseNumber: '42',
-  street: 'Main Street',
-  city: 'Berlin',
-  state: 'Bavaria',
-};
+const validAddress = makeValidAddress();
 
 test.describe('Verify checkout billing address step', () => {
   test(
@@ -175,35 +170,12 @@ test.describe('Verify checkout billing address step', () => {
       checkoutSigninPage,
       checkoutAddressPage,
     }) => {
-      const firstName = faker.person.firstName();
-      const lastName = faker.person.lastName();
-      const email = faker.internet.email();
-      const password = faker.internet.password({
-        length: 20,
-        pattern: /^[a-z ,.'-]+$/i,
-        prefix: '1!',
-      });
-      const dateOfBirth = faker.date
-        .birthdate({ min: 18, max: 65, mode: 'age' })
-        .toLocaleDateString('en-CA');
+      const user = prepareRandomUser();
 
       await registerPage.goto();
-      await registerPage.register(
-        firstName,
-        lastName,
-        dateOfBirth,
-        'Germany',
-        faker.location.street(),
-        '12345',
-        '42',
-        faker.location.city(),
-        faker.location.state(),
-        faker.string.numeric(8),
-        email,
-        password,
-      );
+      await registerPage.register(user);
       await expect(loginPage.heading).toHaveText('Login');
-      await loginPage.login(email, password);
+      await loginPage.login(user.email, user.password);
       // Wait for the session to be established before navigating on — otherwise the
       // checkout can reach the sign-in step before auth lands and not recognize login.
       await expect(accountPage.title).toHaveText('My account');

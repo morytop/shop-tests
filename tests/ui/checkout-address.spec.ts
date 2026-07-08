@@ -23,15 +23,12 @@ test.describe('Verify checkout billing address step', () => {
     'billing step shows all required address fields',
     { tag: ['@checkout', '@regression'] },
     async ({
-      homePage,
-      productDetailPage,
+      addProductToCart,
       cartPage,
       checkoutSigninPage,
       checkoutAddressPage,
     }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+      await addProductToCart();
       await cartPage.goto();
       await cartPage.proceedToCheckout();
 
@@ -59,15 +56,12 @@ test.describe('Verify checkout billing address step', () => {
     'clearing a required field disables proceeding to payment',
     { tag: ['@checkout', '@regression'] },
     async ({
-      homePage,
-      productDetailPage,
+      addProductToCart,
       cartPage,
       checkoutSigninPage,
       checkoutAddressPage,
     }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+      await addProductToCart();
       await cartPage.goto();
       await cartPage.proceedToCheckout();
       await checkoutSigninPage.continueAsGuest(
@@ -95,15 +89,12 @@ test.describe('Verify checkout billing address step', () => {
       `${field} rejects input longer than ${max} characters`,
       { tag: ['@checkout', '@regression'] },
       async ({
-        homePage,
-        productDetailPage,
+        addProductToCart,
         cartPage,
         checkoutSigninPage,
         checkoutAddressPage,
       }) => {
-        await homePage.goto();
-        await homePage.clickProductCard(0);
-        await productDetailPage.addToCartAndAwaitBadge('1');
+        await addProductToCart();
         await cartPage.goto();
         await cartPage.proceedToCheckout();
         await checkoutSigninPage.continueAsGuest(
@@ -128,15 +119,12 @@ test.describe('Verify checkout billing address step', () => {
     'filling all fields validly enables proceeding to payment',
     { tag: ['@checkout', '@regression'] },
     async ({
-      homePage,
-      productDetailPage,
+      addProductToCart,
       cartPage,
       checkoutSigninPage,
       checkoutAddressPage,
     }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+      await addProductToCart();
       await cartPage.goto();
       await cartPage.proceedToCheckout();
       await checkoutSigninPage.continueAsGuest(
@@ -164,15 +152,12 @@ test.describe('Verify checkout billing address step', () => {
     'logged-in user reaches billing with address pre-filled from account',
     { tag: ['@checkout', '@regression', '@logged'] },
     async ({
-      homePage,
-      productDetailPage,
+      addProductToCart,
       cartPage,
       checkoutSigninPage,
       checkoutAddressPage,
     }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+      await addProductToCart();
       await cartPage.goto();
       await cartPage.proceedToCheckout();
 

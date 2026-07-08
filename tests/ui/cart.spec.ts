@@ -13,10 +13,8 @@ test.describe('Verify cart', () => {
   test(
     'cart lists an added item with Item/Quantity/Price/Total columns',
     { tag: '@regression' },
-    async ({ homePage, productDetailPage, cartPage }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+    async ({ addProductToCart, cartPage }) => {
+      await addProductToCart();
 
       await cartPage.goto();
 
@@ -41,10 +39,8 @@ test.describe('Verify cart', () => {
   test(
     'changing quantity recalculates line and cart total with a confirmation',
     { tag: '@regression' },
-    async ({ homePage, productDetailPage, cartPage }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+    async ({ addProductToCart, cartPage }) => {
+      await addProductToCart();
       await cartPage.goto();
       const unitPrice = parsePrice(
         await cartPage.productPrices.first().innerText(),
@@ -64,13 +60,9 @@ test.describe('Verify cart', () => {
   test(
     'deleting an item removes it and recalculates the cart total',
     { tag: '@regression' },
-    async ({ homePage, productDetailPage, cartPage }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
-      await homePage.goto();
-      await homePage.clickProductCard(1);
-      await productDetailPage.addToCartAndAwaitBadge('2');
+    async ({ addProductToCart, cartPage }) => {
+      await addProductToCart(0, '1');
+      await addProductToCart(1, '2');
       await cartPage.goto();
       await expect(cartPage.productTitles).toHaveCount(2);
       const survivorTitle = (
@@ -94,10 +86,8 @@ test.describe('Verify cart', () => {
   test(
     'emptying the cart shows the empty-cart message',
     { tag: '@regression' },
-    async ({ homePage, productDetailPage, cartPage }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+    async ({ addProductToCart, cartPage }) => {
+      await addProductToCart();
       await cartPage.goto();
 
       await cartPage.removeItem(0);
@@ -110,13 +100,11 @@ test.describe('Verify cart', () => {
   test(
     'Proceed is available only with items and advances to the sign-in step',
     { tag: ['@smoke', '@regression'] },
-    async ({ homePage, productDetailPage, cartPage }) => {
+    async ({ addProductToCart, cartPage }) => {
       await cartPage.goto();
       await expect(cartPage.proceedButton).toHaveCount(0);
 
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+      await addProductToCart();
       await cartPage.goto();
 
       await expect(cartPage.proceedButton).toBeEnabled();

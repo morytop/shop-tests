@@ -590,3 +590,55 @@ API-registered `@logged` user — never a shared seeded account. Products chosen
 
 Not deferred — §5.9 is fully covered (both ACs, Cash on Delivery, tagged `@smoke @checkout @e2e`; AC2
 also `@logged`).
+
+## 19. Registration validation implementation findings (2026-07-08)
+
+Extended `tests/ui/register.spec.ts` (kept the existing happy-path register+login = §5.10 AC5) with the
+remaining ACs the user scoped: **AC1** (required fields), **AC6** (email format), **AC4** (duplicate
+email), **AC2** (password requirements list). **AC3** (strength meter) is present but pinned as a bug (see
+below). Behaviour and exact copy were verified against the live site and cross-checked against the
+sprint5 source (`auth/register/register.component.{ts,html}`, `shared/password-input/`,
+`_helpers/password.validators.ts`, `assets/i18n/en.json`); production build footer `v2.3 | Built
+2026-07-06 | Angular 20.0.5` matches that source. New `register.page.ts` locators: `fieldError(dataTest)`,
+`registerError` banner, `passwordRequirements` + per-rule `<li>` locators, `strengthFill`,
+`activeStrengthLabel`, and an `enterPassword()` helper. All specs tagged `@auth @register @regression`.
+
+**Confirmed contract (live + source):**
+
+- **The whole form is `updateOn: 'blur'`** (register.component.ts). Validators, the inline `*-error`
+  blocks and the password requirements-list highlighting only recompute on blur — a plain `.fill()`
+  leaves the control pristine. `enterPassword()` fills **then blurs**.
+- **All inline errors are submit-gated** — every block is `@if (f['x'].invalid && submitted)` and
+  `submitted` is only set in `onSubmit()`. There is **no live per-field validation before the first
+  submit**. AC1 asserts each `data-test="<field>-error"` after clicking submit on the empty form. Exact
+  required copy is env-independent (en.json): First/Last name / Date of Birth / Country / Postcode / House
+  number / Street / City / State / "Phone is required." / Email / Password "… is required". `dob-error`
+  also carries the hardcoded "Please enter a valid date in YYYY-MM-DD format."
+- **AC2 requirements list** = 4 `<li>` in `#passwordHelp`, each `[class.text-success]` bound to a password
+  validator: minLength(8), mixedCase (needs **both** upper+lower), hasNumber, hasSymbol. Verified: length
+  gates independently of the character-class rules (`aB1!` → three green, length red; `aaaaaaaa` → only
+  length green; `Aaaaaaa1!` → all four).
+- **AC6 email format** = pattern validator; error text **"Email format is invalid"** on submit. Malformed
+  cases (`plainaddress`, `foo@`, `@example.com`) show it; valid edge cases (`a@b.co`,
+  `first.last+tag@sub.example.com`) don't render the block. The format specs fill **only** the email, so
+  the form stays invalid and never hits the API — no account is created.
+
+**Discrepancies to account for (docs/source vs. actual production):**
+
+- **AC3 strength meter is broken in production.** `passwordStrength()` implements the intended 5-criteria
+  → Weak 20% / Moderate 40% / Strong 60% / Very Strong 80% / Excellent 100% mapping, but the template
+  wires it as `(input)="passwordStrengthIndicator = passwordStrength(f['password'].value)"` — updating on
+  the _input_ event while reading the control value, which (because the form is `updateOn:'blur'`) is
+  still the stale pre-blur value at that instant. Net effect: the indicator always evaluates the empty
+  string → `'Invalid'` → bar width `0%`, no `.strength-labels span.active`, **even for a fully valid
+  password**. The spec `password strength meter stays empty (known production bug)` pins this actual
+  behaviour rather than the documented mapping (same convention as the §17 card-holder finding). AC3's
+  documented behaviour cannot be asserted until the app is fixed.
+- **Duplicate-email copy differs from both the AC and the source.** §5.10 AC4 and the source
+  (`err.error === 'Duplicate Entry'` → "Email is already in use.") are stale: production returns the API
+  field error verbatim, so the `data-test="register-error"` banner reads **"A customer with this email
+  address already exists."** The spec asserts the actual production string.
+- **The requirements list is always visible, not focus-gated.** AC2's "shown on focus" is inaccurate —
+  `#passwordHelp` renders unconditionally; only the per-rule highlighting is dynamic.
+
+Not deferred — §5.10 is fully covered (AC1/AC2/AC4/AC5/AC6 asserted; AC3 pinned as a documented bug).

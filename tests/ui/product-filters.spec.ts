@@ -1,4 +1,5 @@
 import { expect, test } from '@src/merge.fixture';
+import { HomePage } from '@src/ui/pages/home.page';
 import { parsePrice } from '@src/ui/utils/price.util';
 import { isSorted, isSortedByString } from '@src/ui/utils/sort.util';
 
@@ -104,77 +105,60 @@ test.describe('Verify product overview / home — filters, sort, price range', (
     },
   );
 
-  test(
-    'sorting by Name (A-Z) produces an alphabetically ascending grid',
-    { tag: ['@regression', '@product-overview'] },
-    async ({ homePage }) => {
-      await homePage.goto();
-      await expect(homePage.productCards.first()).toBeVisible();
-
-      await homePage.sortBy('name,asc');
-
-      await expect
-        .poll(async () => {
-          const names = await homePage.getProductNames();
-          return isSortedByString(names, 'asc');
-        })
-        .toBe(true);
+  // The four sort options share one shape — apply a sort, then poll until the grid
+  // is ordered — so each case carries its own read-and-check closure (a conditional
+  // on name-vs-price would not be allowed inside a test body).
+  const sortCases: {
+    label: string;
+    sortValue: string;
+    isOrdered: (home: HomePage) => Promise<boolean>;
+  }[] = [
+    {
+      label: 'Name (A-Z)',
+      sortValue: 'name,asc',
+      isOrdered: async (home: HomePage): Promise<boolean> =>
+        isSortedByString(await home.getProductNames(), 'asc'),
     },
-  );
-
-  test(
-    'sorting by Name (Z-A) produces an alphabetically descending grid',
-    { tag: ['@regression', '@product-overview'] },
-    async ({ homePage }) => {
-      await homePage.goto();
-      await expect(homePage.productCards.first()).toBeVisible();
-
-      await homePage.sortBy('name,desc');
-
-      await expect
-        .poll(async () => {
-          const names = await homePage.getProductNames();
-          return isSortedByString(names, 'desc');
-        })
-        .toBe(true);
+    {
+      label: 'Name (Z-A)',
+      sortValue: 'name,desc',
+      isOrdered: async (home: HomePage): Promise<boolean> =>
+        isSortedByString(await home.getProductNames(), 'desc'),
     },
-  );
-
-  test(
-    'sorting by Price (Low-High) produces an ascending grid',
-    { tag: ['@regression', '@product-overview'] },
-    async ({ homePage }) => {
-      await homePage.goto();
-      await expect(homePage.productCards.first()).toBeVisible();
-
-      await homePage.sortBy('price,asc');
-
-      await expect
-        .poll(async () => {
-          const prices = (await homePage.getProductPrices()).map(parsePrice);
-          return isSorted(prices, (a, b) => a <= b);
-        })
-        .toBe(true);
+    {
+      label: 'Price (Low-High)',
+      sortValue: 'price,asc',
+      isOrdered: async (home: HomePage): Promise<boolean> =>
+        isSorted(
+          (await home.getProductPrices()).map(parsePrice),
+          (a, b) => a <= b,
+        ),
     },
-  );
-
-  test(
-    'sorting by Price (High-Low) produces a descending grid',
-    { tag: ['@regression', '@product-overview'] },
-    async ({ homePage }) => {
-      await homePage.goto();
-      await expect(homePage.productCards.first()).toBeVisible();
-
-      await homePage.sortBy('price,desc');
-
-      await expect
-        .poll(async () => {
-          const prices = (await homePage.getProductPrices()).map(parsePrice);
-          return isSorted(prices, (a, b) => a >= b);
-        })
-        .toBe(true);
+    {
+      label: 'Price (High-Low)',
+      sortValue: 'price,desc',
+      isOrdered: async (home: HomePage): Promise<boolean> =>
+        isSorted(
+          (await home.getProductPrices()).map(parsePrice),
+          (a, b) => a >= b,
+        ),
     },
-  );
+  ];
+
+  for (const { label, sortValue, isOrdered } of sortCases) {
+    test(
+      `sorting by ${label} produces a correctly ordered grid`,
+      { tag: ['@regression', '@product-overview'] },
+      async ({ homePage }) => {
+        await homePage.goto();
+        await expect(homePage.productCards.first()).toBeVisible();
+
+        await homePage.sortBy(sortValue);
+
+        await expect.poll(() => isOrdered(homePage)).toBe(true);
+      },
+    );
+  }
 
   test(
     'lowering the price range max filters out pricier products',

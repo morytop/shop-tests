@@ -542,4 +542,51 @@ scope); if CI proves flaky, options are a higher `timeout`/`retries` or fewer wo
 Deferred (per user scope decision, not a gap): the "successful order → confirmation with invoice
 number, cart cleared" AC (one happy path per method). It places real orders that write invoices to
 shared production data; left for a follow-up pass (would also seed §5.9 e2e and §5.17 invoices). The
-`reachPaymentAsGuest` fixture and `CheckoutPaymentPage` are the natural extension points.
+`reachPaymentAsGuest` fixture and `CheckoutPaymentPage` are the natural extension points. **Update
+2026-07-08 (§18):** the successful-order AC is now covered for Cash on Delivery by the §5.9 e2e specs
+(guest + logged-in); the per-payment-method happy paths (Credit Card, etc.) remain deferred here.
+
+## 18. End-to-end checkout implementation findings (2026-07-08)
+
+Implemented both ACs of §5.9 (`tests/ui/checkout-e2e.spec.ts`) — the critical-path smoke test that
+places a **real order** end to end and asserts the confirmation + emptied cart. This is the
+order-placement piece §17 deferred; it extends the same `CheckoutPaymentPage` and `reachPaymentAsGuest`
+fixture. Cash on Delivery (simulated payment, §2) is the payment method for both ACs. Data-safety (§3):
+the guest order is owned by throwaway faker identity, the logged-in order by the disposable
+API-registered `@logged` user — never a shared seeded account. Products chosen dynamically (§3, §9). New
+`CheckoutPaymentPage.confirmOrder()` + `orderConfirmation`/`paymentSuccessMessage` locators;
+`CheckoutAddressPage.fillAddressViaLookup()`.
+
+**Confirmed contract (live, playwright-cli):**
+
+- **"Confirm" is a two-click sequence.** First `[data-test="finish"]` click → `POST /payment/check`
+  (200) → `[data-test="payment-success-message"]` ("Payment was successful") appears, Confirm stays;
+  second `finish` click → the invoice POST → confirmation. `confirmOrder()` models this (click →
+  waitFor success message → click → waitFor confirmation).
+- **Confirmation** is `<div id="order-confirmation">` (no `data-test`, only the id): _"Thanks for your
+  order! Your invoice number is INV-2026000004."_ — invoice number format `INV-` + digits (asserted
+  `/Your invoice number is INV-\d+/`). Once it renders, the nav **cart badge (`cart-quantity`) and the
+  `nav-cart` link disappear** — the cart-emptied signal the specs assert.
+
+**Discrepancies / gotchas to account for (beyond docs):**
+
+- **The invoice API cross-validates city ↔ country.** `POST /invoices/guest` (guest) returns **422**
+  _"The billing_country does not match the entered address. The city does not belong to the selected
+  country."_ for a manually-typed city that doesn't match the country — even a real one (`Berlin`/`DE`
+  failed). So `makeValidAddress()`'s `Berlin/Bavaria` overwrite (used by `reachPaymentAsGuest` only to
+  _reach_ payment for the §5.8 validation tests, which never place an order) is **not orderable**. The
+  e2e flow instead completes billing via the **postcode lookup** and leaves the geocoded
+  street/city/state (DE / 12345 / 42 → Schüttegasse / Lampertheim / Sachsen-Anhalt), which is internally
+  consistent. New `CheckoutAddressPage.fillAddressViaLookup(country, postalCode, houseNumber)` does this
+  (existing `fillAddress` overwrite kept for the §5.7 boundary tests). `reachPaymentAsGuest` was switched
+  to `fillAddressViaLookup` so its reached state is orderable — the §5.8 payment spec was re-run green.
+- **AC5 pre-fill re-confirmed (§16).** The logged-in billing pre-fills the text fields with the country
+  `<select>` empty; the §5.9 AC2 test asserts the pre-fill first (the AC), then re-runs the lookup so the
+  submitted address is orderable, then places the order. Caveat for future manual spikes: a
+  **playwright-cli** manual login lands in a half-authenticated SPA state (token in localStorage but
+  Angular treats it as a guest → empty billing + `/invoices/guest` 404). This is a cli artifact; the real
+  `storageState`/`@logged` session hydrates auth correctly, so drive logged-in order tests under the
+  `@logged` project, not via ad-hoc cli login.
+
+Not deferred — §5.9 is fully covered (both ACs, Cash on Delivery, tagged `@smoke @checkout @e2e`; AC2
+also `@logged`).

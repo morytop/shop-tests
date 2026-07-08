@@ -71,6 +71,29 @@ export class CheckoutAddressPage extends BasePage {
     await this.stateInput.fill(address.state);
   }
 
+  /**
+   * Fill only country + postal code + house number and let the postcode lookup
+   * auto-fill street/city/state, leaving those geocoded values untouched. The
+   * invoice API cross-validates city ↔ country, so a manually-typed city is
+   * rejected (422) — only the geocoded triple is internally consistent and
+   * orderable (test_plan.md §18). House number is cleared then refilled to force
+   * the lookup even when the field is already pre-filled (logged-in path).
+   */
+  async fillAddressViaLookup(
+    country: string,
+    postalCode: string,
+    houseNumber: string,
+  ): Promise<void> {
+    const lookup = this.page.waitForResponse((response) =>
+      response.url().includes('/postcode-lookup'),
+    );
+    await this.selectCountry(country);
+    await this.postalCodeInput.fill(postalCode);
+    await this.houseNumberInput.fill('');
+    await this.houseNumberInput.fill(houseNumber);
+    await lookup;
+  }
+
   async proceedToPayment(): Promise<void> {
     await this.proceedButton.click();
   }

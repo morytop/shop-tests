@@ -470,3 +470,76 @@ lives on the sign-in step). The billing step is reached by composing existing pa
 
 Not deferred — §5.7 is fully covered. AC3 is parametrized per length-limited text field (Country
 excluded, being a dropdown, §9); AC5 documents the pre-fill discrepancy above.
+
+## 17. Checkout payment step implementation findings (2026-07-08)
+
+Implemented the **validation subset** of §5.8 (`tests/ui/checkout-payment.spec.ts`, new
+`src/ui/pages/checkout-payment.page.ts` registered in `src/ui/fixtures/page-object.fixture.ts`):
+the payment-method dropdown (AC1), per-method field validation (AC2 bank transfer, AC3/AC4 credit
+card, AC5 buy-now-pay-later, AC6 gift card, AC7 cash on delivery), and form-reset-on-switch (AC8).
+The payment step is reached as a **guest** via a new `reachPaymentAsGuest` action fixture
+(`cart-action.fixture.ts`: add to cart → cart → Continue as Guest → fill the fixed valid billing
+address → `proceed-3`), so no auth or seeded account is touched; products are chosen dynamically
+(§3, §9). The step is one Angular reactive form — a `[data-test="payment-method"]` `<select>`
+reveals a method sub-form (each behind an `@if`, so switching method removes the previous method's
+inputs from the DOM), and the "Confirm" button (`[data-test="finish"]`) is `[disabled]` until the
+whole form is valid. Errors are visible `.alert.alert-danger` text shown once a control is
+dirty/touched.
+
+**Locators were first drafted from source, then verified live.** For much of the session production
+(and general internet) was unreachable from the run environment, so the initial draft used the
+**pinned v5.0 source** (`../practice-software-testing/sprint5/UI/src/app/checkout/payment/` +
+`assets/i18n/en.json`) that `test_plan.md` names as the behavior source of truth. Connectivity
+returned before finishing, so **all 17 tests were then executed live** (all pass serially) — which
+caught two spots where **production has drifted ahead of the pinned source** (see discrepancies).
+Lesson: the pinned source is a good first draft but is not always in sync with deployed prod;
+live-verify before trusting error copy in particular.
+
+**Confirmed contract (live):**
+
+- Method `<select data-test="payment-method">` options (value → label): `bank-transfer`→"Bank
+  Transfer", `cash-on-delivery`→"Cash on Delivery", `credit-card`→"Credit Card",
+  `buy-now-pay-later`→"Buy Now Pay Later", `gift-card`→"Gift Card", plus a disabled placeholder
+  "Choose your payment method". `payment_method` is required, so Confirm starts disabled.
+- Field `data-test` ids: `bank_name`/`account_name`/`account_number`;
+  `credit_card_number`/`expiration_date`/`cvv`/`card_holder_name`; `gift_card_number`/
+  `validation_code`; `monthly_installments` (a `<select>`, options `3`/`6`/`9`/`12` +
+  "Choose your monthly installments" placeholder).
+- Validators: bank name letters/spaces `/^[a-zA-Z ]+$/`, account name `/^[a-zA-Z0-9 .'-]+$/`,
+  account number digits `/^\d+$/`; card number `/^\d{4}-\d{4}-\d{4}-\d{4}$/`, cvv `/^\d{3,4}$/`, card
+  holder letters/spaces `/^[a-zA-Z ]+$/`, expiration custom `MM/YYYY`-must-be-future. Error copy
+  asserted verbatim where it renders (e.g. "Bank name can only contain letters and spaces.",
+  "Expiration date must be in the future.").
+
+**Discrepancies to account for (docs/source vs. actual production):**
+
+- **Credit Card fields are pattern-only, NOT required** (unlike Bank Transfer / Gift Card / BNPL,
+  which are required). The expiration validator also returns valid on empty. So a Credit Card form
+  left **entirely blank is valid** and Confirm is **enabled** — AC3 is asserted as "malformed values
+  are rejected", not as required-ness, and the CC happy-path test proves Confirm toggles disabled↔
+  enabled via a malformed→valid card number rather than empty→filled.
+- **The card-holder-name field shows NO error message.** A pattern violation turns the input
+  `ng-invalid` and disables Confirm, but the `.alert-danger` box renders **empty** — the template
+  only prints text for a `required` error, and the field is pattern-only. So its negative test
+  asserts `ng-invalid` + Confirm disabled, not visible text (unlike the other CC fields, which do
+  render their message).
+- **Gift Card rules on prod are stricter than the source/docs and have new copy.** Gift card number
+  must be **exactly 16** letters/digits — "Please enter a valid gift card number: exactly 16 letters
+  and/or digits." — and validation code **exactly 4** (the input also has `maxlength=4`) — "Please
+  enter a valid validation code: exactly 4 letters and/or digits." (the pinned source still had the
+  older `/^[a-zA-Z0-9]+$/` + "must be alphanumeric." copy). Because of `maxlength=4`, a
+  negative validation-code test must use a 4-char value with a disallowed character (a longer string
+  is silently truncated to a valid one).
+
+**Known flake (environmental, not a logic defect):** each test runs the full guest checkout to reach
+payment (home → product → add → cart → guest → billing incl. a postcode-lookup network wait →
+payment). Under `fullyParallel` at the auto worker count, against the slow shared public server, an
+occasional test trips the 60s timeout (a _different_ test each run; the app also spams a
+`cart_items`-undefined console error on the payment page). All 17 pass reliably **serially**
+(`--workers=1`, ~1.6m) and typically 16–17/17 in parallel. No global config was changed (out of
+scope); if CI proves flaky, options are a higher `timeout`/`retries` or fewer workers for this file.
+
+Deferred (per user scope decision, not a gap): the "successful order → confirmation with invoice
+number, cart cleared" AC (one happy path per method). It places real orders that write invoices to
+shared production data; left for a follow-up pass (would also seed §5.9 e2e and §5.17 invoices). The
+`reachPaymentAsGuest` fixture and `CheckoutPaymentPage` are the natural extension points.

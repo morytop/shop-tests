@@ -2,6 +2,7 @@ import { test as base } from '@playwright/test';
 import { AccountPage } from '@src/ui/pages/account.page';
 import { CartPage } from '@src/ui/pages/cart.page';
 import { CheckoutAddressPage } from '@src/ui/pages/checkout-address.page';
+import { CheckoutPaymentPage } from '@src/ui/pages/checkout-payment.page';
 import { CheckoutSigninPage } from '@src/ui/pages/checkout-signin.page';
 import { ContactPage } from '@src/ui/pages/contact.page';
 import { HandToolsPage } from '@src/ui/pages/hand-tools.page';
@@ -18,6 +19,7 @@ export type Pages = {
   accountPage: AccountPage;
   cartPage: CartPage;
   checkoutAddressPage: CheckoutAddressPage;
+  checkoutPaymentPage: CheckoutPaymentPage;
   checkoutSigninPage: CheckoutSigninPage;
   contactPage: ContactPage;
   handToolsPage: HandToolsPage;
@@ -40,6 +42,9 @@ export const pageObjectTest = base.extend<Pages>({
   },
   checkoutAddressPage: async ({ page }, use) => {
     await use(new CheckoutAddressPage(page));
+  },
+  checkoutPaymentPage: async ({ page }, use) => {
+    await use(new CheckoutPaymentPage(page));
   },
   checkoutSigninPage: async ({ page }, use) => {
     await use(new CheckoutSigninPage(page));

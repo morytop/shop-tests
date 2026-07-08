@@ -1,5 +1,10 @@
 import { BASE_URL } from '@config/env.config';
 import { defineConfig, devices } from '@playwright/test';
+import * as path from 'path';
+
+// Saved logged-in session (gitignored). The `setup` project writes it; the
+// `chromium-logged` project loads it so @logged specs start authenticated.
+export const STORAGE_STATE = path.join(__dirname, 'tmp', 'session.json');
 
 export default defineConfig({
   testDir: './tests',
@@ -20,8 +25,21 @@ export default defineConfig({
 
   projects: [
     {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
+      name: 'chromium-logged',
+      use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
+      dependencies: ['setup'],
+      grep: /@logged/,
+      testIgnore: /.*\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      grepInvert: /@logged/,
+      testIgnore: /.*\.setup\.ts/,
     },
   ],
 });

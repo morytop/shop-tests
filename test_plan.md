@@ -448,15 +448,19 @@ lives on the sign-in step). The billing step is reached by composing existing pa
 
 **Discrepancies to account for (docs/plan vs. actual):**
 
-- **AC5 is false — billing is NOT pre-filled from account data.** Registered a fresh user with a
-  saved address (verified stored on `/account/profile`), logged in, and went through checkout
-  twice: the billing fields render **empty** every time. The step instead shows _"Enter country,
-  postal code and house number. We will fill in the rest automatically."_ and performs a
-  **postal-code lookup** — filling country+postal(+house) auto-fills street/city/state from an
-  external geocoding service (nondeterministic values, e.g. DE+12345 → "Schüttegasse" /
-  "Lampertheim" / "Sachsen-Anhalt" — not suitable for a stable assertion, left unautomated). Per
-  user decision the AC5 test pins the **actual** behavior: a logged-in user reaches billing
-  (login recognized via the "already logged in" panel + `proceed-2`) with **empty** fields.
+- **AC5 — billing IS pre-filled from account data for a logged-in user (behavior changed).** An
+  earlier pass found the billing fields rendered empty; production now **pre-fills** the billing
+  text fields (street / city / state / postcode / house*number) from the logged-in account. The one
+  exception is the **Country** `<select>`: it only pre-fills when the account's stored country is an
+  ISO code matching an option `value` (e.g. `DE`). A user registered via the **API** stores the
+  country \_name* (`"Germany"`), which matches no option value, so the dropdown alone stays empty
+  while the free-text fields populate. The `@logged` AC5 test pins this: it inherits the
+  storageState session (a user registered via the API with a full address; see
+  `tests/setup/login.setup.ts`), reaches billing via the "already logged in" panel + `proceed-2`,
+  and asserts the text fields are populated while the country select is empty. (The **guest** path
+  still starts empty and offers the postal-code lookup — _"Enter country, postal code and house
+  number. We will fill in the rest automatically."_ — which auto-fills street/city/state from an
+  external geocoder; those values are nondeterministic, so the guest tests set them explicitly.)
 - **No native `maxlength` attributes and no user-visible validation error text.** Max lengths are
   enforced by Angular validators surfaced **only** as the field's `ng-invalid` class plus the
   disabled `proceed-3` button. Verified boundaries: `street` ≤70, `city` ≤40, `state` ≤40,

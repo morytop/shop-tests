@@ -1,7 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@src/merge.fixture';
 import { makeValidAddress } from '@src/ui/factories/address.factory';
-import { prepareRandomUser } from '@src/ui/factories/user.factory';
 import { AddressTextField } from '@src/ui/models/address.model';
 import { ADDRESS_MAX_LENGTHS } from '@src/ui/test-data/address.data';
 
@@ -153,33 +152,24 @@ test.describe('Verify checkout billing address step', () => {
     },
   );
 
-  // AC5 — the docs say a logged-in user's billing address is pre-filled from
-  // account data; production does NOT do this (§9/§16). This pins the actual
-  // behavior: login is recognized (the sign-in step shows the "already logged in"
-  // panel, proceed-2 skips the login form) yet the billing fields render empty.
+  // AC5 — a logged-in user's billing address IS pre-filled from account data. This
+  // pins that (correcting an earlier finding to the contrary; test_plan.md §9/§16).
+  // It runs under the @logged project, inheriting the storageState session from
+  // tests/setup/login.setup.ts (a user registered via the API with a full address),
+  // so it only advances to billing and asserts the pre-fill. The account's country
+  // is stored as the name "Germany" (not an ISO code), which matches no <select>
+  // option value, so the country dropdown alone stays empty while every free-text
+  // field is populated from the account.
   test(
-    'logged-in user reaches billing with empty (not pre-filled) fields',
-    { tag: ['@checkout', '@regression'] },
+    'logged-in user reaches billing with address pre-filled from account',
+    { tag: ['@checkout', '@regression', '@logged'] },
     async ({
-      registerPage,
-      loginPage,
-      accountPage,
       homePage,
       productDetailPage,
       cartPage,
       checkoutSigninPage,
       checkoutAddressPage,
     }) => {
-      const user = prepareRandomUser();
-
-      await registerPage.goto();
-      await registerPage.register(user);
-      await expect(loginPage.heading).toHaveText('Login');
-      await loginPage.login(user.email, user.password);
-      // Wait for the session to be established before navigating on — otherwise the
-      // checkout can reach the sign-in step before auth lands and not recognize login.
-      await expect(accountPage.title).toHaveText('My account');
-
       await homePage.goto();
       await homePage.clickProductCard(0);
       await productDetailPage.addToCartAndAwaitBadge('1');
@@ -190,12 +180,12 @@ test.describe('Verify checkout billing address step', () => {
       await checkoutSigninPage.proceedAsLoggedInUser();
 
       await expect(checkoutAddressPage.heading).toBeVisible();
+      await expect(checkoutAddressPage.postalCodeInput).not.toHaveValue('');
+      await expect(checkoutAddressPage.houseNumberInput).not.toHaveValue('');
+      await expect(checkoutAddressPage.streetInput).not.toHaveValue('');
+      await expect(checkoutAddressPage.cityInput).not.toHaveValue('');
+      await expect(checkoutAddressPage.stateInput).not.toHaveValue('');
       await expect(checkoutAddressPage.countrySelect).toHaveValue('');
-      await expect(checkoutAddressPage.postalCodeInput).toBeEmpty();
-      await expect(checkoutAddressPage.houseNumberInput).toBeEmpty();
-      await expect(checkoutAddressPage.streetInput).toBeEmpty();
-      await expect(checkoutAddressPage.cityInput).toBeEmpty();
-      await expect(checkoutAddressPage.stateInput).toBeEmpty();
     },
   );
 });

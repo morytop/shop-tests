@@ -37,7 +37,7 @@ Husky's pre-commit hook runs `lint` and `format:check` — both must pass to com
 
 ## Architecture
 
-The suite is being refactored toward a layered `src/ui` + `src/api` structure (see `.ai-docs/refactor-layered-architecture-plan.md`). Current state (through Phase 5 — utils, models, factories, and the API layer now exist; `storageState`/`@logged` auth is the remaining phase):
+The suite is being refactored toward a layered `src/ui` + `src/api` structure (see `.ai-docs/refactor-layered-architecture-plan.md`). Current state (through Phase 6 — utils, models, factories, the API layer, and `storageState`/`@logged` auth all exist; only optional parameterization polish remains):
 
 - **Path aliases** (`tsconfig.json`): import via `@src/*` (→ `src/*`) and `@config/*` (→ `config/*`), not deep relative paths. Same-directory siblings may stay relative (`./base.page`). Playwright's esbuild resolves these directly.
 - **Config layer** (`config/`): `env.config.ts` loads `.env` (`override: true`) and exports fail-fast, typed `BASE_URL`/`API_URL`/`USER_EMAIL`/`USER_PASSWORD` via `requireEnvVariable()`. `BASE_URL` is the UI host; `API_URL` (`https://api.practicesoftwaretesting.com`) is the separate REST API host the `src/api` layer targets. `global.setup.ts` (wired as `globalSetup`) does a connectivity check against `BASE_URL`.
@@ -46,7 +46,8 @@ The suite is being refactored toward a layered `src/ui` + `src/api` structure (s
 - **Adding a new page object**: create the `*.page.ts` class under `src/ui/pages/`, then register it in both the `Pages` type and `pageObjectTest` in `src/ui/fixtures/page-object.fixture.ts` — nothing else needs to change.
 - **Test data / utils / models / factories**: `src/ui/test-data/` holds fixed data (`user.data.ts` env-backed accounts, `address.data.ts`, `category.data.ts`); `src/ui/utils/` holds pure helpers (`price.util.ts`, `sort.util.ts`); `src/ui/models/` holds typed data shapes (`user`/`address`/`category`); `src/ui/factories/` builds faker data (`prepareRandomUser()`, `makeValidAddress()`). Ad hoc data is generated per-test with `@faker-js/faker` rather than hard-coded, since tests run against shared production data (no hard-coded product IDs/names/prices, no assumptions about a clean category/brand tree — see `test_plan.md` §3).
 - **API layer** (`src/api/`): mirrors the UI layer — `requests/` (`BaseRequest` + `UsersRequest`/`LoginRequest`, hitting `API_URL`), `models/` (snake_case wire payloads), `factories/` (`prepareRandomUserPayload()`/`registerUserWithApi()` reuse the UI `prepareRandomUser()` as the single data source; `getAuthorizationHeader()` → Bearer token), and `fixtures/request-object.fixture.ts` (injects `usersRequest`/`loginRequest`). API factories are the one sanctioned place for `expect()` outside specs.
-- **Specs** live under `tests/ui/` (with `tests/ui/smoke/`) and `tests/api/`; `tests/setup/` (storageState auth) arrives in the final phase.
+- **Specs** live under `tests/ui/` (with `tests/ui/smoke/`) and `tests/api/`.
+- **Auth via `storageState`** (`playwright.config.ts` project graph): the `setup` project (`tests/setup/login.setup.ts`) registers a fresh user via the API factory, logs in through the UI, and saves the session to `tmp/session.json` (`STORAGE_STATE`, gitignored). The `chromium-logged` project (`dependencies: ['setup']`, `grep: /@logged/`, `storageState`) runs `@logged`-tagged specs already authenticated; the `chromium` project (`grepInvert: /@logged/`) runs everything else. Tag a spec `@logged` to have it start from the saved session instead of logging in inline.
 
 ## Test framework
 

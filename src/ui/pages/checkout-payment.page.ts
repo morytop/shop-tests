@@ -50,6 +50,12 @@ export class CheckoutPaymentPage extends BasePage {
   readonly monthlyInstallmentsSelect: Locator;
   readonly monthlyInstallmentsOptions: Locator;
 
+  // Order placement (test_plan.md §18): the first "Confirm" click runs the payment
+  // check and reveals the success message; the second places the order and renders
+  // the confirmation with the invoice number.
+  readonly paymentSuccessMessage: Locator;
+  readonly orderConfirmation: Locator;
+
   constructor(page: Page) {
     super(page);
     this.bookmarks = new NavbarComponent(this.page);
@@ -121,6 +127,12 @@ export class CheckoutPaymentPage extends BasePage {
     );
     this.monthlyInstallmentsOptions =
       this.monthlyInstallmentsSelect.locator('option');
+
+    this.paymentSuccessMessage = this.page.locator(
+      '[data-test="payment-success-message"]',
+    );
+    // The confirmation banner has no data-test, only an id.
+    this.orderConfirmation = this.page.locator('#order-confirmation');
   }
 
   async selectPaymentMethod(value: string): Promise<void> {
@@ -167,5 +179,18 @@ export class CheckoutPaymentPage extends BasePage {
 
   async selectMonthlyInstallments(value: string): Promise<void> {
     await this.monthlyInstallmentsSelect.selectOption(value);
+  }
+
+  /**
+   * Place the order via the two-step Confirm: the first click runs the payment
+   * check (waits for the success message), the second submits the order (waits for
+   * the confirmation banner). Assertions on the invoice number / cart stay in the
+   * spec — this only synchronizes on each step landing (test_plan.md §18).
+   */
+  async confirmOrder(): Promise<void> {
+    await this.finishButton.click();
+    await this.paymentSuccessMessage.waitFor();
+    await this.finishButton.click();
+    await this.orderConfirmation.waitFor();
   }
 }

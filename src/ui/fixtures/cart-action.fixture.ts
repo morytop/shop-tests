@@ -20,7 +20,10 @@ export interface CartActions {
 //   wizard (add to cart → cart → Continue as Guest → fill a valid billing address →
 //   proceed). Composes several page objects, so it belongs in an action fixture
 //   rather than on one page. Guest identity is throwaway faker data and the billing
-//   address is the fixed known-valid one the postcode lookup needs (§3, §16).
+//   address is filled via the postcode lookup (country/postcode/house → geocoded
+//   street/city/state), which leaves the reached state internally consistent and
+//   thus orderable — the invoice API rejects a manually-typed mismatched city
+//   (§3, §16, §18). So the checkout-e2e spec can reuse this and then place the order.
 export const cartActionTest = pageObjectTest.extend<CartActions>({
   addProductToCart: async ({ homePage, productDetailPage }, use) => {
     await use(async (index = 0, expectedBadgeCount = '1'): Promise<void> => {
@@ -42,7 +45,12 @@ export const cartActionTest = pageObjectTest.extend<CartActions>({
         faker.person.firstName(),
         faker.person.lastName(),
       );
-      await checkoutAddressPage.fillAddress(makeValidAddress());
+      const address = makeValidAddress();
+      await checkoutAddressPage.fillAddressViaLookup(
+        address.country,
+        address.postalCode,
+        address.houseNumber,
+      );
       await checkoutAddressPage.proceedToPayment();
     });
   },

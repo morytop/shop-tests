@@ -276,6 +276,41 @@ test('should register new user', async ({ page }) => {
 
 ## Fixtures
 
-Here are the key use cases where you should use custom fixtures, along with practical examples.
+Fixtures inject ready-to-use objects into a test's arguments, so specs never write `new SomePage(page)` boilerplate or repeat setup. Specs import `{ expect, test }` from `@src/merge.fixture` (never `@playwright/test`) and destructure what they need.
 
-1. Initializing Page Object Models (POM)Instead of manually instantiating your page classes inside every single test or beforeEach block, let fixtures inject them directly.Example: Injecting loginPage or dashboardPage straight into the test arguments.Why use it: It eliminates boilerplates like const loginPage = new LoginPage(page) from your test files, keeping them readable.2. Handling Multi-Role AuthenticationWhen your application has different user roles (e.g., Admin, Customer, Guest) and tests require specific authorization states.Example: Creating an adminPage fixture that automatically applies the Admin browser context/session state, and a customerPage for standard users.Why use it: It allows you to run parallel tests with different logged-in users seamlessly without auth steps leaking into each other. 3. Automated Setup and Teardown (Data Seeding)When a test depends on specific backend data or assets that must exist before the test runs and should be cleaned up afterward.Example: An issue fixture that calls an API to create a GitHub issue, passes the issue ID to the test, and deletes the issue using code written after the yield statement.Why use it: The teardown code after yield runs even if the test fails, preventing data pollution in your test environments. 4. Encapsulating External ServicesIf your end-to-end tests interact with databases, mock servers, email testing tools (like Mailosaur), or third-party APIs.Example: A dbClient fixture that establishes a database connection, performs quick queries for assertions, and closes the connection.Why use it: It abstracts complex connection logic away from your actual test assertions.5. Overriding Default Playwright FixturesWhen you want to globally modify how built-in fixtures (like page or context) behave across your entire test suite.Example: Overriding page to automatically listen for and throw errors on console exceptions, or to block specific network analytics scripts.Why use it: Centralized control over the browser behavior without changing individual test files.
+### How the fixtures are layered
+
+The project composes three fixture files into one `test` (`src/merge.fixture.ts` → `mergeTests(cartActionTest, requestObjectTest)`):
+
+- **Page-object fixtures** (`src/ui/fixtures/page-object.fixture.ts`) — one instance of each `*.page.ts` per test (`homePage`, `cartPage`, …). This is the default home for a new page object.
+- **Action fixtures** (`src/ui/fixtures/cart-action.fixture.ts`) — `cartActionTest` extends the page-object fixtures and adds a reusable cross-page _flow_ as a callable: `addProductToCart(index?, expectedBadgeCount?)`. Because it extends `pageObjectTest`, it re-exports every page object too.
+- **Request-object fixtures** (`src/api/fixtures/request-object.fixture.ts`) — one instance of each API request object (`usersRequest`, `loginRequest`).
+
+```typescript
+// cart-action.fixture.ts — a flow used by several specs, injected as a callable
+export const cartActionTest = pageObjectTest.extend<CartActions>({
+  addProductToCart: async ({ homePage, productDetailPage }, use) => {
+    await use(async (index = 0, expectedBadgeCount = '1'): Promise<void> => {
+      await homePage.goto();
+      await homePage.clickProductCard(index);
+      await productDetailPage.addToCartAndAwaitBadge(expectedBadgeCount);
+    });
+  },
+});
+```
+
+### When to create a new fixture
+
+Reach for a fixture only after the cheaper options don't fit — most reuse belongs on a Page Object, not in a fixture. Create one when:
+
+- **A new page object or API request object exists** — register it in `page-object.fixture.ts` / `request-object.fixture.ts` so specs get it injected. This is the common case and needs no new fixture _file_, just a new entry.
+- **A multi-page arrange flow is repeated across specs** and can't live on a single Page Object because it composes several of them (e.g. `addProductToCart` spans `homePage` + `productDetailPage`). Add it to an action fixture like `cartActionTest`. A flow that lives entirely on one page belongs to that Page Object as a method instead — see Page Object rule 3.
+- **A shared authenticated/seeded state is needed.** Prefer the existing `storageState`/`@logged` project wiring (see `CLAUDE.md`) for "start logged in"; add a fixture only for a state that wiring can't express.
+
+Do **not** add a fixture for:
+
+- A one-off setup used by a single spec — keep it inline in that spec's Arrange.
+- A pure, page-agnostic data transform — that's a util (`src/ui/utils/`) or a factory (`src/ui/factories/`), not a fixture.
+- Anything that would put an assertion in the fixture — fixtures follow the same no-`expect()` rule as Page Objects (API factories are the one sanctioned exception).
+
+After adding a fixture, expose it through the merge in `src/merge.fixture.ts` if it isn't already reachable, and give it a precise type on the `extend<...>()` generic so specs get autocomplete.

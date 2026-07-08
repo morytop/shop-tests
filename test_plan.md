@@ -2,7 +2,7 @@
 
 **Application under test:** https://practicesoftwaretesting.com/#/
 **Source of truth for behavior:** [practice-software-testing](../practice-software-testing) repo, `docs/user-stories/v5.md` (full production feature set)
-**Automation:** Playwright + TypeScript, Page Object Model (`src/pages`), fixtures in `src/fixtures`
+**Automation:** Playwright + TypeScript, Page Object Model (`src/ui/pages`), fixtures in `src/ui/fixtures`
 **Scope:** UI end-to-end tests against the public site as a black box (no seeded DB access), plus API-observable outcomes (status codes, emails) where feasible via the UI.
 
 ## 1. Objectives
@@ -44,9 +44,9 @@
 
 ## 5. Feature areas & test cases
 
-Each area below maps to a spec file under `tests/` and a page object under `src/pages/` (existing files reused where possible; new ones added as noted).
+Each area below maps to a spec file under `tests/ui/` and a page object under `src/ui/pages/` (existing files reused where possible; new ones added as noted).
 
-### 5.1 Product Overview / Home (`tests/product-overview.spec.ts`)
+### 5.1 Product Overview / Home (`tests/ui/product-overview.spec.ts`)
 
 - Product grid renders with image, name, price for each card.
 - Clicking a product card navigates to its detail page.
@@ -62,12 +62,12 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - Discounted product card shows strikethrough original price + discounted price. **Best-effort/skip in automation** — see §9 finding (2026-07-05): no generic discount/sale field exists in the product API; this is the same server-side/IP-determined `is_location_offer` mechanism as the §5.22 geo-location discount and can't be triggered from an automated test.
 - Out-of-stock product card shows "Out of stock" label.
 
-### 5.2 Browse by Category (`tests/category.spec.ts`)
+### 5.2 Browse by Category (`tests/ui/category.spec.ts`)
 
 - Navigating via a category link loads the category page with the category name as title.
 - Same filter/sort/pagination/price-range capabilities are present and functional as on the overview page.
 
-### 5.3 Product Detail (`tests/product-detail.spec.ts`)
+### 5.3 Product Detail (`tests/ui/product-detail.spec.ts`)
 
 - Image, name, description, price, category badge, brand badge are displayed.
 - Discounted product: strikethrough price + discount % badge shown.
@@ -80,14 +80,14 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - Favorites (logged out): clicking "Add to Favorites" shows "Unauthorized..." message and does not persist anything.
 - Related products section is present below main content.
 
-### 5.4 Rentals (`tests/rentals.spec.ts`)
+### 5.4 Rentals (`tests/ui/rentals.spec.ts`)
 
 - Rentals listing page shows all rental products with image, name, description.
 - Rental product detail page shows duration slider instead of qty stepper.
 - Rental item added to cart is labeled "This is a rental item" in checkout.
 - (Best-effort/skippable if geolocation can't be reliably mocked against prod) Location-based discount applies to rental price for a supported city context.
 
-### 5.5 Cart (`tests/cart.spec.ts`)
+### 5.5 Cart (`tests/ui/cart.spec.ts`)
 
 - Cart displays Item/Quantity/Price/Total/Actions columns once an item is added.
 - Changing quantity recalculates line total and cart total, with "Product quantity updated." confirmation.
@@ -98,14 +98,14 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - Cart with both a rental and a non-rental item gets an additional 15% combined-product discount, and shows subtotal/discount/total breakdown.
 - Removing all items of one type (all rentals or all non-rentals) removes the 15% combined discount and reverts total.
 
-### 5.6 Checkout — Sign in step (`tests/checkout-signin.spec.ts`)
+### 5.6 Checkout — Sign in step (`tests/ui/checkout-signin.spec.ts`)
 
 - Guest proceeding from cart is shown a login form (email, password, submit) as part of the checkout wizard.
 - TOTP-enabled account: submitting valid credentials at this step prompts for a 6-digit TOTP code before proceeding.
 - Valid credentials advance to billing address step.
 - Already-logged-in user sees "You are already signed in as {name}" and proceeds directly to billing address.
 
-### 5.7 Checkout — Billing address (`tests/checkout-address.spec.ts`)
+### 5.7 Checkout — Billing address (`tests/ui/checkout-address.spec.ts`)
 
 - All required fields present (street ≤70, city ≤40, state ≤40, country ≤40, postal code ≤10).
 - Leaving a required field empty invalidates it and disables "Proceed".
@@ -113,7 +113,7 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - Filling all fields validly enables proceeding to payment.
 - Logged-in user's address fields are pre-filled from account data.
 
-### 5.8 Checkout — Payment (`tests/checkout-payment.spec.ts`)
+### 5.8 Checkout — Payment (`tests/ui/checkout-payment.spec.ts`)
 
 - Payment method dropdown offers: Bank Transfer, Cash on Delivery, Credit Card, Buy Now Pay Later, Gift Card.
 - Bank Transfer: bank name (letters/spaces only, rejects digits), account name (alphanumeric + `. ' -`), account number (digits only) — validate both valid and invalid input per field.
@@ -125,12 +125,12 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - Switching payment method resets the form and shows the new method's fields (no stale field values/errors carried over).
 - Successful order (one happy path per payment method, at least full coverage for Credit Card and Cash on Delivery): confirmation with invoice number shown, cart is cleared afterward.
 
-### 5.9 End-to-end checkout (`tests/checkout-e2e.spec.ts`) — critical path, tagged `@smoke`
+### 5.9 End-to-end checkout (`tests/ui/checkout-e2e.spec.ts`) — critical path, tagged `@smoke`
 
 - Guest: browse → add to cart → checkout → register/login inline → address → payment (Cash on Delivery) → confirmation with invoice number → cart emptied.
 - Logged-in user: add to cart → checkout skips login step → pre-filled address → payment → confirmation.
 
-### 5.10 Registration (`tests/register.spec.ts` — extend existing)
+### 5.10 Registration (`tests/ui/register.spec.ts` — extend existing)
 
 - All required fields enforced (first/last name, DOB ISO format, street, numeric postal code, city, state, country dropdown, numeric phone, RFC-valid email ≤256 chars, password).
 - Password requirements list is shown on focus and each rule (length, upper/lower, number, special char) is highlighted live as it's satisfied/unsatisfied while typing.
@@ -139,7 +139,7 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - Successful registration redirects to login page (already covered) — extend to also assert a distinct new user can subsequently log in.
 - Invalid email format is rejected client-side (RFC-format boundary cases: missing `@`, missing domain, valid edge-case addresses).
 
-### 5.11 Login (`tests/login.spec.ts` — extend existing)
+### 5.11 Login (`tests/ui/login.spec.ts` — extend existing)
 
 - Valid credentials → `/account` for a regular user (existing test).
 - Valid admin credentials → redirected to `/admin/dashboard`.
@@ -150,28 +150,28 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - TOTP-enabled account → 6-digit code prompt after valid email/password; valid code authenticates; invalid code shows "Invalid TOTP".
 - "Sign in with Google" opens a 500×400 popup (assert popup dimensions/target, not full OAuth flow — treat deep Google auth as out of scope/mocked).
 
-### 5.12 Forgot password (`tests/forgot-password.spec.ts`)
+### 5.12 Forgot password (`tests/ui/forgot-password.spec.ts`)
 
 - Form accessible from login page with an email field.
 - Invalid/non-RFC email format is rejected client-side.
 - Valid registered email → success/confirmation message, which fades out after ~3s.
 - Unregistered email → error message shown.
 
-### 5.13 Two-Factor Authentication setup (`tests/totp-setup.spec.ts`)
+### 5.13 Two-Factor Authentication setup (`tests/ui/totp-setup.spec.ts`)
 
 - Freshly-registered, logged-in user sees "Setup two factor authentication" section with QR code and manual secret key text.
 - Valid 6-digit code (generate via `otplib`/similar using the displayed secret) → "TOTP verified and enabled successfully."
 - Invalid code → error message, TOTP not enabled.
 - Seeded `customer@`/`admin@` accounts are denied TOTP setup with the specific "Access denied..." message (safe: this is a read/negative check, no mutation).
 
-### 5.14 Customer profile (`tests/profile.spec.ts`)
+### 5.14 Customer profile (`tests/ui/profile.spec.ts`)
 
 - Profile page shows current data for a freshly-registered logged-in user.
 - All editable fields (first/last name, phone, street, postal code, city, state, country) can be updated and persist after save; success message fades after ~5s.
 - Email field is present but not editable (readonly/disabled).
 - Required-field validation prevents saving with a field blanked out.
 
-### 5.15 Change password (`tests/change-password.spec.ts`)
+### 5.15 Change password (`tests/ui/change-password.spec.ts`)
 
 - Form shows current/new/confirm fields.
 - Password strength indicator mirrors registration behavior for the new password field.
@@ -180,13 +180,13 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - New password identical to current → "New Password cannot be same as your current password."
 - Valid change → success message, then automatic logout after ~5s (assert redirected/unauthenticated afterward).
 
-### 5.16 Favorites (`tests/favorites.spec.ts`)
+### 5.16 Favorites (`tests/ui/favorites.spec.ts`)
 
 - Empty state message when no favorites.
 - Adding a product from detail page surfaces it on the favorites page with image/name/truncated description.
 - Removing a favorite updates the list immediately.
 
-### 5.17 Invoices (`tests/invoices.spec.ts`)
+### 5.17 Invoices (`tests/ui/invoices.spec.ts`)
 
 - After completing a checkout, the invoice appears in the paginated invoice list with correct number/street/date/total.
 - Invoice detail page shows number/date/total, full billing address, payment method+details, and line items.
@@ -194,13 +194,13 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - Discounted order's invoice shows subtotal/discount %/amount/total, and discounted line items show strikethrough + discounted price.
 - "Download PDF" is disabled while generating, then enabled and triggers a real file download once ready (poll, allow for the ~20s status check).
 
-### 5.18 Messages (`tests/messages.spec.ts`)
+### 5.18 Messages (`tests/ui/messages.spec.ts`)
 
 - After submitting a contact form while logged in, the message appears in the paginated Messages list (subject, truncated body, NEW status badge, date).
 - Message detail shows full original message + chronological replies.
 - Submitting a reply appends it to the thread.
 
-### 5.19 Contact form (`tests/contact.spec.ts` — extend existing `contact.page.ts`)
+### 5.19 Contact form (`tests/ui/contact.spec.ts` — extend existing `contact.page.ts`)
 
 - Logged-in: name/email are auto-filled & hidden, "Known user, {name}" shown.
 - Guest: name/email fields shown and required.
@@ -222,7 +222,7 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 
 > Admin CRUD tests must only ever create, modify, or delete entities the test itself created — production catalog/order/user data must not be mutated by automated tests.
 
-### 5.21 Chat widget (`tests/chat-widget.spec.ts`)
+### 5.21 Chat widget (`tests/ui/chat-widget.spec.ts`)
 
 - Toggle button visible bottom-right on any page; opening shows menu: Find Product, Order Product, Checkout, Support.
 - Find Product: search returns ≤5 product cards; "View Product" navigates to detail page.
@@ -231,23 +231,23 @@ Each area below maps to a spec file under `tests/` and a page object under `src/
 - Checkout via chat with empty cart → "Your cart is empty".
 - Support via chat: subject + message (≥50 chars) + optional `.txt` attachment (+ guest name/email if logged out) → confirmation.
 
-### 5.22 Discounts (`tests/discounts.spec.ts`)
+### 5.22 Discounts (`tests/ui/discounts.spec.ts`)
 
 - Combination discount (rental + non-rental in cart) — covered primarily in 5.5, cross-checked here through to invoice (5.17 AC4).
 - Location-based discount: best-effort using Playwright's `geolocation`/`locale` context options or a mocked geolocation API response, for at least one supported city (e.g. London 25%); explicitly note if the app determines location via IP (not overridable client-side) — if so, mark this test **manual/exploratory only** and document why automation is unreliable.
 
-### 5.23 Multi-language (`tests/language.spec.ts`)
+### 5.23 Multi-language (`tests/ui/language.spec.ts`)
 
 - Default language selector shows DE/EN/ES/FR/NL/TR options in the nav on any page.
 - Switching language updates visible UI text to the selected language (spot-check a handful of strings, e.g. nav labels).
 - Selected language persists across a reload/new navigation within the same browser context (localStorage).
 - (Optional/best-effort) First-visit browser-language auto-detection and fallback-to-English for unsupported browser locales, using Playwright's `locale` launch option in a fresh context.
 
-### 5.24 Privacy policy (`tests/privacy.spec.ts`)
+### 5.24 Privacy policy (`tests/ui/privacy.spec.ts`)
 
 - `/privacy` loads and contains expected sections (Google Sign-In, data collection, automatic removal, third-party services, data security, contact info) — assert on presence of key headings/text.
 
-### 5.25 Accessibility & cross-cutting checks (`tests/a11y.spec.ts`, tagged `@a11y`)
+### 5.25 Accessibility & cross-cutting checks (`tests/ui/a11y.spec.ts`, tagged `@a11y`)
 
 - Run `@axe-core/playwright` against key pages (home, product detail, cart, checkout steps, login, register) as a smoke-level accessibility gate, asserting no serious/critical violations.
 - Basic keyboard navigation through the main checkout flow (tab order reaches primary actions).
@@ -301,7 +301,7 @@ Explored `https://practicesoftwaretesting.com` directly (page title confirms `To
 
 ## 10. Product overview / home implementation findings (2026-07-05)
 
-Implemented the "core browse" subset of §5.1 (`tests/product-overview.spec.ts`, `src/pages/home.page.ts`). Confirmed stable `data-test` locators for the product grid (`a.card[data-test^="product-"]`, `product-name`, `product-price`, `out-of-stock`) and pagination (`pagination-prev`/`pagination-next`, disabled state on the parent `li.page-item`, not the link).
+Implemented the "core browse" subset of §5.1 (`tests/ui/product-overview.spec.ts`, `src/ui/pages/home.page.ts`). Confirmed stable `data-test` locators for the product grid (`a.card[data-test^="product-"]`, `product-name`, `product-price`, `out-of-stock`) and pagination (`pagination-prev`/`pagination-next`, disabled state on the parent `li.page-item`, not the link).
 
 **Discount mechanism confirmed unautomatable:** the products API (`api.practicesoftwaretesting.com/products`) has no generic sale/discount field — the only price-related flag is `is_location_offer` (boolean per product), the same field backing the §5.22 geo-location discount. Tested directly: mocked Playwright's browser `geolocation` context to London coordinates for a live product with `is_location_offer: true`, then reloaded — no strikethrough/discounted price rendered. This empirically confirms the §9 hypothesis that eligibility is determined server-side by request IP, not the browser Geolocation API, so the §5.1 "discounted product card" AC (and §5.22 generally) cannot be forced from an automated test running from a non-eligible CI/dev IP. The corresponding test is written as `test.skip` with a comment, not exercised.
 
@@ -309,14 +309,14 @@ Deferred (per user scope decision, not a gap): search, category filter, brand fi
 
 **Pagination flakiness fixed (2026-07-06):** `product-overview.spec.ts` › "last page's next pagination control is disabled" was intermittently timing out on `toHaveClass(/disabled/)`. Live investigation (playwright-cli) disproved the earlier "app behavior change" hypothesis: the app **does** still add `disabled` to the last page's `[data-test="pagination-next"]` parent `<li>` — reachable both via the numbered page links and via sequential "next" clicks. The catalog currently renders 5 UI pages of 9 cards (the numbered links window to 5, so the true last page can sit beyond the visible numbers), and clicking "next" fires an async `QUERY /products` (Angular HttpClient XHR, not `fetch`).
 
-Two **test-side races** were the real cause, both fixed in `src/pages/product-list.page.ts`:
+Two **test-side races** were the real cause, both fixed in `src/ui/pages/product-list.page.ts`:
 
 - `goToLastPage()` fired `paginationNextLink.click()` fire-and-forget (unlike `getAllProductNamesAcrossPages`, which already awaited the re-fetch), so overlapping `/products` responses could settle out of order and leave the walk parked on a middle page where "next" is still enabled → the assertion timed out. Fixed with a shared `goToNextPage()` helper that serializes each turn — awaiting both the `QUERY /products` response and the re-render (the active page number incrementing) — now used by `goToLastPage`, `getAllProductNamesAcrossPages`, and `findOutOfStockCardAcrossPages`.
 - A separate first-paint race: the grid renders via a post-navigation XHR, so a walk started right after `goto()` could run before any cards/pagination existed, making `isOnLastPage()` read "no pagination ⇒ last page" and bail on page one (this is what made the out-of-stock walk return `false` even though the out-of-stock card was on page 1). Fixed with a `waitForGrid()` guard on the two post-`goto()` walkers (`goToLastPage`, `findOutOfStockCardAcrossPages`); deliberately **not** applied to `getAllProductNamesAcrossPages`, whose filtered result set can legitimately be empty (its callers already await the filter's `/products` response). The `isOnLastPage()` "next disabled/absent on the last page" assumption is confirmed valid and retained.
 
 ## 11. Browse-by-category implementation findings (2026-07-06)
 
-Implemented §5.2 (`tests/category.spec.ts`). Refactor: extracted the shared product-listing interface (grid/filters/sort/pagination/price/search locators + methods) from `HomePage` into an abstract `src/pages/product-list.page.ts` (`ProductListPage`); `HomePage` and the four category page objects (`hand-tools`/`power-tools`/`other`/`special-tools`) now extend it. Each category page adds a `Category: <Name>` heading locator; the navbar gained `openCategories()` (the category links live inside the collapsed "Categories" dropdown and are hidden until it is clicked). `HomePage`'s public API is unchanged, so the §5.1 specs are unaffected (re-run green aside from the pre-existing pagination note above).
+Implemented §5.2 (`tests/ui/category.spec.ts`). Refactor: extracted the shared product-listing interface (grid/filters/sort/pagination/price/search locators + methods) from `HomePage` into an abstract `src/ui/pages/product-list.page.ts` (`ProductListPage`); `HomePage` and the four category page objects (`hand-tools`/`power-tools`/`other`/`special-tools`) now extend it. Each category page adds a `Category: <Name>` heading locator; the navbar gained `openCategories()` (the category links live inside the collapsed "Categories" dropdown and are hidden until it is clicked). `HomePage`'s public API is unchanged, so the §5.1 specs are unaffected (re-run green aside from the pre-existing pagination note above).
 
 - **AC1** covered for all four categories via nav-link click → assert URL + `Category: <Name>` heading. The document `<title>` is intentionally **not** re-asserted here (it's already covered per-category by `smoke/menu.spec.ts`, and see the Special Tools discrepancy below).
 
@@ -328,7 +328,7 @@ Implemented §5.2 (`tests/category.spec.ts`). Refactor: extracted the shared pro
 
 ## 12. Product detail implementation findings (2026-07-07)
 
-Implemented the **core** subset of §5.3 (`tests/product-detail.spec.ts`, new `src/pages/product-detail.page.ts`): display fields, quantity stepper, manual-quantity clamp, add-to-cart, out-of-stock, related products. New page object registered in `src/fixtures/pages.ts`; the cart badge locators (`nav-cart` / `cart-quantity`) were added to the shared `NavbarComponent`. Detail pages are always reached by **clicking a live product card** from a listing (dynamic `/product/<id>`, no cached/hard-coded id per §9); the out-of-stock case reuses `ProductListPage.findOutOfStockCardAcrossPages()` then clicks `outOfStockCard`.
+Implemented the **core** subset of §5.3 (`tests/ui/product-detail.spec.ts`, new `src/ui/pages/product-detail.page.ts`): display fields, quantity stepper, manual-quantity clamp, add-to-cart, out-of-stock, related products. New page object registered in `src/ui/fixtures/page-object.fixture.ts`; the cart badge locators (`nav-cart` / `cart-quantity`) were added to the shared `NavbarComponent`. Detail pages are always reached by **clicking a live product card** from a listing (dynamic `/product/<id>`, no cached/hard-coded id per §9); the out-of-stock case reuses `ProductListPage.findOutOfStockCardAcrossPages()` then clicks `outOfStockCard`.
 
 Confirmed stable locators: `product-name` (h1), `unit-price`, `product-description`, main image `img.figure-img`, `quantity`/`increase-quantity`/`decrease-quantity`, `add-to-cart`, `out-of-stock`. Category and brand render as pill badges with **no `data-test`** — distinguished only by `aria-label="category"` / `aria-label="brand"` (use `getByLabel`). The add-to-cart confirmation is an ngx-toastr toast (`.toast-message`, `role="alert"`) reading exactly **"Product added to shopping cart."**; the navbar cart badge (`cart-quantity`) is **absent until the cart is non-empty** and appears after the first add (guest cart is per-context localStorage, so it starts empty and is deterministic per test).
 
@@ -342,7 +342,7 @@ Deferred (per user scope decision, not gaps): discounted-product badge (unautoma
 
 ## 13. Rentals implementation findings (2026-07-07)
 
-Implemented §5.4 AC1–AC3 (`tests/rentals.spec.ts`): the `RentalsPage` stub was fleshed out, `ProductDetailPage` gained a `durationSlider` locator, and a new minimal `CartPage` (`src/pages/cart.page.ts`, `PAGE_URLS.CHECKOUT = /checkout`, registered in `src/fixtures/pages.ts`) models the cart step so §5.5 can extend it. AC4 (location-based rental discount) is **not** implemented — same unautomatable server/IP-side `is_location_offer` mechanism as §10/§5.22. Rentals are selected dynamically (first card), no hard-coded id/name/price (§3, §9).
+Implemented §5.4 AC1–AC3 (`tests/ui/rentals.spec.ts`): the `RentalsPage` stub was fleshed out, `ProductDetailPage` gained a `durationSlider` locator, and a new minimal `CartPage` (`src/ui/pages/cart.page.ts`, `PAGE_URLS.CHECKOUT = /checkout`, registered in `src/ui/fixtures/page-object.fixture.ts`) models the cart step so §5.5 can extend it. AC4 (location-based rental discount) is **not** implemented — same unautomatable server/IP-side `is_location_offer` mechanism as §10/§5.22. Rentals are selected dynamically (first card), no hard-coded id/name/price (§3, §9).
 
 Confirmed stable locators (live exploration): rental listing cards are `[data-test^="product-"]` with `h5.card-title` (name) and `p.card-text` (description); the rental detail duration slider is `getByRole('slider', { name: 'ngx-slider' })` (1–10h); the cart product name is `[data-test="product-title"]`.
 
@@ -355,8 +355,8 @@ Deferred (per user scope decision, not gaps): AC4 location discount (unautomatab
 
 ## 14. Cart core implementation findings (2026-07-07)
 
-Implemented the **core** subset of §5.5 AC1–AC5 (`tests/cart.spec.ts`, extending the existing minimal
-`src/pages/cart.page.ts`). The cart step lives at `/checkout` and is fully exercisable as a **guest** (the cart
+Implemented the **core** subset of §5.5 AC1–AC5 (`tests/ui/cart.spec.ts`, extending the existing minimal
+`src/ui/pages/cart.page.ts`). The cart step lives at `/checkout` and is fully exercisable as a **guest** (the cart
 is a per-context localStorage cart, empty per test — deterministic and safe to mutate, §12). Products are
 selected dynamically by card index and prices read back from the DOM — no hard-coded id/name/price (§3, §9).
 
@@ -391,8 +391,8 @@ discount and its removal — deterministic and automatable, left for a follow-up
 
 ## 15. Checkout sign-in step implementation findings (2026-07-07)
 
-Implemented §5.6 **AC1 only** (`tests/checkout-signin.spec.ts`, new
-`src/pages/checkout-signin.page.ts` registered in `src/fixtures/pages.ts`): a guest
+Implemented §5.6 **AC1 only** (`tests/ui/checkout-signin.spec.ts`, new
+`src/ui/pages/checkout-signin.page.ts` registered in `src/ui/fixtures/page-object.fixture.ts`): a guest
 proceeding from the cart (`proceed-1`) is shown the login form. The step is reached by
 composing existing page objects (`HomePage` → `ProductDetailPage.addToCartAndAwaitBadge`
 → `CartPage.proceedToCheckout`); the product is chosen dynamically by card index (§3, §9).
@@ -423,8 +423,8 @@ Deferred (per user scope decision, not gaps): **AC2** TOTP 6-digit prompt (needs
 
 ## 16. Checkout billing address implementation findings (2026-07-07)
 
-Implemented **all 5 ACs** of §5.7 (`tests/checkout-address.spec.ts`, new
-`src/pages/checkout-address.page.ts` registered in `src/fixtures/pages.ts`). `CheckoutSigninPage`
+Implemented **all 5 ACs** of §5.7 (`tests/ui/checkout-address.spec.ts`, new
+`src/ui/pages/checkout-address.page.ts` registered in `src/ui/fixtures/page-object.fixture.ts`). `CheckoutSigninPage`
 was extended with the guest-continuation and logged-in proceed methods (the guest details form
 lives on the sign-in step). The billing step is reached by composing existing page objects
 (`HomePage` → `ProductDetailPage.addToCartAndAwaitBadge` → `CartPage.proceedToCheckout` →

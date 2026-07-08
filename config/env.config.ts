@@ -1,6 +1,10 @@
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-dotenv.config({ override: true });
+// Resolve `.env` by absolute path (repo root, one level up from config/) rather
+// than the process cwd, so the vars load the same whether run from the CLI or
+// evaluated by the IDE/Playwright extension (whose cwd may differ).
+dotenv.config({ path: path.resolve(__dirname, '..', '.env'), override: true });
 
 function requireEnvVariable(name: string): string {
   const value = process.env[name];
@@ -11,5 +15,6 @@ function requireEnvVariable(name: string): string {
 }
 
 export const BASE_URL = requireEnvVariable('BASE_URL');
+export const API_URL = requireEnvVariable('API_URL');
 export const USER_EMAIL = requireEnvVariable('USER_EMAIL');
 export const USER_PASSWORD = requireEnvVariable('USER_PASSWORD');

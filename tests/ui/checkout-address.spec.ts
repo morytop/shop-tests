@@ -1,9 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@src/merge.fixture';
-import {
-  ADDRESS_MAX_LENGTHS,
-  AddressTextField,
-} from '@src/ui/pages/checkout-address.page';
+import { AddressTextField } from '@src/ui/models/address.model';
+import { ADDRESS_MAX_LENGTHS } from '@src/ui/test-data/address.data';
 
 // User Stories v5 — Checkout Billing Address (test_plan.md §5.7). The billing step
 // is reached by advancing past the sign-in step: as a guest via the "Continue as

@@ -2,39 +2,7 @@ import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
-
-/**
- * A length-limited text field on the Billing Address form. Country is excluded:
- * it's a `<select>`, not a text input (test_plan.md §9).
- */
-export type AddressTextField =
-  | 'postalCode'
-  | 'houseNumber'
-  | 'street'
-  | 'city'
-  | 'state';
-
-/**
- * Max accepted length per text field, enforced by Angular validators (there are
- * no native `maxlength` attributes). Verified live (test_plan.md §16): the field
- * turns `ng-invalid` and the proceed button stays disabled one character over.
- */
-export const ADDRESS_MAX_LENGTHS: Record<AddressTextField, number> = {
-  postalCode: 10,
-  houseNumber: 10,
-  street: 70,
-  city: 40,
-  state: 40,
-};
-
-export type Address = {
-  country: string;
-  postalCode: string;
-  houseNumber: string;
-  street: string;
-  city: string;
-  state: string;
-};
+import { Address, AddressTextField } from '@src/ui/models/address.model';
 
 /**
  * The "Billing Address" step of the checkout wizard (`/checkout`), reached by

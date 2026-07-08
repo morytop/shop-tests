@@ -1,18 +1,10 @@
 import { expect, test } from '@src/merge.fixture';
+import { categories } from '@src/ui/test-data/category.data';
 import { parsePrice } from '@src/ui/utils/price.util';
 import { isSorted } from '@src/ui/utils/sort.util';
 
 // test_plan.md §5.2 Browse by Category
-type CategoryName = 'Hand Tools' | 'Power Tools' | 'Other' | 'Special Tools';
-
 test.describe('Verify browse by category', () => {
-  const categories: { name: CategoryName; slug: string }[] = [
-    { name: 'Hand Tools', slug: 'hand-tools' },
-    { name: 'Power Tools', slug: 'power-tools' },
-    { name: 'Other', slug: 'other' },
-    { name: 'Special Tools', slug: 'special-tools' },
-  ];
-
   for (const { name, slug } of categories) {
     test(
       `${name} nav link opens its category page titled by the category name`,

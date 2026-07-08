@@ -1,17 +1,6 @@
 import { expect, test } from '@src/merge.fixture';
-
-function parsePrice(price: string): number {
-  return Number(price.replace('$', ''));
-}
-
-function isSortedBy(
-  values: number[],
-  comparator: (a: number, b: number) => boolean,
-): boolean {
-  return values.every(
-    (value, i) => i === 0 || comparator(values[i - 1], value),
-  );
-}
+import { parsePrice } from '@src/ui/utils/price.util';
+import { isSorted } from '@src/ui/utils/sort.util';
 
 // test_plan.md §5.2 Browse by Category
 type CategoryName = 'Hand Tools' | 'Power Tools' | 'Other' | 'Special Tools';
@@ -81,7 +70,7 @@ test.describe('Verify browse by category', () => {
           const prices = (await handToolsPage.getProductPrices()).map(
             parsePrice,
           );
-          return isSortedBy(prices, (a, b) => a <= b);
+          return isSorted(prices, (a, b) => a <= b);
         })
         .toBe(true);
     },

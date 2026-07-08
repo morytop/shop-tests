@@ -1,17 +1,6 @@
 import { expect, test } from '@src/merge.fixture';
-
-function parsePrice(price: string): number {
-  return Number(price.replace('$', ''));
-}
-
-function isSortedBy(
-  values: number[],
-  comparator: (a: number, b: number) => boolean,
-): boolean {
-  return values.every(
-    (value, i) => i === 0 || comparator(values[i - 1], value),
-  );
-}
+import { parsePrice } from '@src/ui/utils/price.util';
+import { isSorted, isSortedByString } from '@src/ui/utils/sort.util';
 
 // test_plan.md §5.1 Product Overview / Home — category/brand filters, sorting, price range
 test.describe('Verify product overview / home — filters, sort, price range', () => {
@@ -127,9 +116,7 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       await expect
         .poll(async () => {
           const names = await homePage.getProductNames();
-          return names.every(
-            (name, i) => i === 0 || name.localeCompare(names[i - 1]) >= 0,
-          );
+          return isSortedByString(names, 'asc');
         })
         .toBe(true);
     },
@@ -147,9 +134,7 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       await expect
         .poll(async () => {
           const names = await homePage.getProductNames();
-          return names.every(
-            (name, i) => i === 0 || name.localeCompare(names[i - 1]) <= 0,
-          );
+          return isSortedByString(names, 'desc');
         })
         .toBe(true);
     },
@@ -167,7 +152,7 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       await expect
         .poll(async () => {
           const prices = (await homePage.getProductPrices()).map(parsePrice);
-          return isSortedBy(prices, (a, b) => a <= b);
+          return isSorted(prices, (a, b) => a <= b);
         })
         .toBe(true);
     },
@@ -185,7 +170,7 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       await expect
         .poll(async () => {
           const prices = (await homePage.getProductPrices()).map(parsePrice);
-          return isSortedBy(prices, (a, b) => a >= b);
+          return isSorted(prices, (a, b) => a >= b);
         })
         .toBe(true);
     },

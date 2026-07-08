@@ -1,4 +1,5 @@
 import { expect, test } from '@src/merge.fixture';
+import { parsePrice } from '@src/ui/utils/price.util';
 
 // User Stories v5 — Cart (test_plan.md §5.5), core subset AC1–AC5: columns,
 // quantity update + confirmation, delete, empty-cart message, Proceed gating.
@@ -7,9 +8,6 @@ import { expect, test } from '@src/merge.fixture';
 // .ai-docs/cart-core-plan.md. The catalog is shared/mutable (§3, §9), so products
 // are chosen dynamically by card index (no hard-coded id/name/price) and prices
 // are read back from the DOM rather than asserted against fixed amounts.
-
-const parsePrice = (text: string): number =>
-  Number(text.replace('$', '').trim());
 
 test.describe('Verify cart', () => {
   test(

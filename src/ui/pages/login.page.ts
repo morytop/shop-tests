@@ -21,4 +21,27 @@ export class LoginPage extends BasePage {
     await this.passwordInput.fill(password);
     await this.loginButton.click();
   }
+
+  /**
+   * Submit the form and await the auth round-trip. Repeated-attempt flows can't
+   * synchronize on the error element becoming visible — it is already visible from
+   * the previous attempt, so its text is only repainted once the response lands.
+   */
+  async loginAndAwaitResponse(email: string, password: string): Promise<void> {
+    const loginResponse = this.page.waitForResponse((response) =>
+      response.url().includes('/users/login'),
+    );
+    await this.login(email, password);
+    await loginResponse;
+  }
+
+  async failLoginAttempts(
+    email: string,
+    password: string,
+    attempts: number,
+  ): Promise<void> {
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      await this.loginAndAwaitResponse(email, password);
+    }
+  }
 }

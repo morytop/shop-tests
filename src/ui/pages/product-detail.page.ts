@@ -22,6 +22,7 @@ export class ProductDetailPage extends BasePage {
   readonly increaseQuantityButton: Locator;
   readonly decreaseQuantityButton: Locator;
   readonly addToCartButton: Locator;
+  readonly addToFavoritesButton: Locator;
   readonly durationSlider: Locator;
   readonly outOfStockLabel: Locator;
   readonly relatedProductsHeading: Locator;
@@ -50,6 +51,10 @@ export class ProductDetailPage extends BasePage {
       '[data-test="decrease-quantity"]',
     );
     this.addToCartButton = this.page.locator('[data-test="add-to-cart"]');
+    // The attribute is American, the visible label British ("Add to favourites").
+    this.addToFavoritesButton = this.page.locator(
+      '[data-test="add-to-favorites"]',
+    );
     // Rental products replace the quantity stepper with a 1–10h duration slider.
     this.durationSlider = this.page.getByRole('slider', { name: 'ngx-slider' });
     this.outOfStockLabel = this.page.locator('[data-test="out-of-stock"]');
@@ -93,5 +98,21 @@ export class ProductDetailPage extends BasePage {
     await this.bookmarks.cartQuantity
       .filter({ hasText: new RegExp(`^${count}$`) })
       .waitFor();
+  }
+
+  /**
+   * Favorite the product and wait for the write to land. The favorite is persisted by
+   * an async `POST /favorites`; navigating straight to the favorites page after a bare
+   * click can outrun it, so the response — not the toast — is the synchronisation point.
+   */
+  async addToFavoritesAndAwaitSaved(): Promise<void> {
+    await Promise.all([
+      this.page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname.endsWith('/favorites') &&
+          response.request().method() === 'POST',
+      ),
+      this.addToFavoritesButton.click(),
+    ]);
   }
 }

@@ -200,9 +200,18 @@ account password, so each test registers its own throwaway user. Never `testUser
 
 ### 5.16 Favorites (`tests/ui/favorites.spec.ts`)
 
-- Empty state message when no favorites.
-- Adding a product from detail page surfaces it on the favorites page with image/name/truncated description.
-- Removing a favorite updates the list immediately.
+**Implemented 2026-07-09 (see §26)** — all three ACs. ⚠ **Destructive:** every AC mutates the account's favorites,
+so each test registers its own throwaway user. Never `testUser1` or the `@logged` session user.
+
+- Empty state message when no favorites ("There are no favorites yet. In order to add favorites, please go to the
+  product listing and mark some products as your favorite."). The message also renders **while the list is still
+  loading** — enter the page via `gotoAndAwaitLoaded()`, never a bare `goto()` (§26).
+- Adding a product from detail page surfaces it on the favorites page with image/name/truncated description
+  (truncation is a real 250-char substring from the app's `TruncatePipe`, not CSS ellipsis — §26).
+- Removing a favorite updates the list immediately (delete + refetch, no dialog, no toast, no reload).
+
+The favorites ACs that belong to the **product detail page** (§5.3: logged-in add success / "already in favorites"
+toasts, and the logged-out "Unauthorized" path) remain deferred — this pass covered §5.16 only.
 
 ### 5.17 Invoices (`tests/ui/invoices.spec.ts`)
 
@@ -999,3 +1008,60 @@ matches with the password.`) and new-equals-current (`New Password cannot be sam
   passed 3/3 under `--repeat-each=3`.
 
 Not deferred — §5.15 is fully covered.
+
+## 26. Favorites implementation findings (2026-07-09)
+
+Implemented **all 3 ACs** of §5.16 (`tests/ui/favorites.spec.ts`). Added `src/ui/pages/favorites.page.ts` (registered
+in `src/ui/fixtures/page-object.fixture.ts`), `PAGE_URLS.FAVORITES`, a `truncate()` helper in
+`src/ui/utils/text.util.ts`, and an `addToFavoritesButton` + `addToFavoritesAndAwaitSaved()` on
+`src/ui/pages/product-detail.page.ts`. Tagged `@auth @favorites @regression` (`@favorites` is a new feature tag).
+See `.ai-docs/favorites-plan.md`.
+
+**Data safety (§3):** all three ACs mutate the account's favorites, so each registers its own throwaway user via
+`registerUserWithApi` and logs in inline. AC1 additionally _requires_ a guaranteed-empty list, which only a fresh
+user gives. No product name/description is hard-coded — both are read off the live detail page at runtime.
+
+**Confirmed page contract (live, cross-checked against `sprint5/UI` source).**
+
+- Route `/account/favorites`, `<h1 data-test="page-title">Favorites</h1>`.
+- Each favorite is `div.card[data-test="favorite-<favoriteId>"]` — the `data-test` id is the **favorite's** id, not
+  the product's — containing `img.card-img` (`alt` = product name), `h5[data-test="product-name"]`,
+  `p[data-test="product-description"]`, and `button[data-test="delete"]`.
+- The empty-state message is a bare `div.col > div` carrying **no `data-test`** and no role; it is located
+  structurally (`:not(.card)`), with the copy asserted in the spec.
+
+**New finding — the favorites page is not linked from the account dashboard.** `/account` renders only Profile,
+Invoices and Messages tiles. Favorites is reachable via the navbar user menu (`[data-test="nav-my-favorites"]`) or
+the direct URL. Any future test that expects a dashboard tile will not find one.
+
+**New finding — the empty-state message renders while the list is still loading.** `FavoritesComponent` initialises
+`favorites: Favorite[] = []` and the template guards the message with `@if (!favorites?.length)`, so between
+navigation and the `GET /favorites` response the page is indistinguishable from "this user has no favorites". A
+naive AC1 assertion therefore passes before any data loads — and would pass even for a user _with_ favorites.
+`FavoritesPage.gotoAndAwaitLoaded()` closes this by awaiting the `GET /favorites` response alongside `goto()`
+(same shape as `ProductListPage.triggerAndAwaitProducts()`). AC1 passed 3/3 under `--repeat-each=3`.
+
+**New finding — the card description is a real substring, not a CSS ellipsis.** The template pipes it through
+`| truncate: 250`, and `TruncatePipe.transform` is
+`text.length > length ? text.substring(0, length).trim() + '...' : text` (note the `.trim()` before the suffix);
+`text-overflow` computes to `clip`. Verified live: a 738-char description renders at 253 chars. `truncate()` in
+`src/ui/utils/text.util.ts` mirrors the pipe so the assertion is derived from the live product text and holds for
+short descriptions too, where the pipe is the identity.
+
+**Removal is a refetch, not an optimistic splice.** `deleteFavorite()` fires `DELETE /favorites/{id}` and, on
+success, re-runs `loadFavorites()`. There is no confirmation dialog, no toast, and no navigation — so the page
+object only clicks, and the spec's auto-retrying `toHaveCount` is what proves the list updated in place. Removing
+the last favorite restores the empty-state message without a reload.
+
+**Recorded but not asserted (still deferred, §5.3).** Clicking `[data-test="add-to-favorites"]` (visible label
+"Add to favourites", British — §9) POSTs `/favorites` and raises an ngx-toastr `.toast-message` reading
+**"Product added to your favorites list."**; a second click on the same product yields **"Product already in your
+favorites list."** These, plus the logged-out "Unauthorized" path, belong to `product-detail.spec.ts`.
+
+**Unrelated pre-existing failures observed.** `product-detail.spec.ts` currently fails 3 tests (quantity stepper,
+manual quantity clamp, add-to-cart confirmation) on **clean `main` as well as on this branch** — verified by
+re-running them from a stashed working tree. The first card in the default home grid is now an API-mutated,
+out-of-stock product (`UpdatedProduct-test_products`, description "Updated via PATCH"), which disables the cart
+controls those ACs drive. This is the shared-mutable-catalog hazard §3 warns about, not a regression from this
+change; favorites are unaffected (an out-of-stock product can still be favorited). Filed here as a gap for a
+follow-up pass rather than fixed in-scope.

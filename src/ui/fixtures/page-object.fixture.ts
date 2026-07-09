@@ -5,6 +5,7 @@ import { CheckoutAddressPage } from '@src/ui/pages/checkout-address.page';
 import { CheckoutPaymentPage } from '@src/ui/pages/checkout-payment.page';
 import { CheckoutSigninPage } from '@src/ui/pages/checkout-signin.page';
 import { ContactPage } from '@src/ui/pages/contact.page';
+import { FavoritesPage } from '@src/ui/pages/favorites.page';
 import { ForgotPasswordPage } from '@src/ui/pages/forgot-password.page';
 import { HandToolsPage } from '@src/ui/pages/hand-tools.page';
 import { HomePage } from '@src/ui/pages/home.page';
@@ -24,6 +25,7 @@ export type Pages = {
   checkoutPaymentPage: CheckoutPaymentPage;
   checkoutSigninPage: CheckoutSigninPage;
   contactPage: ContactPage;
+  favoritesPage: FavoritesPage;
   forgotPasswordPage: ForgotPasswordPage;
   handToolsPage: HandToolsPage;
   homePage: HomePage;
@@ -55,6 +57,9 @@ export const pageObjectTest = base.extend<Pages>({
   },
   contactPage: async ({ page }, use) => {
     await use(new ContactPage(page));
+  },
+  favoritesPage: async ({ page }, use) => {
+    await use(new FavoritesPage(page));
   },
   forgotPasswordPage: async ({ page }, use) => {
     await use(new ForgotPasswordPage(page));

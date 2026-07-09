@@ -66,7 +66,7 @@ test.describe('Verify favorites', () => {
       const productDescription =
         await productDetailPage.productDescription.innerText();
 
-      await productDetailPage.addToFavoritesAndAwaitSaved();
+      await productDetailPage.addToFavoritesAndAwaitResponse();
       await favoritesPage.gotoAndAwaitLoaded();
 
       await expect(favoritesPage.favoriteCards).toHaveCount(1);
@@ -105,10 +105,10 @@ test.describe('Verify favorites', () => {
       await accountPage.title.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
-      await productDetailPage.addToFavoritesAndAwaitSaved();
+      await productDetailPage.addToFavoritesAndAwaitResponse();
       await homePage.goto();
       await homePage.clickProductCard(1);
-      await productDetailPage.addToFavoritesAndAwaitSaved();
+      await productDetailPage.addToFavoritesAndAwaitResponse();
       await favoritesPage.gotoAndAwaitLoaded();
       await expect(favoritesPage.favoriteCards).toHaveCount(2);
       const [removedName, remainingName] =

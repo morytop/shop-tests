@@ -76,8 +76,11 @@ Each area below maps to a spec file under `tests/ui/` and a page object under `s
 - Add to cart: success message "Product added to shopping cart." and cart badge/count updates.
 - Out-of-stock non-rental product: "Add to Cart" disabled, "Out of stock" shown in red.
 - Rental product: duration slider (1–10h) replaces qty stepper; total price = hourly rate × duration, recalculated on drag.
-- Favorites (logged in): add succeeds with success message; adding same product again shows "already in favorites" message.
-- Favorites (logged out): clicking "Add to Favorites" shows "Unauthorized..." message and does not persist anything.
+- Favorites (logged in): add succeeds ("Product added to your favorites list.", `POST /favorites` → 201); adding the
+  same product again shows "Product already in your favorites list." (→ 409). **Implemented 2026-07-09 (see §27).**
+- Favorites (logged out): clicking "Add to favourites" shows "Unauthorized, can not add product to your favorite
+  list." — the documented "Unauthorized..." is an abbreviation, not the copy (§27) — and does not persist anything
+  (`POST /favorites` → 401). **Implemented 2026-07-09 (see §27).**
 - Related products section is present below main content.
 
 ### 5.4 Rentals (`tests/ui/rentals.spec.ts`)
@@ -1058,10 +1061,58 @@ the last favorite restores the empty-state message without a reload.
 **"Product added to your favorites list."**; a second click on the same product yields **"Product already in your
 favorites list."** These, plus the logged-out "Unauthorized" path, belong to `product-detail.spec.ts`.
 
-**Unrelated pre-existing failures observed.** `product-detail.spec.ts` currently fails 3 tests (quantity stepper,
-manual quantity clamp, add-to-cart confirmation) on **clean `main` as well as on this branch** — verified by
-re-running them from a stashed working tree. The first card in the default home grid is now an API-mutated,
-out-of-stock product (`UpdatedProduct-test_products`, description "Updated via PATCH"), which disables the cart
-controls those ACs drive. This is the shared-mutable-catalog hazard §3 warns about, not a regression from this
-change; favorites are unaffected (an out-of-stock product can still be favorited). Filed here as a gap for a
-follow-up pass rather than fixed in-scope.
+**Transient catalog-driven failures observed (resolved — see §27).** During this pass `product-detail.spec.ts` failed
+3 tests (quantity stepper, manual quantity clamp, add-to-cart confirmation) on **clean `main` as well as on the
+branch** — verified by re-running them from a stashed working tree, so not a regression. The cause was the shared
+catalog: the first card in the default home grid was an API-mutated, out-of-stock product
+(`UpdatedProduct-test_products`, description "Updated via PATCH"), which disables the cart controls those ACs drive.
+Hours later the catalog had reverted (first card `Combination Pliers`, in stock) and all 9 tests passed untouched.
+
+⚠ **The lasting lesson is a suite weakness, not a bug:** any test that reaches for `clickProductCard(0)` and then
+drives _cart_ controls is hostage to whichever product another engineer has mutated to the front of the grid. §3
+already forbids hard-coded catalog data; this shows that "the first card" is not neutral either. A future pass should
+have those three ACs select a product by the property they need (in-stock, non-rental) rather than by position, the
+way `findOutOfStockCardAcrossPages()` already does for the out-of-stock AC. Favorites are immune — an out-of-stock
+product can still be favorited.
+
+## 27. Product-detail favorites implementation findings (2026-07-09)
+
+Implemented the **two favorites ACs of §5.3** (3 tests) in `tests/ui/product-detail.spec.ts`, closing the gap §26
+left open. Tagged `@auth @favorites @regression` (the logged-out test is `@favorites @regression` — it has no
+account). See `.ai-docs/product-detail-favorites-plan.md`.
+
+**Data safety (§3):** the two logged-in tests mutate the account's favorites, so each registers its own throwaway
+user via `registerUserWithApi` and logs in inline. The logged-out test creates no account at all.
+
+**The component has no client-side auth guard.** `DetailComponent.addToFavorites()` fires `POST /favorites`
+unconditionally and picks its toast from the _server's_ reply:
+
+| Case              | `POST /favorites`    | toast class     | copy                                                       |
+| ----------------- | -------------------- | --------------- | ---------------------------------------------------------- |
+| logged in, first  | **201** Created      | `toast-success` | `Product added to your favorites list.`                    |
+| logged in, repeat | **409** Conflict     | `toast-error`   | `Product already in your favorites list.`                  |
+| logged out        | **401** Unauthorized | `toast-error`   | `Unauthorized, can not add product to your favorite list.` |
+
+**Doc correction.** §5.3's logged-out copy `"Unauthorized..."` is an **abbreviation, not the real string** — the app
+renders `Unauthorized, can not add product to your favorite list.` (i18n key `toasts.unauthorized-favorite`). §5.3
+has been corrected.
+
+**"Does not persist anything" is a network assertion, not a UI one.** Because the POST _is_ fired while logged out,
+the observable is that it comes back **401** and no success toast appears — not that no request is made.
+`addToFavoritesAndAwaitSaved()` (added in §26) was therefore renamed to `addToFavoritesAndAwaitResponse()` and now
+**returns the HTTP status**; its `waitForResponse` already matched any status, but the old name only described the
+201 path. The three call sites in `favorites.spec.ts` were updated; behavior there is unchanged.
+
+**Typed toast locators replace the generic one.** `ProductDetailPage.cartToast` (`.toast-message`) could not express
+success-vs-error, and ngx-toastr toasts linger (~16s observed), so in the duplicate-add test the success toast from
+the first add can still be on screen when the error toast for the second arrives — a generic `.toast-message`
+assertion would race them. `cartToast` is replaced by `successToast` (`.ngx-toastr.toast-success`) and `errorToast`
+(`.ngx-toastr.toast-error`); the add-to-cart assertion now uses `successToast`. `CartPage.updateToast` is untouched.
+
+**The §26 failures were transient.** All 9 tests in `product-detail.spec.ts` now pass, including the 3 that failed
+during the §26 pass — the shared catalog reverted its mutated first product in the interim. See the amended note in
+§26 for the durable takeaway: position-based product selection (`clickProductCard(0)`) is not safe for cart-driving
+ACs on a shared, mutable catalog.
+
+§5.3 favorites are no longer deferred. The remaining §5.3 gaps are unchanged: the discounted-product badge
+(unautomatable, §10) and the rental duration slider + price recalculation.

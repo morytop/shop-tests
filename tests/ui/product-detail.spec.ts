@@ -1,10 +1,18 @@
+import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/merge.fixture';
 
 // User Stories v5 — Product Detail (test_plan.md §5.3), core subset:
 // display fields, quantity stepper + manual clamp, add-to-cart, out-of-stock,
-// related products. Discount, rental slider and favorites are deferred (see
+// related products, favorites. Discount and the rental slider are deferred (see
 // .ai-docs/product-detail-core-plan.md). Detail pages are reached by clicking a
 // live product card (never a hard-coded id) per §9.
+//
+// Favorites (§27): the component fires `POST /favorites` unconditionally and picks its
+// toast from the server's reply — 201 → success, 409 → duplicate, 401 → unauthorized —
+// so each favorites test asserts the status alongside the copy. Adding a favorite
+// mutates the account, so those tests register their own throwaway user and log in
+// inline; never `testUser1` (it IS the shared seeded `customer@` account) or the
+// `@logged` storageState session user.
 test.describe('Verify product detail', () => {
   test(
     'detail page shows image, name, price, description, category and brand',
@@ -73,7 +81,7 @@ test.describe('Verify product detail', () => {
 
       await productDetailPage.addToCart();
 
-      await expect(productDetailPage.cartToast).toHaveText(
+      await expect(productDetailPage.successToast).toHaveText(
         'Product added to shopping cart.',
       );
       await expect(productDetailPage.bookmarks.cartQuantity).toHaveText('1');
@@ -109,6 +117,89 @@ test.describe('Verify product detail', () => {
 
       await expect(productDetailPage.relatedProductsHeading).toBeVisible();
       await expect(productDetailPage.relatedProductCards.first()).toBeVisible();
+    },
+  );
+
+  // §5.3 favorites, logged in — the happy path.
+  test(
+    'adding a product to favorites shows a success message',
+    { tag: ['@auth', '@favorites', '@regression'] },
+    async ({
+      accountPage,
+      homePage,
+      loginPage,
+      productDetailPage,
+      usersRequest,
+    }) => {
+      const user = await registerUserWithApi(usersRequest);
+
+      await loginPage.goto();
+      await loginPage.login(user.email, user.password);
+      await accountPage.title.waitFor();
+      await homePage.goto();
+      await homePage.clickProductCard(0);
+
+      const status = await productDetailPage.addToFavoritesAndAwaitResponse();
+
+      expect(status).toBe(201);
+      await expect(productDetailPage.successToast).toHaveText(
+        'Product added to your favorites list.',
+      );
+      await expect(productDetailPage.errorToast).toHaveCount(0);
+    },
+  );
+
+  // §5.3 favorites, logged in — re-adding the same product. The server rejects the
+  // duplicate with 409; the success toast from the first add may still be on screen, so
+  // the assertion targets the error toast specifically (§27).
+  test(
+    'adding the same product to favorites twice reports it is already there',
+    { tag: ['@auth', '@favorites', '@regression'] },
+    async ({
+      accountPage,
+      homePage,
+      loginPage,
+      productDetailPage,
+      usersRequest,
+    }) => {
+      const user = await registerUserWithApi(usersRequest);
+
+      await loginPage.goto();
+      await loginPage.login(user.email, user.password);
+      await accountPage.title.waitFor();
+      await homePage.goto();
+      await homePage.clickProductCard(0);
+      const firstStatus =
+        await productDetailPage.addToFavoritesAndAwaitResponse();
+
+      const secondStatus =
+        await productDetailPage.addToFavoritesAndAwaitResponse();
+
+      expect(firstStatus).toBe(201);
+      expect(secondStatus).toBe(409);
+      await expect(productDetailPage.errorToast).toHaveText(
+        'Product already in your favorites list.',
+      );
+    },
+  );
+
+  // §5.3 favorites, logged out. There is no client-side guard: the POST is fired and
+  // rejected server-side with 401, so "does not persist anything" is asserted as the
+  // rejected status plus the absence of a success toast (§27).
+  test(
+    'adding to favorites while logged out is rejected as unauthorized',
+    { tag: ['@favorites', '@regression'] },
+    async ({ homePage, productDetailPage }) => {
+      await homePage.goto();
+      await homePage.clickProductCard(0);
+
+      const status = await productDetailPage.addToFavoritesAndAwaitResponse();
+
+      expect(status).toBe(401);
+      await expect(productDetailPage.errorToast).toHaveText(
+        'Unauthorized, can not add product to your favorite list.',
+      );
+      await expect(productDetailPage.successToast).toHaveCount(0);
     },
   );
 });

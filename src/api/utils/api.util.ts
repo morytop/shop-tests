@@ -5,4 +5,6 @@ import { API_URL } from '@config/env.config';
 export const apiUrls = {
   registerUrl: `${API_URL}/users/register`,
   loginUrl: `${API_URL}/users/login`,
+  totpSetupUrl: `${API_URL}/totp/setup`,
+  totpVerifyUrl: `${API_URL}/totp/verify`,
 } as const;

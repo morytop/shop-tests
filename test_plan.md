@@ -147,7 +147,7 @@ Each area below maps to a spec file under `tests/ui/` and a page object under `s
 - ~~Account locking: 3 consecutive failed attempts → 4th attempt shows "Account locked, too many failed attempts..."~~ **Implemented 2026-07-09 (see §20)** — uses a disposable freshly-registered account, never the shared seeded ones, since lockout is destructive to that account permanently.
 - Admin account is exempt from lockout even after repeated failed logins (use a throwaway check — do not lock the shared seeded admin; if this can't be verified without touching the shared admin, mark as manual/skip with a comment explaining why).
 - Disabled account (requires admin action to disable a test-created user first) → "Account disabled." and not authenticated.
-- TOTP-enabled account → 6-digit code prompt after valid email/password; valid code authenticates; invalid code shows "Invalid TOTP".
+- ~~TOTP-enabled account → 6-digit code prompt after valid email/password; valid code authenticates; invalid code shows "Invalid TOTP".~~ **Implemented 2026-07-09 (see §23)** — the account is enrolled over the API by `registerUserWithTotpEnabled()`; never a shared account.
 - "Sign in with Google" opens a 500×400 popup (assert popup dimensions/target, not full OAuth flow — treat deep Google auth as out of scope/mocked).
 
 ### 5.12 Forgot password (`tests/ui/forgot-password.spec.ts`)
@@ -819,3 +819,54 @@ add no behavioural coverage; it stays manual until admin credentials are provisi
 
 Deferred (not gaps): TOTP **login** (§5.11's "TOTP-enabled account → 6-digit prompt") and §5.6 AC2's checkout
 TOTP prompt. Both are now unblocked — `generateTotpCode()` plus a user enabled via this flow is all they need.
+**Update 2026-07-09 (§23):** TOTP login is now implemented; §5.6 AC2 remains deferred.
+
+## 23. TOTP-enabled login implementation findings (2026-07-09)
+
+Implemented the §5.11 TOTP-login bullet (three tests appended to `tests/ui/login.spec.ts`). This was the item
+§20 deferred pending "a new `otplib` dependency + a full 2FA-setup flow"; §22 supplied both. New API-layer
+pieces: `src/api/requests/totp.request.ts`, `src/api/models/totp.api.model.ts`,
+`src/api/factories/totp-user.api.factory.ts` (`registerUserWithTotpEnabled()`), plus `totpSetupUrl`/
+`totpVerifyUrl` in `api.util.ts`. `LoginPage` gained `totpCodeInput`/`verifyTotpButton`/`submitTotpCode()`.
+
+**Precondition is built entirely over the API** — register → login → `/totp/setup` → `/totp/verify` — so these
+specs fail only on the behaviour they assert, not on the enrolment UI. Each test enrols its **own** disposable
+user: enabling TOTP is a permanent mutation, and `testUser1` is the shared seeded `customer@` (§22), which the
+API refuses anyway (403). `TotpRequest` is deliberately **not** in `request-object.fixture.ts` — every call
+needs a per-user Bearer header, so a header-less injected instance would be useless; the factory constructs it,
+exactly as `getAuthorizationHeader()` already does with `LoginRequest`.
+
+**Confirmed contract (live):**
+
+- Login on a TOTP-enabled account returns **200** `{ message: "TOTP required", requires_totp: true,
+access_token }`. The app stays on `/auth/login` and swaps the form in place — `@if (!showTotpInput)` wraps the
+  credentials form, so `[data-test="email"]` and `[data-test="login-submit"]` drop to **count 0**. That absence
+  is the cleanest "prompt is shown" signal.
+- Prompt ids: `[data-test="totp-code"]` (label "TOTP Code") and `[data-test="verify-totp"]` ("Verify TOTP").
+  They share names with the profile page's setup form (§22) but are a different component on a different route.
+- **The second leg reuses `POST /users/login`**, not `/totp/verify`: body `{ totp, access_token }`. Valid →
+  `200 { access_token }` → `/account`. Invalid → `401 { "error": "Invalid TOTP" }`.
+- The error renders in the **shared** `[data-test="login-error"]` element — the same one used for invalid
+  credentials and for lockout (§20). It lives outside both `@if` branches. No new locator was needed.
+- Copy is exactly **"Invalid TOTP"**, bare — no `Error:` prefix, unlike the profile page's banners (§22). The
+  plan's wording was accurate here.
+
+**Security-relevant checks (both clean, worth recording):**
+
+- **The provisional token is correctly scoped.** `GET /users/me` using the `access_token` handed out alongside
+  `requires_totp: true` returns **401 "Unauthorized token usage"**. Issuing a token before the second factor is
+  therefore not an auth bypass — the token only works as the `access_token` argument of the TOTP leg.
+- **Failed TOTP attempts do NOT feed the §20 lockout counter.** Four consecutive `000000` submissions left the
+  account able to log in normally afterwards. So the invalid-code test is safe to run repeatedly and needs no
+  special handling. (It still gets its own disposable user, as all three do.)
+
+**Behavioural contrast worth knowing:** the login prompt **survives an invalid code** — it stays rendered and is
+retryable. The profile page's TOTP setup form does the opposite: §22's bug tears the whole form down on the
+first error. Same feature, two components, opposite error handling.
+
+**Time sensitivity:** codes rotate every 30s and are derived immediately before submission; the API's
+`verifyKey()` window = 1 gives ±30s of skew tolerance. The valid-code test passed 3/3 under `--repeat-each=3`,
+so no retry handling was added.
+
+Deferred (not a gap): §5.6 AC2 (the checkout-wizard TOTP prompt) — `registerUserWithTotpEnabled()` +
+`generateTotpCode()` now make it straightforward, and `CheckoutSigninPage` is the extension point.

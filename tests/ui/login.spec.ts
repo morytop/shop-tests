@@ -1,7 +1,9 @@
+import { registerUserWithTotpEnabled } from '@src/api/factories/totp-user.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { testUser1 } from '@src/ui/test-data/user.data';
+import { generateTotpCode } from '@src/ui/utils/totp.util';
 
 // Login AC1-AC3 (docs/user-stories/v5.md)
 test.describe('Verify login @login', () => {
@@ -55,4 +57,68 @@ test.describe('Verify login @login', () => {
       await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
     },
   );
+
+  // Login AC: a TOTP-enabled account is prompted for a 6-digit code after valid
+  // credentials; a valid code authenticates, an invalid one shows "Invalid TOTP".
+  //
+  // Each test enrols its own disposable user over the API (register → login →
+  // /totp/setup → /totp/verify). Enabling TOTP is a permanent mutation, and
+  // testUser1 IS the shared seeded customer@ account, which the API refuses TOTP
+  // setup for anyway (403) — see test_plan.md §22/§23. The second leg reuses
+  // POST /users/login with {totp, access_token}, and its errors surface in the
+  // same [data-test="login-error"] element as the credential errors.
+  test.describe('with a TOTP-enabled account', () => {
+    test(
+      'prompt for a TOTP code after valid credentials',
+      { tag: ['@auth', '@login', '@totp', '@regression'] },
+      async ({ loginPage, page, request, usersRequest }) => {
+        const user = await registerUserWithTotpEnabled(request, usersRequest);
+
+        await loginPage.goto();
+        await loginPage.login(user.email, user.password);
+
+        await expect(loginPage.totpCodeInput).toBeVisible();
+        await expect(loginPage.verifyTotpButton).toBeVisible();
+        // The credentials form is swapped out in place — same route, no redirect.
+        await expect(loginPage.loginButton).toHaveCount(0);
+        await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
+      },
+    );
+
+    test(
+      'authenticate with a valid TOTP code',
+      { tag: ['@auth', '@login', '@totp', '@regression'] },
+      async ({ accountPage, loginPage, usersRequest, request }) => {
+        const user = await registerUserWithTotpEnabled(request, usersRequest);
+
+        await loginPage.goto();
+        await loginPage.login(user.email, user.password);
+        await loginPage.totpCodeInput.waitFor();
+
+        // Codes rotate every 30s, so derive it immediately before submitting.
+        await loginPage.submitTotpCode(generateTotpCode(user.secret));
+
+        await expect(accountPage.title).toHaveText('My account');
+      },
+    );
+
+    test(
+      'reject an invalid TOTP code',
+      { tag: ['@auth', '@login', '@totp', '@regression'] },
+      async ({ loginPage, page, request, usersRequest }) => {
+        const user = await registerUserWithTotpEnabled(request, usersRequest);
+
+        await loginPage.goto();
+        await loginPage.login(user.email, user.password);
+        await loginPage.totpCodeInput.waitFor();
+
+        await loginPage.submitTotpCode('000000');
+
+        await expect(loginPage.loginError).toHaveText('Invalid TOTP');
+        await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
+        // Unlike the profile page's setup form (§22), the prompt survives the error.
+        await expect(loginPage.totpCodeInput).toBeVisible();
+      },
+    );
+  });
 });

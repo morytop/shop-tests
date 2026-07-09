@@ -3,6 +3,7 @@ export const PAGE_URLS = {
   ACCOUNT: '/account',
   CHECKOUT: '/checkout',
   CONTACT: '/contact',
+  FAVORITES: '/account/favorites',
   FORGOT_PASSWORD: '/auth/forgot-password',
   HAND_TOOLS: '/category/hand-tools',
   LOGIN: '/auth/login',

@@ -9,6 +9,7 @@ export const PAGE_URLS = {
   OTHER: '/category/other',
   POWER_TOOLS: '/category/power-tools',
   PRODUCT: '/product',
+  PROFILE: '/account/profile',
   REGISTER: '/auth/register',
   RENTALS: '/rentals',
   SPECIAL_TOOLS: '/category/special-tools',

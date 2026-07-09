@@ -144,7 +144,7 @@ Each area below maps to a spec file under `tests/ui/` and a page object under `s
 - Valid credentials → `/account` for a regular user (existing test).
 - Valid admin credentials → redirected to `/admin/dashboard`.
 - Invalid credentials → "Invalid email or password" (existing test).
-- Account locking: 3 consecutive failed attempts → 4th attempt shows "Account locked, too many failed attempts..." (use a disposable freshly-registered account, never the shared seeded ones, since lockout is destructive to that account for the remainder of the run).
+- ~~Account locking: 3 consecutive failed attempts → 4th attempt shows "Account locked, too many failed attempts..."~~ **Implemented 2026-07-09 (see §20)** — uses a disposable freshly-registered account, never the shared seeded ones, since lockout is destructive to that account permanently.
 - Admin account is exempt from lockout even after repeated failed logins (use a throwaway check — do not lock the shared seeded admin; if this can't be verified without touching the shared admin, mark as manual/skip with a comment explaining why).
 - Disabled account (requires admin action to disable a test-created user first) → "Account disabled." and not authenticated.
 - TOTP-enabled account → 6-digit code prompt after valid email/password; valid code authenticates; invalid code shows "Invalid TOTP".
@@ -642,3 +642,44 @@ sprint5 source (`auth/register/register.component.{ts,html}`, `shared/password-i
   `#passwordHelp` renders unconditionally; only the per-rule highlighting is dynamic.
 
 Not deferred — §5.10 is fully covered (AC1/AC2/AC4/AC5/AC6 asserted; AC3 pinned as a documented bug).
+
+## 20. Login account lockout implementation findings (2026-07-09)
+
+Implemented the §5.11 account-lockout bullet (`tests/ui/login.spec.ts`, `src/ui/pages/login.page.ts`).
+All behaviour below was confirmed live (playwright-cli) against two throwaway API-registered users
+before any assertion was written — no shared/seeded account was touched.
+
+**Confirmed live:**
+
+- **Threshold is exactly 3.** Attempts 1-3 render `"Invalid email or password"`; the 4th and every
+  subsequent attempt render the lockout message. Matches the documented AC.
+- **Exact lockout copy:** `"Account locked, too many failed attempts. Please contact the administrator."`
+  (the docs' `"Account locked, too many failed attempts..."` is a truncation, not a mismatch).
+- **No dedicated locator.** The lockout message reuses the same `[data-test="login-error"]` element as
+  the invalid-credentials error, so no new page-object locator was needed.
+- **The lock is on the account, not the counter.** Supplying the _correct_ password on the 4th attempt
+  is still rejected with the lockout message and leaves the user on `/auth/login`. The spec deliberately
+  spends its locking attempt on the valid password to assert this, rather than a 4th wrong one.
+- **The lock is account-scoped, not IP- or session-scoped.** A second, unlocked user logged in
+  successfully from the same browser and IP immediately after locking the first. This is what makes the
+  test safe to run under `fullyParallel: true` alongside the other login specs — worth re-verifying if
+  the app ever adds rate limiting.
+- Lockout did not expire within the exploration session; the spec does not depend on the lock persisting
+  beyond the single test, so a future expiry window would not break it.
+
+**Discrepancy to account for (docs vs. actual production):**
+
+- **The app no longer uses hash routing.** `test_plan.md`/`CLAUDE.md` and the app docs reference
+  `https://practicesoftwaretesting.com/#/...`, but production serves path routes (`/auth/login`), and
+  navigating to `/#/auth/login` silently lands on the **home page** with no redirect. `PAGE_URLS` already
+  encodes the correct path-style routes, so no code change is needed — but any future manual exploration
+  or hand-written URL must drop the `#/`, or it will silently explore the wrong page.
+
+**Synchronization note:** repeated-attempt flows cannot gate on `loginError` becoming _visible_ — it is
+already visible from the prior attempt, and only its text repaints when the response lands. `LoginPage`
+therefore exposes `loginAndAwaitResponse()`/`failLoginAttempts()`, which await the `POST /users/login`
+response per attempt (same pattern as the `product-list.page.ts` and `checkout-address.page.ts` waits).
+
+Deferred (per user scope decision, not a gap): the remaining §5.11 bullets — admin redirect to
+`/admin/dashboard`, admin lockout exemption, disabled account, TOTP-enabled login, and the Google
+sign-in popup.

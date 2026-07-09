@@ -12,6 +12,7 @@ import { LoginPage } from '@src/ui/pages/login.page';
 import { OtherPage } from '@src/ui/pages/other.page';
 import { PowerToolsPage } from '@src/ui/pages/power-tools.page';
 import { ProductDetailPage } from '@src/ui/pages/product-detail.page';
+import { ProfilePage } from '@src/ui/pages/profile.page';
 import { RegisterPage } from '@src/ui/pages/register.page';
 import { RentalsPage } from '@src/ui/pages/rentals.page';
 import { SpecialToolsPage } from '@src/ui/pages/special-tools.page';
@@ -30,6 +31,7 @@ export type Pages = {
   otherPage: OtherPage;
   powerToolsPage: PowerToolsPage;
   productDetailPage: ProductDetailPage;
+  profilePage: ProfilePage;
   registerPage: RegisterPage;
   rentalsPage: RentalsPage;
   specialToolsPage: SpecialToolsPage;
@@ -74,6 +76,9 @@ export const pageObjectTest = base.extend<Pages>({
   },
   productDetailPage: async ({ page }, use) => {
     await use(new ProductDetailPage(page));
+  },
+  profilePage: async ({ page }, use) => {
+    await use(new ProfilePage(page));
   },
   registerPage: async ({ page }, use) => {
     await use(new RegisterPage(page));

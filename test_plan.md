@@ -164,10 +164,12 @@ faker/API-registered user — never `testUser1` or the shared seeded accounts.
 
 ### 5.13 Two-Factor Authentication setup (`tests/ui/totp-setup.spec.ts`)
 
-- Freshly-registered, logged-in user sees "Setup two factor authentication" section with QR code and manual secret key text.
-- Valid 6-digit code (generate via `otplib`/similar using the displayed secret) → "TOTP verified and enabled successfully."
-- Invalid code → error message, TOTP not enabled.
-- Seeded `customer@`/`admin@` accounts are denied TOTP setup with the specific "Access denied..." message (safe: this is a read/negative check, no mutation).
+**Implemented 2026-07-09 (see §22)** — AC1–AC3 fully, AC4 for `customer@` only.
+
+- Freshly-registered, logged-in user sees the setup section (real heading: **"Set up Two-Factor Authentication"**) with QR code and manual secret key text.
+- Valid 6-digit code (generated via `otplib` from the displayed secret) → "TOTP verified and enabled successfully."
+- Invalid code → error message, TOTP not enabled (the error also tears down the QR/secret/form — prod bug, §22).
+- Seeded `customer@`/`admin@` accounts are denied TOTP setup with the specific "Access denied..." message (safe: this is a read/negative check, no mutation). **`admin@` is not automatable** — no admin password exists in config, and guessing risks locking a shared account; both emails hit one hardcoded 403 branch, so the `customer@` test covers the rule (§22).
 
 ### 5.14 Customer profile (`tests/ui/profile.spec.ts`)
 
@@ -751,3 +753,69 @@ through the form; login with the original password → **`401`**, login with `we
   rather than a confusing copy mismatch.
 
 Not deferred — §5.12 is fully covered (AC1–AC4; AC2 and AC3 pinned to the two production bugs above).
+
+## 22. Two-Factor Authentication setup implementation findings (2026-07-09)
+
+Implemented §5.13 (`tests/ui/totp-setup.spec.ts`, new `src/ui/pages/profile.page.ts` +
+`src/ui/utils/totp.util.ts`, `PAGE_URLS.PROFILE = /account/profile`, page object registered in
+`src/ui/fixtures/page-object.fixture.ts`). New devDependency: **`otplib` v13**. Locators/copy were drafted
+from the pinned v5.0 source, then every one verified live. See `.ai-docs/totp-setup-plan.md`.
+
+**🚨 `testUser1` IS the shared seeded `customer@practicesoftwaretesting.com`** (it is the `.env` `USER_EMAIL`;
+`CLAUDE.md` says the env account "must be a real seeded account"). This is easy to miss and makes it trivially
+easy to write a "freshly-registered user" test that actually mutates a shared account. AC1–AC3 enable TOTP —
+a permanent mutation — so each registers its **own** throwaway user via the API and logs in inline. AC4 is the
+one sanctioned use of `testUser1`: a pure read/negative denial check that submits no code.
+
+They also deliberately do **not** run under the `@logged` project: `tests/setup/login.setup.ts` registers one
+user per run and shares that session across every `@logged` spec, so enabling TOTP on it could leak into
+`checkout-e2e` AC2.
+
+**Confirmed contract (live):**
+
+- The section is on **`/account/profile`** (auth-guarded). Loading the page POSTs `/totp/setup`, which for an
+  eligible account **mints and persists a NEW secret on every visit** — so the secret must be read from the DOM
+  immediately before use, never cached across navigations (same spirit as §9's live-product-ID rule).
+- `data-test` ids: `totp-secret` (the key, inside `<strong>`), `totp-code`, `verify-totp`, `totp-error`,
+  `totp-success`. The QR has **no `data-test`** — it is an Angular `<qrcode>` component rendering a `<canvas>`.
+- Secret is **16 base32 chars** (`/^[A-Z2-7]{16}$/`), and the `otpauth://` URI pins **SHA1 / 6 digits / 30s**.
+  The API's `verifyKey()` uses `pragmarx/google2fa`'s default **window = 1**, giving ±1 time step (±30s) of
+  clock-skew tolerance. AC2 passed 3/3 on repeat, so no extra retry handling was added.
+- Exact copy: success `Success: TOTP verified and enabled successfully.`; invalid
+  `Error: Invalid TOTP code. Please try again.`; denial
+  `Error: Access denied: If you want to configure TOTP, please create your own account.`
+
+**Discrepancies to account for (docs/source vs. actual production):**
+
+- **The heading is "Set up Two-Factor Authentication", not §5.13's "Setup two factor authentication".**
+- **Both banners are prefixed by the template** — `<strong>Error:</strong>` / `<strong>Success:</strong>` — so
+  the rendered text is `Error: …` / `Success: …`, not the bare message the source constant holds.
+- **An invalid code tears down the whole setup UI (production bug).** The template gates the QR, secret and
+  verify form behind `@if (!profile?.totp_enabled && !errorMessage)`, so setting `errorMessage` removes them.
+  A user who mistypes their code once cannot retry without reloading the page. AC3 pins this, and proves "TOTP
+  not enabled" by reloading and asserting the setup section returns rather than "already enabled".
+- **After enabling, the profile shows a spurious error banner (production bug).** A reload re-POSTs
+  `/totp/setup`, which now returns **400** ("TOTP already enabled"); the component only special-cases 403, so
+  the page renders _"Two-Factor Authentication already enabled."_ **and** _"Error: Failed to load TOTP setup
+  details."_ side by side. Not asserted (outside the ACs), but recorded.
+- **`data-test="totp-secret"` renders before its content.** The `<p>` is in the DOM as soon as the `@if` passes
+  — before the `/totp/setup` response resolves — so it is briefly empty. A naive `innerText()` read returns
+  `""`. `ProfilePage.readTotpSecret()` therefore waits on a `.filter({hasText: /^[A-Z2-7]{16}$/})` narrowing
+  of the same locator before reading (the `waitFor`-not-`expect()` sync pattern from `CODING_STANDARDS.md`).
+
+**Tooling note — `otplib` v13 rejects the app's secret out of the box.** v13 is a rewrite: there is no
+`authenticator` singleton (the API is now `generateSync({secret})`), and it enforces a **128-bit minimum
+secret**. google2fa mints 16 base32 chars = **80 bits (10 bytes)**, so generation throws `SecretTooShortError`.
+`src/ui/utils/totp.util.ts` relaxes exactly that one bound via
+`createGuardrails({ MIN_SECRET_BYTES: 10 })`; all other parameters are otplib defaults and already match the
+server. Verified end to end against prod: generated code → `POST /totp/verify` → `200`.
+
+**AC4 gap — `admin@` cannot be automated.** No admin password exists in `.env`, `.env-template`, or the test
+data, and guessing one risks permanently locking a shared admin account (§20: lockout at 3 failed attempts).
+`TOTPService::setupTOTP()` denies via a single hardcoded allowlist
+(`['customer@practicesoftwaretesting.com', 'admin@practicesoftwaretesting.com']` → 403), so both accounts take
+the **identical branch** and the `customer@` test exercises the whole rule. Covering `admin@` separately would
+add no behavioural coverage; it stays manual until admin credentials are provisioned (cf. §8 open question 2).
+
+Deferred (not gaps): TOTP **login** (§5.11's "TOTP-enabled account → 6-digit prompt") and §5.6 AC2's checkout
+TOTP prompt. Both are now unblocked — `generateTotpCode()` plus a user enabled via this flow is all they need.

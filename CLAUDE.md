@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Playwright + TypeScript end-to-end test suite for the **Toolshop** demo app (https://practicesoftwaretesting.com/#/, source: https://github.com/testsmith-io/practice-software-testing). Tests run against the public production site as a black box — no seeded DB access.
 
-`test_plan.md` is the living test plan: scope, out-of-scope items, data strategy, the tag taxonomy, and a full feature-area → spec-file mapping. Much of it is now implemented — `tests/ui/` holds `login`, `register`, `forgot-password`, `cart`, `category`, `checkout-address`, `checkout-e2e`, `checkout-payment`, `checkout-signin`, `product-detail`, `product-filters`, `product-overview`, `product-search`, and `rentals` specs plus `smoke/{homepage,menu}`, and `tests/api/` holds `users.smoke`; check the per-section status notes in `test_plan.md` for what each area covers and what's still deferred. It also documents real discrepancies found between the app's docs and actual production behavior. Check it before writing tests for a feature area, and update it when adding specs or finding further doc/behavior mismatches.
+`test_plan.md` is the living test plan: scope, out-of-scope items, data strategy, the tag taxonomy, and a full feature-area → spec-file mapping. Much of it is now implemented — `tests/ui/` holds `login`, `register`, `forgot-password`, `totp-setup`, `cart`, `category`, `checkout-address`, `checkout-e2e`, `checkout-payment`, `checkout-signin`, `product-detail`, `product-filters`, `product-overview`, `product-search`, and `rentals` specs plus `smoke/{homepage,menu}`, and `tests/api/` holds `users.smoke`; check the per-section status notes in `test_plan.md` for what each area covers and what's still deferred. It also documents real discrepancies found between the app's docs and actual production behavior. Check it before writing tests for a feature area, and update it when adding specs or finding further doc/behavior mismatches.
 
 ## Setup
 
@@ -18,6 +18,8 @@ cp .env-template .env   # then set BASE_URL, USER_EMAIL, USER_PASSWORD
 ```
 
 `USER_EMAIL`/`USER_PASSWORD` must be a real seeded account (`testUser1` in `src/ui/test-data/user.data.ts`). The shared seeded accounts (`customer@`/`admin@practicesoftwaretesting.com`) are read-only fixtures — never use them in destructive tests; register a fresh user via `@faker-js/faker` instead (see `register.spec.ts`).
+
+> **`testUser1` is normally `customer@practicesoftwaretesting.com` itself** — it reads straight from `USER_EMAIL`, so it is _not_ a safe stand-in for "some logged-in user". Any test that mutates its account (password change/reset, TOTP enable, profile edit, disable) must register its own throwaway user instead. Anything that mutates the `@logged` `storageState` session user is also suspect: `tests/setup/login.setup.ts` shares one user across every `@logged` spec in a run.
 
 ## Commands
 

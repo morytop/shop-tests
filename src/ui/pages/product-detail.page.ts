@@ -27,7 +27,8 @@ export class ProductDetailPage extends BasePage {
   readonly outOfStockLabel: Locator;
   readonly relatedProductsHeading: Locator;
   readonly relatedProductCards: Locator;
-  readonly cartToast: Locator;
+  readonly successToast: Locator;
+  readonly errorToast: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -64,8 +65,12 @@ export class ProductDetailPage extends BasePage {
     // The only cards on a detail page are the related-products cards (plain
     // `a.card`, unlike the listing's `a.card[data-test^="product-"]`).
     this.relatedProductCards = this.page.locator('a.card');
-    // ngx-toastr message body; the expected text is asserted in the spec.
-    this.cartToast = this.page.locator('.toast-message');
+    // ngx-toastr renders success and failure into identically-structured toasts that
+    // differ only by container class, and a toast raised by an earlier action can still
+    // be on screen when the next one arrives — so match the type rather than the generic
+    // `.toast-message`. The expected copy is asserted in the spec.
+    this.successToast = this.page.locator('.ngx-toastr.toast-success');
+    this.errorToast = this.page.locator('.ngx-toastr.toast-error');
   }
 
   async increaseQuantity(times: number): Promise<void> {
@@ -101,12 +106,16 @@ export class ProductDetailPage extends BasePage {
   }
 
   /**
-   * Favorite the product and wait for the write to land. The favorite is persisted by
-   * an async `POST /favorites`; navigating straight to the favorites page after a bare
-   * click can outrun it, so the response — not the toast — is the synchronisation point.
+   * Favorite the product and wait for the write to land, returning the HTTP status.
+   *
+   * The favorite is persisted by an async `POST /favorites`; navigating straight to the
+   * favorites page after a bare click can outrun it, so the response — not the toast —
+   * is the synchronisation point. The component fires that POST unconditionally and
+   * decides which toast to raise from the server's reply (201 added / 409 duplicate /
+   * 401 logged out), so the status is the caller's observable for all three outcomes.
    */
-  async addToFavoritesAndAwaitSaved(): Promise<void> {
-    await Promise.all([
+  async addToFavoritesAndAwaitResponse(): Promise<number> {
+    const [response] = await Promise.all([
       this.page.waitForResponse(
         (response) =>
           new URL(response.url()).pathname.endsWith('/favorites') &&
@@ -114,5 +123,7 @@ export class ProductDetailPage extends BasePage {
       ),
       this.addToFavoritesButton.click(),
     ]);
+
+    return response.status();
   }
 }

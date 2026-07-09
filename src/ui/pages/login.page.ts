@@ -11,9 +11,14 @@ export class LoginPage extends BasePage {
   passwordInput = this.page.locator('[data-test="password"]');
   loginButton = this.page.locator('[data-test="login-submit"]');
   loginError = this.page.locator('[data-test="login-error"]');
+  forgotPasswordLink = this.page.locator('[data-test="forgot-password-link"]');
 
   constructor(page: Page) {
     super(page);
+  }
+
+  async openForgotPassword(): Promise<void> {
+    await this.forgotPasswordLink.click();
   }
 
   async login(email: string, password: string): Promise<void> {

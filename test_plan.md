@@ -152,10 +152,15 @@ Each area below maps to a spec file under `tests/ui/` and a page object under `s
 
 ### 5.12 Forgot password (`tests/ui/forgot-password.spec.ts`)
 
+**Implemented 2026-07-09 (see §21)** — all four ACs. ⚠ **This form is destructive:** submitting a registered
+email resets that account's password immediately (no email token). Only ever drive it with a disposable
+faker/API-registered user — never `testUser1` or the shared seeded accounts.
+
 - Form accessible from login page with an email field.
-- Invalid/non-RFC email format is rejected client-side.
-- Valid registered email → success/confirmation message, which fades out after ~3s.
-- Unregistered email → error message shown.
+- Invalid/non-RFC email format is rejected client-side (the format error box renders **empty** — prod bug, §21).
+- Valid registered email → success/confirmation message, which fades out after ~3s (message renders the **raw
+  i18n key** `page.forgot-password.confirm` — prod bug, §21).
+- Unregistered email → error message shown ("The selected email is invalid.").
 
 ### 5.13 Two-Factor Authentication setup (`tests/ui/totp-setup.spec.ts`)
 
@@ -683,3 +688,66 @@ response per attempt (same pattern as the `product-list.page.ts` and `checkout-a
 Deferred (per user scope decision, not a gap): the remaining §5.11 bullets — admin redirect to
 `/admin/dashboard`, admin lockout exemption, disabled account, TOTP-enabled login, and the Google
 sign-in popup.
+
+## 21. Forgot password implementation findings (2026-07-09)
+
+Implemented all four ACs of §5.12 (`tests/ui/forgot-password.spec.ts`, new
+`src/ui/pages/forgot-password.page.ts` registered in `src/ui/fixtures/page-object.fixture.ts`; `LoginPage`
+gained `forgotPasswordLink` + `openForgotPassword()`, and `PAGE_URLS.FORGOT_PASSWORD` was added). Locators and
+copy were first drafted from the pinned v5.0 source, then **every one was verified live** (playwright-cli +
+direct API calls) against the deployed build `v2.3 | Built 2026-07-06` — which caught one drift the source
+would have gotten wrong. See `.ai-docs/forgot-password-plan.md`.
+
+**🚨 The endpoint is destructive — this is the most important thing on this page.** `POST
+/users/forgot-password` does **not** mail a reset link. `UserService::resetPassword()` overwrites the account's
+password with the hardcoded **`welcome02`** on the spot, with no token and no confirmation step. Verified
+end to end on production against a throwaway user: login with the original password → `200`; submit that email
+through the form; login with the original password → **`401`**, login with `welcome02` → **`200`**. Consequences:
+
+- The AC3 test **must** use a disposable API-registered user. Pointing this form at `testUser1` (the env-backed
+  `USER_EMAIL`) would silently reset it and break `login.spec.ts` and `tests/setup/login.setup.ts` for every
+  later run and every other engineer; pointing it at `customer@`/`admin@` is forbidden outright (§3).
+- §5.12 AC3's phrasing ("success/confirmation message") understates what happened — the password is already
+  changed by the time the banner renders.
+- Anyone hand-exploring this page should assume any email they type is burned.
+
+**Confirmed contract (live):**
+
+- Route `/auth/forgot-password`; reached from `/auth/login` via `[data-test="forgot-password-link"]`
+  ("Forgot your Password?"). `<h1>` and document title are both "Forgot Password".
+- Field ids: `[data-test="forgot-password-form"]`, `[data-test="email"]`, `[data-test="email-error"]`,
+  `[data-test="forgot-password-submit"]` (value "Set New Password").
+- **Validation is submit-gated**, not blur-gated (unlike register's `updateOn:'blur'`, §19): nothing validates
+  until the submit is clicked. An invalid email never reaches the API (no request fires) — so AC2's
+  "rejected client-side" is literally true.
+- Both server banners are `role="alert"` with **no `data-test`** — distinguished only by `.alert-success` /
+  `.alert-danger` (located as `getByRole('alert').and(locator('.alert-…'))`). Both are **detached from the DOM
+  ~3s** after rendering (`hideAlert` via a 3000 ms `setTimeout` behind an `@if`) — there is no CSS fade, so
+  assert `toBeHidden()`, not opacity. Because they vanish, the specs await the `POST /users/forgot-password`
+  response before asserting rather than racing the slow public API (the `loginAndAwaitResponse` pattern, §20).
+
+**Discrepancies to account for (docs/source vs. actual production):**
+
+- **AC2's format error renders an EMPTY box (production bug).** The email control is built with
+  `Validators.pattern(...)`, which populates `errors.pattern` — but the template only prints copy for
+  `errors.required` and `errors['email']` (the key `Validators.email` would set). So a malformed-but-non-empty
+  address makes `[data-test="email-error"]` **visible with no text** (`innerHTML` is just `<!----><!---->`).
+  The **empty** field is the only case whose message renders ("Email is required"). The spec pins both halves,
+  the same convention as the §17 card-holder-name and §19 strength-meter findings.
+- **AC3's success message renders a raw i18n key (production bug).** The template reads
+  `t('page.forgot-password.confirm')` (singular `page.`) while `en.json` defines
+  `pages.forgot-password.confirm`. There is no top-level `page` key, so transloco falls back to echoing the
+  key: the banner literally reads **`page.forgot-password.confirm`**. The intended copy is "Your password is
+  **successfully** updated!". The spec asserts the actual string.
+- **AC4's error copy is real and deterministic, but is _not_ the source's.** Unknown email → **422**
+  `{"message":"The selected email is invalid."}`, surfaced verbatim in the `.alert-danger`. Confirmed 5/5
+  consecutive runs. Note there is **no anti-enumeration** here: the form distinguishes registered from
+  unregistered addresses, which is itself a security smell worth reporting to the team alongside the
+  no-token reset.
+- **Prod carries a generic fallback string absent from the pinned source.** One early probe (while the API was
+  slow, ~2.5 s) rendered **"Something went wrong "** instead of the 422 copy; that string exists nowhere in
+  `sprint5/`. It did not reproduce across 5 further runs, so it appears to be the handler for a non-422
+  response. Awaiting the POST response (as the spec does) keeps a transient 5xx surfacing as an honest failure
+  rather than a confusing copy mismatch.
+
+Not deferred — §5.12 is fully covered (AC1–AC4; AC2 and AC3 pinned to the two production bugs above).

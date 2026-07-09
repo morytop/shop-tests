@@ -46,3 +46,13 @@ export type RequiredProfileField =
   | 'street'
   | 'city'
   | 'country';
+
+/**
+ * One step of the change-password strength meter: a sample password, and the bar
+ * width + label the meter is expected to show for it (test_plan.md §25).
+ */
+export interface PasswordStrengthLevel {
+  password: string;
+  label: string;
+  width: string;
+}

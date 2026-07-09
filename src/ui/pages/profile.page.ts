@@ -7,8 +7,9 @@ import { ProfileDetails } from '@src/ui/models/user.model';
 const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
 
 /**
- * Customer profile page (`/account/profile`), modelling both the profile form and
- * the "Set up Two-Factor Authentication" section below it.
+ * Customer profile page (`/account/profile`), modelling the profile form, the
+ * change-password form below it, and the "Set up Two-Factor Authentication" section
+ * below that.
  *
  * The profile form is populated by an async `GET /users/me` that lands *after*
  * navigation resolves, and Angular writes only the inputs' `value` property (the
@@ -19,6 +20,10 @@ const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
  * secret on every visit for an eligible account — so the secret must be read from
  * the DOM at the moment it is used, never cached across navigations. The seeded
  * `customer@`/`admin@` accounts are refused (403) and see only `totpError`.
+ *
+ * The profile and change-password forms each render their own `.alert-*` banners as
+ * siblings, so every alert locator here is scoped to its own form rather than matched
+ * page-wide.
  */
 export class ProfilePage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.PROFILE;
@@ -38,6 +43,15 @@ export class ProfilePage extends BasePage {
   readonly profileForm: Locator;
   readonly profileSuccess: Locator;
   readonly profileError: Locator;
+  readonly currentPasswordInput: Locator;
+  readonly newPasswordInput: Locator;
+  readonly confirmPasswordInput: Locator;
+  readonly changePasswordButton: Locator;
+  readonly passwordForm: Locator;
+  readonly passwordSuccess: Locator;
+  readonly passwordError: Locator;
+  readonly strengthFill: Locator;
+  readonly activeStrengthLabel: Locator;
 
   totpHeading = this.page.getByRole('heading', {
     name: 'Set up Two-Factor Authentication',
@@ -87,6 +101,28 @@ export class ProfilePage extends BasePage {
       .filter({ has: this.updateProfileButton });
     this.profileSuccess = this.profileForm.locator('.alert-success');
     this.profileError = this.profileForm.locator('.alert-danger');
+
+    this.currentPasswordInput = this.page.locator(
+      '[data-test="current-password"]',
+    );
+    this.newPasswordInput = this.page.locator('[data-test="new-password"]');
+    this.confirmPasswordInput = this.page.locator(
+      '[data-test="new-password-confirm"]',
+    );
+    this.changePasswordButton = this.page.locator(
+      '[data-test="change-password-submit"]',
+    );
+    this.passwordForm = this.page
+      .locator('form')
+      .filter({ has: this.changePasswordButton });
+    this.passwordSuccess = this.passwordForm.locator('.alert-success');
+    this.passwordError = this.passwordForm.locator('.alert-danger');
+    // The register form renders the same meter markup, but its copy is broken in
+    // production (test_plan.md §19); this one tracks the typed value (§25).
+    this.strengthFill = this.passwordForm.locator('.strength-bar .fill');
+    this.activeStrengthLabel = this.passwordForm.locator(
+      '.strength-labels span.active',
+    );
   }
 
   /**
@@ -120,6 +156,25 @@ export class ProfilePage extends BasePage {
   async updateProfile(details: ProfileDetails): Promise<void> {
     await this.fillProfile(details);
     await this.submitProfile();
+  }
+
+  /**
+   * Type a new password. Unlike the register form (`updateOn: 'blur'`), this control
+   * recomputes the strength meter straight off the typed value, so no blur is needed.
+   */
+  async enterNewPassword(password: string): Promise<void> {
+    await this.newPasswordInput.fill(password);
+  }
+
+  async changePassword(
+    currentPassword: string,
+    newPassword: string,
+    confirmPassword: string,
+  ): Promise<void> {
+    await this.currentPasswordInput.fill(currentPassword);
+    await this.newPasswordInput.fill(newPassword);
+    await this.confirmPasswordInput.fill(confirmPassword);
+    await this.changePasswordButton.click();
   }
 
   /**

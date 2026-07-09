@@ -13,6 +13,11 @@ export class LoginPage extends BasePage {
   loginError = this.page.locator('[data-test="login-error"]');
   forgotPasswordLink = this.page.locator('[data-test="forgot-password-link"]');
 
+  // Second-factor prompt: replaces the credentials form in place on /auth/login once
+  // the account is TOTP-enabled. `loginError` is shared with the credential errors.
+  totpCodeInput = this.page.locator('[data-test="totp-code"]');
+  verifyTotpButton = this.page.locator('[data-test="verify-totp"]');
+
   constructor(page: Page) {
     super(page);
   }
@@ -38,6 +43,11 @@ export class LoginPage extends BasePage {
     );
     await this.login(email, password);
     await loginResponse;
+  }
+
+  async submitTotpCode(code: string): Promise<void> {
+    await this.totpCodeInput.fill(code);
+    await this.verifyTotpButton.click();
   }
 
   async failLoginAttempts(

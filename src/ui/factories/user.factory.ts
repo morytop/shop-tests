@@ -4,6 +4,19 @@ import { ProfileDetails, RegisterUser } from '@src/ui/models/user.model';
 import { RegisterPage } from '@src/ui/pages/register.page';
 
 /**
+ * A random password that always satisfies the app's policy. Constrained to
+ * letters/spaces/punctuation plus a "1!" prefix so it carries an uppercase letter, a
+ * lowercase letter, a digit and a symbol.
+ */
+export function prepareRandomPassword(): string {
+  return faker.internet.password({
+    length: 20,
+    pattern: /^[a-z ,.'-]+$/i,
+    prefix: '1!',
+  });
+}
+
+/**
  * Build a random-but-valid registration record. Country/postcode/houseNumber use a
  * known-good pair (Germany / 12345 / 42) rather than faker: the country <select>
  * and the billing postcode lookup both need real, matchable values, so a random
@@ -26,13 +39,7 @@ export function prepareRandomUser(): RegisterUser {
     state: faker.location.state(),
     phone: faker.string.numeric(8),
     email: faker.internet.email(),
-    // Constrain to letters/spaces/punctuation plus a "1!" prefix so the value
-    // always satisfies the app's password policy (upper, lower, digit, symbol).
-    password: faker.internet.password({
-      length: 20,
-      pattern: /^[a-z ,.'-]+$/i,
-      prefix: '1!',
-    }),
+    password: prepareRandomPassword(),
   };
 }
 

@@ -185,12 +185,18 @@ faker/API-registered user — never `testUser1` or the shared seeded accounts.
 
 ### 5.15 Change password (`tests/ui/change-password.spec.ts`)
 
+**Implemented 2026-07-09 (see §25)** — all six ACs. ⚠ **This form is destructive:** every AC changes the
+account password, so each test registers its own throwaway user. Never `testUser1` or the `@logged` session user.
+
 - Form shows current/new/confirm fields.
-- Password strength indicator mirrors registration behavior for the new password field.
-- Mismatched new/confirm → "Passwords do not match."
+- Password strength indicator advances one step per criterion met (Weak 20% → Excellent 100%). It does **not**
+  mirror registration behavior: registration's meter is broken (§19), this one works (§25).
+- Mismatched new/confirm → "The new password field confirmation does not match." (the documented "Passwords do
+  not match." is **not** the real copy — §25).
 - Wrong current password → "Your current password does not matches with the password."
 - New password identical to current → "New Password cannot be same as your current password."
-- Valid change → success message, then automatic logout after ~5s (assert redirected/unauthenticated afterward).
+- Valid change → success message ("Your password is successfully updated!"), then automatic logout after ~5s
+  (assert redirected/unauthenticated afterward).
 
 ### 5.16 Favorites (`tests/ui/favorites.spec.ts`)
 
@@ -933,3 +939,63 @@ objects rule holds. Every profile test gates on it after each `goto()`.
 
 Not deferred — §5.14 is fully covered. The change-password form (§5.15) sits in the same page object and is the
 natural next extension.
+
+## 25. Change password implementation findings (2026-07-09)
+
+Implemented **all 6 ACs** of §5.15 (`tests/ui/change-password.spec.ts`). As §24 predicted, the form sits in the
+existing `src/ui/pages/profile.page.ts` — no new page object and therefore no fixture change. Added
+`PasswordStrengthLevel` to `src/ui/models/user.model.ts`, `CHANGE_PASSWORD_ERRORS` +
+`PASSWORD_STRENGTH_LEVELS` to `src/ui/test-data/user.data.ts`, and extracted `prepareRandomPassword()` out of
+`prepareRandomUser()` in `src/ui/factories/user.factory.ts` (behavior unchanged — the same faker pattern, now
+reusable by tests that need a second policy-compliant password). Tagged `@auth @profile @regression`. See
+`.ai-docs/change-password-plan.md`.
+
+**Data safety (§3):** every AC submits a form that changes the account password, so all six register their own
+throwaway user via `registerUserWithApi` and log in inline — including the read-only ACs 1–2, both for
+consistency and to remove any chance of a stray submit reaching a shared account. None uses `testUser1` (which
+_is_ the seeded `customer@` account) or rides the `@logged` storageState session.
+
+**Confirmed page contract (live).** The change-password form is the middle of the three `<form>`s on
+`/account/profile` (under `<h2>Password</h2>`, between the profile form and the TOTP section). It holds
+`[data-test="current-password"]`, `[data-test="new-password"]`, `[data-test="new-password-confirm"]` (all
+`input[type=password]`), two unnamed show/hide toggle buttons, and `[data-test="change-password-submit"]`. There
+are **no field-level `[data-test="*-error"]` elements anywhere on this page** — every message is a form-level
+`.alert`. Save is a `POST /users/change-password`.
+
+**Discrepancies to account for (docs/plan vs. actual):**
+
+- **§5.15 AC2 is wrong: the strength meter does _not_ "mirror registration behavior".** The two components share
+  the markup (`.strength-bar .fill`, `.strength-labels span.active`, `#passwordHelp`) but not the behavior.
+  Registration's meter is broken in production (§19 — the `(input)` handler reads a stale `updateOn:'blur'`
+  value, so the bar never leaves `0%`). The change-password meter **works correctly** and updates straight off the
+  typed value, so a plain `fill()` drives it and no blur helper is needed. This corroborates §9's 2026-07-04 sweep,
+  which already listed the change-password indicator under "Confirmed live, matches docs". Measured scale — one
+  criterion per step (non-empty → ≥8 chars → uppercase → digit → symbol), cumulative:
+
+  | new-password value | bar width | active label |
+  | ------------------ | --------- | ------------ |
+  | `a`                | 20%       | Weak         |
+  | `abcdefgh`         | 40%       | Moderate     |
+  | `Abcdefgh`         | 60%       | Strong       |
+  | `Abcdefg1`         | 80%       | Very Strong  |
+  | `Abcdefg1!`        | 100%      | Excellent    |
+
+- **§5.15 AC3's error copy is wrong.** A mismatched confirmation renders **`The new password field confirmation
+does not match.`** (the API's 422 message), not the documented "Passwords do not match."
+- **All three error paths are enforced server-side.** Exactly as on the profile form (§24), the submit button
+  **stays enabled**, the `POST` **is** fired, and the message renders in one `.alert.alert-danger.mt-3` inside the
+  password form. Mismatched confirmation → **422**; wrong current password (`Your current password does not
+matches with the password.`) and new-equals-current (`New Password cannot be same as your current password.`) →
+  **400**. The negative submits leave the password genuinely unchanged (verified: the original password still
+  authenticated afterwards), so AC3–AC5 assert "error shown, no success banner" without re-checking credentials.
+- **Both alert locators must be scoped to their own form.** The profile and change-password forms are siblings and
+  each renders its own `.alert-success`/`.alert-danger`, so `passwordSuccess`/`passwordError` are scoped to
+  `passwordForm` (`form` filtered by `has: changePasswordButton`), mirroring §24's `profileSuccess`/`profileError`.
+- **AC6's logout is real, not cosmetic.** Success shows `Your password is successfully updated!`, then the app
+  redirects to `/auth/login`: `localStorage` is emptied (the `auth-token` is gone) and a later `goto('/account')`
+  bounces back to the login page. Verified over the API that the password genuinely rotates — old password → 401,
+  new → 200 — so the test finishes by authenticating with the new password. Timing was measured between 5s and
+  ~9.3s (1s poll granularity), so the documented "~5s" holds but the URL assertion uses a **15s** timeout. The test
+  passed 3/3 under `--repeat-each=3`.
+
+Not deferred — §5.15 is fully covered.

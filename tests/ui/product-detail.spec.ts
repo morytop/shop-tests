@@ -7,6 +7,12 @@ import { expect, test } from '@src/merge.fixture';
 // .ai-docs/product-detail-core-plan.md). Detail pages are reached by clicking a
 // live product card (never a hard-coded id) per §9.
 //
+// Card selection (§28): the catalog is shared, mutable production data, so the three
+// tests that drive *cart* controls pick their product by stock rather than by grid
+// position — an out-of-stock product PATCHed to the front of the grid disables those
+// controls, which is exactly how they broke once. Tests indifferent to stock (display
+// fields, related products, favorites) still take the first card.
+//
 // Favorites (§27): the component fires `POST /favorites` unconditionally and picks its
 // toast from the server's reply — 201 → success, 409 → duplicate, 401 → unauthorized —
 // so each favorites test asserts the status alongside the copy. Adding a favorite
@@ -36,7 +42,9 @@ test.describe('Verify product detail', () => {
     { tag: '@regression' },
     async ({ homePage, productDetailPage }) => {
       await homePage.goto();
-      await homePage.clickProductCard(0);
+      const found = await homePage.findInStockCardAcrossPages();
+      expect(found).toBe(true);
+      await homePage.inStockCard.click();
 
       await expect(productDetailPage.quantityInput).toHaveValue('1');
 
@@ -59,7 +67,9 @@ test.describe('Verify product detail', () => {
     { tag: '@regression' },
     async ({ homePage, productDetailPage }) => {
       await homePage.goto();
-      await homePage.clickProductCard(0);
+      const found = await homePage.findInStockCardAcrossPages();
+      expect(found).toBe(true);
+      await homePage.inStockCard.click();
 
       await productDetailPage.setQuantity('0');
       await expect(productDetailPage.quantityInput).toHaveValue('1');
@@ -77,7 +87,9 @@ test.describe('Verify product detail', () => {
     { tag: ['@smoke', '@regression'] },
     async ({ homePage, productDetailPage }) => {
       await homePage.goto();
-      await homePage.clickProductCard(0);
+      const found = await homePage.findInStockCardAcrossPages();
+      expect(found).toBe(true);
+      await homePage.inStockCard.click();
 
       await productDetailPage.addToCart();
 

@@ -19,6 +19,7 @@ export abstract class ProductListPage extends BasePage {
   readonly outOfStockLabelSelector: Locator;
   readonly outOfStockLabels: Locator;
   readonly outOfStockCard: Locator;
+  readonly inStockCard: Locator;
   readonly paginationNextLink: Locator;
   readonly paginationNextItem: Locator;
   readonly paginationPrevItem: Locator;
@@ -54,6 +55,14 @@ export abstract class ProductListPage extends BasePage {
     );
     this.outOfStockCard = this.productCards
       .filter({ has: this.outOfStockLabelSelector })
+      .first();
+    // The catalog is shared, mutable production data, so any test that drives the cart
+    // must pick its product by stock rather than by grid position — an out-of-stock
+    // product PATCHed to the front of the grid disables those controls (§26/§28). The
+    // grid never contains rentals (the overview always queries `is_rental=false`), so
+    // "in stock" is the only predicate such a test needs.
+    this.inStockCard = this.productCards
+      .filter({ hasNot: this.outOfStockLabelSelector })
       .first();
     this.paginationNextLink = this.page.locator(
       '[data-test="pagination-next"]',
@@ -228,6 +237,19 @@ export abstract class ProductListPage extends BasePage {
     const maxPages = 50;
     for (let i = 0; i < maxPages; i++) {
       if ((await this.outOfStockCard.count()) > 0) return true;
+
+      if (await this.isOnLastPage()) return false;
+      await this.goToNextPage();
+    }
+    return false;
+  }
+
+  // Leaves the grid on the page holding the match, so callers click `inStockCard` next.
+  async findInStockCardAcrossPages(): Promise<boolean> {
+    await this.waitForGrid();
+    const maxPages = 50;
+    for (let i = 0; i < maxPages; i++) {
+      if ((await this.inStockCard.count()) > 0) return true;
 
       if (await this.isOnLastPage()) return false;
       await this.goToNextPage();

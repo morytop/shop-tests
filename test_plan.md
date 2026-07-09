@@ -1073,7 +1073,7 @@ drives _cart_ controls is hostage to whichever product another engineer has muta
 already forbids hard-coded catalog data; this shows that "the first card" is not neutral either. A future pass should
 have those three ACs select a product by the property they need (in-stock, non-rental) rather than by position, the
 way `findOutOfStockCardAcrossPages()` already does for the out-of-stock AC. Favorites are immune — an out-of-stock
-product can still be favorited.
+product can still be favorited. **Done 2026-07-09 — see §28.**
 
 ## 27. Product-detail favorites implementation findings (2026-07-09)
 
@@ -1116,3 +1116,39 @@ ACs on a shared, mutable catalog.
 
 §5.3 favorites are no longer deferred. The remaining §5.3 gaps are unchanged: the discounted-product badge
 (unautomatable, §10) and the rental duration slider + price recalculation.
+
+## 28. Property-based product selection for cart-driving tests (2026-07-09)
+
+Closes the follow-up flagged in §26. The three tests in `tests/ui/product-detail.spec.ts` that drive **cart** controls
+(quantity stepper, manual quantity clamp, add-to-cart confirmation) no longer take whatever product happens to sit at
+grid position 0; they select the first **in-stock** card instead.
+
+**Why position was unsafe.** The catalog is shared, mutable production data. When someone PATCHed an out-of-stock
+product to the front of the grid, all three broke — an out-of-stock detail page disables the very controls they
+drive — and they silently healed when it reverted. §3 forbids hard-coded catalog data; "the first card" is not
+neutral either.
+
+**Added to `src/ui/pages/product-list.page.ts`** (inherited by the home page and every category page, additive):
+
+- `inStockCard` = `productCards.filter({ hasNot: outOfStockLabelSelector }).first()`
+- `findInStockCardAcrossPages()` — the same page walk as `findOutOfStockCardAcrossPages()`.
+
+**"In stock" is a sufficient predicate — no rental check is needed.** The overview grid can never contain rentals:
+`ProductService.getProductsNew()` always sends `is_rental=false`, and rentals are fetched by a separate
+`is_rental=true` call. Verified against the API (default `/products` → 0 rentals; `?is_rental=true` → 3).
+
+**Tests left on `clickProductCard(0)` deliberately:** display fields, related products, and the three favorites tests
+are all indifferent to stock (an out-of-stock product can still be favorited); the out-of-stock AC is already served
+by `findOutOfStockCardAcrossPages()`.
+
+**How the fix was proven.** The hazard was no longer reproducible — the mutated product had reverted, so all 9 tests
+passed on `main` with or without the change, and re-running them proved nothing. A throwaway spec therefore stubbed
+the overview grid's `/products` response to reorder a genuinely out-of-stock product to index 0, leaving the
+per-product detail responses real. Under that stub: `clickProductCard(0)` lands on a **disabled** add-to-cart
+(reproducing the original failure), while `findInStockCardAcrossPages()` + `inStockCard` select a different product
+with an **enabled** add-to-cart and a quantity of 1. Both assertions passed; the throwaway spec was then deleted.
+
+**Test-run note.** `category.spec.ts` failed 2 tests once when four `ProductListPage` specs were run together (25
+tests in parallel), and passed 7/7 in isolation on both this branch and clean `main`. It looks load-induced rather
+than related to this change — the addition here is a locator and a method that `category.spec.ts` never calls — but
+the four-file parallel combo was **not** re-run on clean `main` as a control, so this is unconfirmed.

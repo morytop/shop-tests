@@ -32,7 +32,7 @@
   - They must **never** be used for destructive/mutating tests (password change, account edits, order placement) since they are shared across all test runs and other engineers/CI.
 - Products/categories/brands are treated as read-only fixture data owned by the app; tests should assert on structural properties (e.g., "grid has products", "price format is $X.XX") rather than hard-coded product names/prices, since catalog content can change over time. Where a specific product is required (e.g. a known out-of-stock or rental item), select it dynamically by locating the first product matching the needed condition rather than hard-coding an ID.
 - Tests must be independent and parallelizable (`fullyParallel: true` is already set) — no shared mutable state (e.g., don't assert on absolute cart/favorites counts from a shared session).
-- Use tags (`@smoke`, `@regression`, `@checkout`, `@auth`, `@admin`, `@a11y`) via `test.describe`/`test` titles to allow selective runs, following the existing `@login`/`@register` convention.
+- Use tags (`@smoke`, `@regression`, `@checkout`, `@auth`, `@admin`, `@a11y`) via `test.describe`/`test` titles to allow selective runs, following the existing `@login`/`@register`/`@profile` convention.
 
 ## 4. Test levels / suites
 
@@ -177,6 +177,11 @@ faker/API-registered user — never `testUser1` or the shared seeded accounts.
 - All editable fields (first/last name, phone, street, postal code, city, state, country) can be updated and persist after save; success message fades after ~5s.
 - Email field is present but not editable (readonly/disabled).
 - Required-field validation prevents saving with a field blanked out.
+
+> **Status: fully implemented (2026-07-09) — see §24.** All four ACs covered. Note that only 5 of the 8 editable
+> fields are actually required (phone, postal code and state save fine when blank), so AC4 is parameterized over
+> those five; validation is enforced **server-side** (the submit button never disables). Country is a free-text
+> input here, unlike the billing step's `<select>` (§9).
 
 ### 5.15 Change password (`tests/ui/change-password.spec.ts`)
 
@@ -870,3 +875,61 @@ so no retry handling was added.
 
 Deferred (not a gap): §5.6 AC2 (the checkout-wizard TOTP prompt) — `registerUserWithTotpEnabled()` +
 `generateTotpCode()` now make it straightforward, and `CheckoutSigninPage` is the extension point.
+
+## 24. Customer profile implementation findings (2026-07-09)
+
+Implemented **all 4 ACs** of §5.14 (`tests/ui/profile.spec.ts`). The existing `src/ui/pages/profile.page.ts` —
+which until now modelled only the TOTP setup section (§22) — was extended with the profile form; no new page
+object and therefore no fixture change. Added `ProfileDetails`/`RequiredProfileField` to
+`src/ui/models/user.model.ts`, `prepareRandomProfileDetails()` to `src/ui/factories/user.factory.ts`, and
+`REQUIRED_PROFILE_FIELD_ERRORS` to `src/ui/test-data/user.data.ts`. Tagged `@auth @profile @regression`
+(`@profile` is new). See `.ai-docs/profile-plan.md`.
+
+**Data safety (§3):** all four ACs register their own throwaway user via `registerUserWithApi` and log in
+inline — AC2/AC4 because they mutate the account, AC1/AC3 because they assert the form shows that user's own
+registered data. None uses `testUser1` (which _is_ the shared seeded `customer@` account) and none rides the
+`@logged` storageState session, whose single shared user's stored address `checkout-address.spec.ts` §5.7 AC5
+asserts on.
+
+**Confirmed page contract (live).** `/account/profile` (`<title>` "Profile - …") stacks three sections:
+`<h1 data-test="page-title">Profile</h1>` + the profile form, `<h2>Password</h2>` + the change-password form
+(§5.15, not yet automated), and `<h2>Set up Two-Factor Authentication</h2>` (§22). Profile fields are all
+`input[type=text]`: `first-name`, `last-name`, `email`, `phone`, `street`, `postal_code`, `city`, `state`,
+`country`; submit is `[data-test="update-profile-submit"]`; save is a `PUT /users/{id}`.
+
+**Discrepancies to account for (docs/plan vs. actual):**
+
+- **Only 5 of the 8 editable fields are required.** Blanking `phone`, `postal_code` or `state` saves
+  successfully. §5.14's blanket "required-field validation" holds only for first name, last name, street, city
+  and country, so the AC4 test is parameterized over exactly those (`REQUIRED_PROFILE_FIELD_ERRORS`).
+- **Validation is server-side, and the error copy leaks the API's payload paths.** Unlike the billing step
+  (§16), `update-profile-submit` **stays enabled** with a blanked field and the `PUT` **is** fired; the API's
+  422 messages then render in a single `.alert.alert-danger` inside the form (newline-joined when several
+  fields are blank), and the offending input turns `ng-invalid`. The messages use dotted payload paths, not the
+  form's own labels: `The first name field is required.`, `The last name field is required.`,
+  `The address.street field is required.`, `The address.city field is required.`,
+  `The address.country field is required.`
+- **`country` is a free-text `<input>` on this form**, not the ISO-code `<select>` the billing step uses (§9,
+  §16) — so profile updates can set any country string, and the §16 "country select won't pre-fill for an
+  API-registered user" problem does not apply here.
+- **`email` is `readonly`, not `disabled`** — it stays focusable/enabled and its value posts. AC3 asserts
+  `not.toBeEditable()` **and** `toBeEnabled()` to pin the distinction.
+- **`dob` and `house_number` are absent from the profile form** even though registration collects them (and
+  §16 found `house_number` on the billing step). §5.14's field list is accurate as written.
+- **The success message is an inline alert, not an ngx-toastr toast** as elsewhere in the app (§12, §14):
+  `<div class="alert alert-success mt-3">Your profile is successfully updated!</div>`, rendered **inside** the
+  profile `<form>`. It is **detached from the DOM**, not merely hidden, after a measured **5.4s** — the
+  documented "~5s fade" holds, but assertions must use `toHaveCount(0)` rather than `toBeHidden()`. Because the
+  sibling change-password form renders its own `.alert-*` banners, both alert locators are scoped to the
+  profile form (`page.locator('form').filter({ has: updateProfileButton })`).
+
+**Synchronization hazard worth knowing (bit us during exploration).** The form is populated by an async
+`GET /users/me` that lands _after_ navigation resolves, and Angular writes the inputs' **`value` property only**
+— `getAttribute('value')` stays `null`. A `fill()` issued before that response silently gets overwritten, and an
+`inputValue()` read too early returns `''`. Neither `waitFor()` nor `.filter({ hasText })` can express this gate
+(inputs carry no text and no value attribute), so `ProfilePage.waitForProfileLoaded()` uses
+`page.waitForFunction` on the live `value` property — a wait, not an assertion, so the no-`expect()`-in-page-
+objects rule holds. Every profile test gates on it after each `goto()`.
+
+Not deferred — §5.14 is fully covered. The change-password form (§5.15) sits in the same page object and is the
+natural next extension.

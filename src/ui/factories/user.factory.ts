@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { Page } from '@playwright/test';
-import { RegisterUser } from '@src/ui/models/user.model';
+import { ProfileDetails, RegisterUser } from '@src/ui/models/user.model';
 import { RegisterPage } from '@src/ui/pages/register.page';
 
 /**
@@ -33,6 +33,24 @@ export function prepareRandomUser(): RegisterUser {
       pattern: /^[a-z ,.'-]+$/i,
       prefix: '1!',
     }),
+  };
+}
+
+/**
+ * Build a fresh set of values for the profile form. Unlike registration, the profile
+ * country/postcode are plain text inputs with no `<select>` option list and no
+ * postcode lookup behind them (test_plan.md §23), so both can be faker-random.
+ */
+export function prepareRandomProfileDetails(): ProfileDetails {
+  return {
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    phone: faker.string.numeric(8),
+    street: faker.location.street(),
+    postalCode: faker.location.zipCode('#####'),
+    city: faker.location.city(),
+    state: faker.location.state(),
+    country: faker.location.country(),
   };
 }
 

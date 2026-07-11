@@ -279,12 +279,15 @@ in `.env` (`adminUser` in `user.data.ts`). Every CRUD bullet below remains **def
 
 ### 5.21 Chat widget (`tests/ui/chat-widget.spec.ts`)
 
-- Toggle button visible bottom-right on any page; opening shows menu: Find Product, Order Product, Checkout, Support.
-- Find Product: search returns ≤5 product cards; "View Product" navigates to detail page.
-- Order Product: search → select quantity (preset or custom 1–999) → confirm → product appears in cart.
-- Checkout via chat: full flow (cart summary → guest details if logged out → address → payment → confirmation with invoice number).
-- Checkout via chat with empty cart → "Your cart is empty".
-- Support via chat: subject + message (≥50 chars) + optional `.txt` attachment (+ guest name/email if logged out) → confirmation.
+**Shell + "Find a product" implemented 2026-07-11 (see §32).** The remaining three bullets are **deferred**
+by scope decision, not gaps.
+
+- Toggle button visible bottom-right on any page; opening shows menu: Find Product, Order Product, Checkout, Support. **Implemented (§32)** — the real labels are "Find a product" / "Order a product" / "Checkout" / "Create support ticket" (§9).
+- Find Product: search returns ≤5 product cards; "View Product" navigates to detail page. **Implemented (§32)** — there is **no "View Product" button**: the result card is itself the link (§32).
+- Order Product: search → select quantity (preset or custom 1–999) → confirm → product appears in cart. **Deferred.**
+- Checkout via chat: full flow (cart summary → guest details if logged out → address → payment → confirmation with invoice number). **Deferred.**
+- Checkout via chat with empty cart → "Your cart is empty". **Deferred.**
+- Support via chat: subject + message (≥50 chars) + optional `.txt` attachment (+ guest name/email if logged out) → confirmation. **Deferred.**
 
 ### 5.22 Discounts (`tests/ui/discounts.spec.ts`)
 
@@ -1395,3 +1398,50 @@ Deferred (per user scope decision, not gaps): all §5.20 CRUD — product/catego
 detail + status change, user disable/re-enable (which is also the precondition for §5.11's "disabled account"
 bullet), and the admin message reply. The page objects above are the extension points; a CRUD pass must only
 ever touch entities it created itself, and must still never submit `/admin/settings`.
+
+## 32. Chat widget — shell + "Find a product" implementation findings (2026-07-11)
+
+Implemented the first two bullets of §5.21 (`tests/ui/chat-widget.spec.ts`, 5 tests) plus a new
+`src/ui/components/chat-widget.component.ts`. Tagged `@chat @regression` (`@chat` is a new feature tag).
+Every test is a **guest** flow and read-only — no account, cart or order state is touched, so no throwaway
+user is needed (§3). The search term is read off a live product card immediately before searching, never
+hard-coded (§3/§9). See `.ai-docs/chat-widget-find-product-plan.md`.
+
+**The widget is a component, not a page.** `<app-chat-widget>` renders inside `<app-root>` but outside the
+router outlet, so it is present on every page and owns no URL. It is therefore registered directly in
+`page-object.fixture.ts` as `chatWidget` (the first non-page entry there) rather than hanging off a
+`BasePage` subclass or being duplicated per page like `NavbarComponent`'s `bookmarks`.
+
+Confirmed stable `data-test` ids: `chat-toggle` (aria-label "Open chat"), `chat-window`, `chat-close`,
+`chat-action-find-product` / `-order-product` / `-start-checkout` / `-support-ticket` / `-back-to-menu`,
+`chat-input`, `chat-send`, `chat-product`, `chat-file-input`. Message bubbles have **no `data-test`** —
+`.chat-message.bot-message` / `.user-message` wrapping a `.message-content` — and the result cards' name and
+price are the plain classes `.product-name` / `.product-price`, _not_ the grid's `[data-test="product-name"]`
+/ `[data-test="product-price"]`.
+
+**Discrepancies to account for (docs/plan vs. actual):**
+
+- **There is no "View Product" button.** §5.21 AC2 assumes one; the `[data-test="chat-product"]` result card
+  is itself the control and routes to `/product/<id>` on click. Assert against the card, not a button.
+- **The chat search has its own endpoint:** `QUERY /products/search` (the grid uses `/products`). This is the
+  synchronisation point for the reply, and the fifth instance of this suite's recurring pre-load race
+  (§10, §26, §29, §30, §31) — the reply renders from that response, so `searchForProduct()` awaits both the
+  response and the rendered reply (result cards **or** the no-match message, via `.or()`).
+- **The flow allows exactly one search per turn.** Once the reply renders, the `chat-input`/`chat-send` form
+  is **removed from the DOM**; "Back to menu" restarts the flow.
+- **The transcript accumulates and does not survive navigation.** "Back to menu" appends a _second_ greeting
+  (with its own four action buttons) rather than replacing the first, and an earlier search's result cards
+  stay in the DOM — so a page-wide `chat-product` count is only meaningful for one search per page load,
+  which is how the specs are written (and why `menuActionButtons` is scoped to the first bot message).
+  Routing to a product closes the widget and resets the conversation.
+- **The ≤5 result cap is real** but can't be _forced_ from a test without violating §3: proving a >5 truncation
+  needs a hard-coded broad term against the shared catalog. Confirmed manually (a catch-all query returns
+  exactly 5); the spec asserts the cap (`1 ≤ count ≤ 5`) with a live-derived term.
+
+**Validation.** `npm run lint`, `npm run format:check`, `npm run tsc:check` clean. `chat-widget.spec.ts` 5/5
+green, and 10/10 under `--repeat-each=2`. Shared-code regression: the pass touches `page-object.fixture.ts`,
+so the `@smoke` tag was re-run across both projects — **19/19 green**.
+
+Deferred (per user scope decision, not gaps): order-a-product via chat, checkout via chat (happy path and the
+empty-cart case), and the support-ticket flow. `ChatWidgetComponent` is the extension point — the menu action
+locators for all three already exist on it, as does `chat-file-input` for the support-ticket attachment.

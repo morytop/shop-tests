@@ -1,4 +1,5 @@
 import { test as base } from '@playwright/test';
+import { ChatWidgetComponent } from '@src/ui/components/chat-widget.component';
 import { AccountPage } from '@src/ui/pages/account.page';
 import { AdminAverageSalesPerMonthPage } from '@src/ui/pages/admin-average-sales-per-month.page';
 import { AdminAverageSalesPerWeekPage } from '@src/ui/pages/admin-average-sales-per-week.page';
@@ -47,6 +48,9 @@ export type Pages = {
   adminStatisticsPage: AdminStatisticsPage;
   adminUsersPage: AdminUsersPage;
   cartPage: CartPage;
+  // Rendered on every page and owning no URL of its own, so it is injected directly
+  // rather than hanging off one page object (test_plan.md §32).
+  chatWidget: ChatWidgetComponent;
   checkoutAddressPage: CheckoutAddressPage;
   checkoutPaymentPage: CheckoutPaymentPage;
   checkoutSigninPage: CheckoutSigninPage;
@@ -108,6 +112,9 @@ export const pageObjectTest = base.extend<Pages>({
   },
   cartPage: async ({ page }, use) => {
     await use(new CartPage(page));
+  },
+  chatWidget: async ({ page }, use) => {
+    await use(new ChatWidgetComponent(page));
   },
   checkoutAddressPage: async ({ page }, use) => {
     await use(new CheckoutAddressPage(page));

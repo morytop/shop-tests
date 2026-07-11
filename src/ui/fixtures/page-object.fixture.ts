@@ -9,6 +9,8 @@ import { FavoritesPage } from '@src/ui/pages/favorites.page';
 import { ForgotPasswordPage } from '@src/ui/pages/forgot-password.page';
 import { HandToolsPage } from '@src/ui/pages/hand-tools.page';
 import { HomePage } from '@src/ui/pages/home.page';
+import { InvoiceDetailPage } from '@src/ui/pages/invoice-detail.page';
+import { InvoicesPage } from '@src/ui/pages/invoices.page';
 import { LoginPage } from '@src/ui/pages/login.page';
 import { OtherPage } from '@src/ui/pages/other.page';
 import { PowerToolsPage } from '@src/ui/pages/power-tools.page';
@@ -29,6 +31,8 @@ export type Pages = {
   forgotPasswordPage: ForgotPasswordPage;
   handToolsPage: HandToolsPage;
   homePage: HomePage;
+  invoiceDetailPage: InvoiceDetailPage;
+  invoicesPage: InvoicesPage;
   loginPage: LoginPage;
   otherPage: OtherPage;
   powerToolsPage: PowerToolsPage;
@@ -69,6 +73,12 @@ export const pageObjectTest = base.extend<Pages>({
   },
   homePage: async ({ page }, use) => {
     await use(new HomePage(page));
+  },
+  invoiceDetailPage: async ({ page }, use) => {
+    await use(new InvoiceDetailPage(page));
+  },
+  invoicesPage: async ({ page }, use) => {
+    await use(new InvoicesPage(page));
   },
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));

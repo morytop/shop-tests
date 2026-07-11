@@ -2,12 +2,20 @@ import { pageObjectTest } from './page-object.fixture';
 import { faker } from '@faker-js/faker';
 import { makeValidAddress } from '@src/ui/factories/address.factory';
 
+/** The order facts a placed COD order surfaces, for asserting on its invoice. */
+export interface PlacedOrder {
+  invoiceNumber: string;
+  street: string;
+  total: string;
+}
+
 export interface CartActions {
   addProductToCart: (
     index?: number,
     expectedBadgeCount?: string,
   ) => Promise<void>;
   reachPaymentAsGuest: () => Promise<void>;
+  placeCodOrderAsLoggedInUser: () => Promise<PlacedOrder>;
 }
 
 // Extends the page-object fixtures with reusable cross-page arrange flows.
@@ -52,6 +60,47 @@ export const cartActionTest = pageObjectTest.extend<CartActions>({
         address.houseNumber,
       );
       await checkoutAddressPage.proceedToPayment();
+    });
+  },
+  // Place a Cash on Delivery order as a user who is *already logged in* (the spec
+  // registers + logs in a throwaway user first, so the same page context stays
+  // authenticated for the later invoice assertions — the fixture doesn't own auth).
+  // Advances add-to-cart → cart → "already logged in" proceed → billing via the
+  // postcode lookup (the invoice API cross-validates city ↔ country, §18) → COD →
+  // confirm, and returns the order facts the invoice should reflect: the invoice
+  // number (from the confirmation banner), the geocoded street, and the cart total.
+  placeCodOrderAsLoggedInUser: async (
+    {
+      addProductToCart,
+      cartPage,
+      checkoutSigninPage,
+      checkoutAddressPage,
+      checkoutPaymentPage,
+    },
+    use,
+  ) => {
+    await use(async (): Promise<PlacedOrder> => {
+      await addProductToCart();
+      await cartPage.goto();
+      const total = (await cartPage.cartTotal.innerText()).trim();
+
+      await cartPage.proceedToCheckout();
+      await checkoutSigninPage.proceedAsLoggedInUser();
+
+      const address = makeValidAddress();
+      await checkoutAddressPage.fillAddressViaLookup(
+        address.country,
+        address.postalCode,
+        address.houseNumber,
+      );
+      const street = await checkoutAddressPage.streetInput.inputValue();
+      await checkoutAddressPage.proceedToPayment();
+
+      await checkoutPaymentPage.selectPaymentMethod('cash-on-delivery');
+      await checkoutPaymentPage.confirmOrder();
+      const invoiceNumber = await checkoutPaymentPage.readInvoiceNumber();
+
+      return { invoiceNumber, street, total };
     });
   },
 });

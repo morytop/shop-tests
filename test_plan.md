@@ -296,10 +296,12 @@ by scope decision, not gaps.
 
 ### 5.23 Multi-language (`tests/ui/language.spec.ts`)
 
-- Default language selector shows DE/EN/ES/FR/NL/TR options in the nav on any page.
-- Switching language updates visible UI text to the selected language (spot-check a handful of strings, e.g. nav labels).
-- Selected language persists across a reload/new navigation within the same browser context (localStorage).
-- (Optional/best-effort) First-visit browser-language auto-detection and fallback-to-English for unsupported browser locales, using Playwright's `locale` launch option in a fresh context.
+**Implemented 2026-07-11 (see §34)**, except the optional fourth bullet, which is **deferred** by scope decision, not a gap.
+
+- Default language selector shows DE/EN/ES/FR/NL/TR options in the nav on any page. **Implemented (§34)** — the real list is **7 options: DE, EL, EN, ES, FR, NL, TR** (Greek is undocumented, §9).
+- Switching language updates visible UI text to the selected language (spot-check a handful of strings, e.g. nav labels). **Implemented (§34)** — one test per non-English language, asserting all four main-menu labels.
+- Selected language persists across a reload/new navigation within the same browser context (localStorage). **Implemented (§34)** — `localStorage["language"]`, asserted through the visible translated nav rather than the storage key.
+- (Optional/best-effort) First-visit browser-language auto-detection and fallback-to-English for unsupported browser locales, using Playwright's `locale` launch option in a fresh context. **Deferred.**
 
 ### 5.24 Privacy policy (`tests/ui/privacy.spec.ts`)
 
@@ -1518,3 +1520,47 @@ serially or in isolation (e.g. `invoices.spec.ts` takes ~8s/test serially vs. 39
 looks like contention on the shared prod backend — the postcode-lookup geocoder and the invoice API slow down
 under concurrent order placement — rather than a test-side race. Worth a follow-up (cap workers for the
 order-placing specs, or make the checkout arrange steps more patient) if it starts biting CI.
+
+## 34. Multi-language implementation findings (2026-07-11)
+
+Implemented §5.23 (`tests/ui/language.spec.ts`) — the selector's option list, per-language switching, and
+persistence. The optional browser-locale auto-detection bullet is deferred by scope decision.
+
+**§9's language discrepancy re-confirmed, and it is the whole point of the first test.** The selector offers
+**7 options, in this order: `DE, EL, EN, ES, FR, NL, TR`** — Greek is live but absent from the v5 docs' 6-language
+list. The test asserts the exact ordered list, so a drift in either direction fails.
+
+New locators/plumbing, all on `NavbarComponent` (the nav is global, so no new page object was needed):
+`languageSelect` (`[data-test="language-select"]`, a toggle button that also displays the active code), plus
+`languageMenu` / `languageOptions` and a `selectLanguage(code)` action. The dropdown is
+`<ul role="menu" aria-labelledby="language">` → `<li role="menuitem"><a data-test="lang-de">DE</a></li>`. Its
+accessible name resolves to **"Select language"** (from the toggle's `aria-label` via `aria-labelledby`), which is
+what lets `getByRole('menu', { name: 'Select language' }).getByRole('menuitem')` scope the options away from the
+**main menubar's own `menuitem`s** — an unscoped `getByRole('menuitem')` matches both sets. Data lives in
+`src/ui/test-data/language.data.ts` + `src/ui/models/language.model.ts` (code, name, expected nav labels).
+
+**Behavior confirmed live (playwright-cli):**
+
+- Switching is instant client-side i18n; it also flips `<html lang>`. Verified nav labels (Home / Categories /
+  Contact / Sign in): DE `Start / Kategorien / Kontakt / Einloggen`; EL `Αρχική / Κατηγορίες / Επικοινωνία /
+Σύνδεση`; ES `Inicio / Categorías / Contacto / Iniciar sesión`; FR `Accueil / Catégories / Contact / Se
+connecter`; NL `Home / Categorieën / Contact / Inloggen`; TR `Anasayfa / Kategoriler / İletişim / Giriş Yap`.
+- **Dutch translates neither "Home" nor "Contact"** — they are identical to English. A language spot-check that
+  leans on a single nav label would silently pass for NL against an unswitched UI, so the test asserts all four.
+- **The `data-test` ids are language-agnostic** — nothing in the nav's identity changes with the language, so every
+  existing navbar locator (and every other spec) keeps working regardless of the active language.
+- Persistence is `localStorage["language"] = "de"`, surviving both `reload()` and a fresh in-context navigation.
+  Language is per-context and every Playwright test gets its own context, so a switch cannot leak between tests
+  (`fullyParallel`) — and these specs are deliberately **not** `@logged`, so they never touch the shared
+  `storageState` session.
+
+**The home page is too heavy to use as a neutral backdrop for nav-only tests.** The first cut drove all of these
+from `homePage`; under parallel workers against prod, loading the product grid alone consumed most of the 60s test
+budget and three tests died on `Tearing down "context" exceeded the test timeout` (30–50s per test, no assertion at
+fault). Re-anchoring on the **contact** and **login** pages — the AC is "on any page", and both are light forms —
+dropped the same tests to ~9–40s and made them stable. Worth remembering for any future nav/chrome-level spec: pick
+the cheapest page that renders the nav, not the home page.
+
+**Validation.** `lint` / `format:check` / `tsc:check` clean. `language.spec.ts` 8/8 green, and 16/16 under
+`--repeat-each=2`. Shared-code regression (this pass touched `NavbarComponent`, which every page object embeds):
+`@smoke` **19/19 green** across both projects.

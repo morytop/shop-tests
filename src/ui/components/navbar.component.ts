@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test';
+import { LanguageCode } from '@src/ui/models/language.model';
 
 export class NavbarComponent {
   readonly page: Page;
@@ -26,6 +27,9 @@ export class NavbarComponent {
   readonly adminStatisticsNavLink: Locator;
   readonly averageMonthSalesNavLink: Locator;
   readonly averageWeekSalesNavLink: Locator;
+  readonly languageSelect: Locator;
+  readonly languageMenu: Locator;
+  readonly languageOptions: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -82,6 +86,16 @@ export class NavbarComponent {
     this.averageWeekSalesNavLink = this.page.locator(
       '[data-test="nav-average-week-sales"]',
     );
+
+    // Language dropdown: the toggle shows the active code ("EN"), and its menu is
+    // labelled by it (`aria-labelledby`), which scopes the option menuitems away from
+    // the main menubar's own menuitems. The nav's `data-test` ids are language-agnostic,
+    // so every other locator here keeps working after a switch (test_plan.md §34).
+    this.languageSelect = this.page.locator('[data-test="language-select"]');
+    this.languageMenu = this.page.getByRole('menu', {
+      name: 'Select language',
+    });
+    this.languageOptions = this.languageMenu.getByRole('menuitem');
   }
 
   async openCategories(): Promise<void> {
@@ -90,5 +104,16 @@ export class NavbarComponent {
 
   async openUserMenu(): Promise<void> {
     await this.userMenu.click();
+  }
+
+  async openLanguageMenu(): Promise<void> {
+    await this.languageSelect.click();
+  }
+
+  async selectLanguage(code: LanguageCode): Promise<void> {
+    await this.openLanguageMenu();
+    await this.languageOptions
+      .filter({ hasText: new RegExp(`^${code}$`) })
+      .click();
   }
 }

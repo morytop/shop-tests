@@ -18,6 +18,9 @@ export class CartPage extends BasePage {
   readonly productPrices: Locator;
   readonly linePrices: Locator;
   readonly deleteButtons: Locator;
+  readonly cartSubtotal: Locator;
+  readonly cartDiscount: Locator;
+  readonly cartDiscountLabel: Locator;
   readonly cartTotal: Locator;
   readonly proceedButton: Locator;
   readonly emptyCartMessage: Locator;
@@ -39,6 +42,12 @@ export class CartPage extends BasePage {
     // CSS chain scoped to the cart table is the only option (CODING_STANDARDS
     // permits raw CSS when a role/label locator genuinely can't express it).
     this.deleteButtons = this.cartTable.locator('a.btn-danger');
+    // The subtotal/discount breakdown rows exist only while the 15% rental +
+    // non-rental combination discount applies — an undiscounted cart renders
+    // neither (count 0), and shows just the total (test_plan.md §33).
+    this.cartSubtotal = this.page.locator('[data-test="cart-subtotal"]');
+    this.cartDiscount = this.page.locator('[data-test="cart-discount"]');
+    this.cartDiscountLabel = this.page.getByText('Discount (15%)');
     this.cartTotal = this.page.locator('[data-test="cart-total"]');
     this.proceedButton = this.page.locator('[data-test="proceed-1"]');
     this.emptyCartMessage = this.page.getByText(

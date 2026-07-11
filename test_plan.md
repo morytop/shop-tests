@@ -97,9 +97,9 @@ Each area below maps to a spec file under `tests/ui/` and a page object under `s
 - Deleting an item removes it and recalculates the cart total.
 - Empty cart shows "Your shopping cart is empty".
 - "Proceed" is enabled/advances only when cart has ≥1 item.
-- Cart item with a discount shows a discount badge plus original & discounted price.
-- Cart with both a rental and a non-rental item gets an additional 15% combined-product discount, and shows subtotal/discount/total breakdown.
-- Removing all items of one type (all rentals or all non-rentals) removes the 15% combined discount and reverts total.
+- Cart item with a discount shows a discount badge plus original & discounted price. **Unautomatable** — the per-item `is_location_offer` mechanism (§10/§14).
+- Cart with both a rental and a non-rental item gets an additional 15% combined-product discount, and shows subtotal/discount/total breakdown. **Implemented (§33)** — in `discounts.spec.ts` (§5.22), not `cart.spec.ts`.
+- Removing all items of one type (all rentals or all non-rentals) removes the 15% combined discount and reverts total. **Implemented (§33)** — in `discounts.spec.ts`; the subtotal/discount rows are removed from the DOM entirely, not zeroed.
 
 ### 5.6 Checkout — Sign in step (`tests/ui/checkout-signin.spec.ts`)
 
@@ -225,7 +225,7 @@ deferred.
 - After completing a checkout, the invoice appears in the paginated invoice list with correct number/street/date/total. **Implemented (§29)** — number/date/total pinned exactly; the list "Billing Address" column (street only) is a real prod-data inconsistency and is asserted present, not pinned.
 - Invoice detail page shows number/date/total, full billing address, payment method+details, and line items. **Implemented (§29).**
 - Non-existent/foreign invoice ID → "not found" message. **Implemented (§29)** — copy is "This invoice doesn't exist." (a non-existent id is used; a foreign id isn't safely obtainable).
-- Discounted order's invoice shows subtotal/discount %/amount/total, and discounted line items show strikethrough + discounted price. **Deferred** — needs the rental+non-rental combination-discount flow (§5.5 AC7/AC8, still deferred); the `is_location_offer` per-item discount is unautomatable (§10).
+- Discounted order's invoice shows subtotal/discount %/amount/total, and discounted line items show strikethrough + discounted price. **Implemented (§33)** — via the rental+non-rental combination discount, in `discounts.spec.ts` rather than `invoices.spec.ts`. The invoice shows subtotal + discount **amount**; the 15% appears only in the field's label. The "discounted line items show strikethrough" half is **not** this discount — the combination discount is order-level and its line items keep full prices; per-line strikethrough is the unautomatable `is_location_offer` mechanism (§10).
 - "Download PDF" is disabled while generating, then enabled and triggers a real file download once ready (poll, allow for the ~20s status check). **Deferred** — best-effort/manual per §9; `[data-test="download-invoice"]` exists on the detail page for a future pass.
 
 ### 5.18 Messages (`tests/ui/messages.spec.ts`)
@@ -291,8 +291,8 @@ by scope decision, not gaps.
 
 ### 5.22 Discounts (`tests/ui/discounts.spec.ts`)
 
-- Combination discount (rental + non-rental in cart) — covered primarily in 5.5, cross-checked here through to invoice (5.17 AC4).
-- Location-based discount: best-effort using Playwright's `geolocation`/`locale` context options or a mocked geolocation API response, for at least one supported city (e.g. London 25%); explicitly note if the app determines location via IP (not overridable client-side) — if so, mark this test **manual/exploratory only** and document why automation is unreliable.
+- Combination discount (rental + non-rental in cart) — covered primarily in 5.5, cross-checked here through to invoice (5.17 AC4). **Implemented (§33)** — all three tests live here rather than in `cart.spec.ts`, since the discount is one mechanism: cart breakdown (§5.5 AC7), its removal (§5.5 AC8), and the invoice cross-check (§5.17 AC4).
+- Location-based discount: best-effort using Playwright's `geolocation`/`locale` context options or a mocked geolocation API response, for at least one supported city (e.g. London 25%); explicitly note if the app determines location via IP (not overridable client-side) — if so, mark this test **manual/exploratory only** and document why automation is unreliable. **Confirmed manual/exploratory only (§10/§33)** — the app determines eligibility server-side from the request IP (`is_location_offer`), so it is not overridable client-side; §10 empirically disproved the geolocation-mocking approach. It ships as a permanently-skipped test carrying that explanation, so the gap stays visible in the suite.
 
 ### 5.23 Multi-language (`tests/ui/language.spec.ts`)
 
@@ -443,9 +443,10 @@ Both the quantity-updated and item-deleted confirmations are ngx-toastr `.toast-
   arithmetic read back from the DOM, e.g. qty 1→3 on a $14.15 item → `$42.45`).
 
 Deferred (per user scope decision, not gaps): **AC6** per-item discount badge — the same unautomatable
-server/IP-side `is_location_offer` mechanism as §10/§12; **AC7/AC8** the 15% rental+non-rental combination
-discount and its removal — deterministic and automatable, left for a follow-up pass that would extend the same
-`CartPage`.
+server/IP-side `is_location_offer` mechanism as §10/§12. **Update 2026-07-11 (§33): AC7/AC8** (the 15%
+rental+non-rental combination discount and its removal) are now **implemented**, extending this same `CartPage`
+as anticipated — but they live in `tests/ui/discounts.spec.ts` (§5.22) rather than `cart.spec.ts`, to keep the
+whole discount mechanism in one file.
 
 ## 15. Checkout sign-in step implementation findings (2026-07-07)
 
@@ -1234,9 +1235,11 @@ the city ↔ country pair is orderable (§18); products chosen dynamically (§3,
 the extended `CheckoutPaymentPage`) and `checkout-payment.spec.ts` (17/17, exercises the extended
 `cart-action.fixture`) both green serially.
 
-Deferred (not gaps): **AC4** discounted invoice (needs the §5.5 AC7/AC8 combination-discount flow, still deferred;
-the `is_location_offer` per-item discount is unautomatable, §10) and **AC5** PDF download (best-effort/manual, §9;
-`[data-test="download-invoice"]` is present on the detail page for a future pass).
+Deferred (not gaps): **AC5** PDF download (best-effort/manual, §9; `[data-test="download-invoice"]` is present on
+the detail page for a future pass). **AC4** discounted invoice is no longer deferred — **implemented 2026-07-11
+(§33)** in `discounts.spec.ts`, on the back of the now-implemented §5.5 AC7/AC8 combination-discount flow. Note it
+forced a fix to `InvoiceDetailPage.total`: a discounted invoice renders **three** inputs sharing
+`data-test="total"`, so that locator now targets `#total` (§33).
 
 ## 30. Messages implementation findings (2026-07-11)
 
@@ -1445,3 +1448,73 @@ so the `@smoke` tag was re-run across both projects — **19/19 green**.
 Deferred (per user scope decision, not gaps): order-a-product via chat, checkout via chat (happy path and the
 empty-cart case), and the support-ticket flow. `ChatWidgetComponent` is the extension point — the menu action
 locators for all three already exist on it, as does `chat-file-input` for the support-ticket attachment.
+
+## 33. Discounts implementation findings (2026-07-11)
+
+Implemented §5.22 (`tests/ui/discounts.spec.ts`), which also closes **§5.5 AC7/AC8** (cart combination discount +
+its removal) and **§5.17 AC4** (discounted invoice). All three live in this one spec because they are the same
+mechanism observed at three points, rather than being split across `cart.spec.ts`/`invoices.spec.ts`.
+
+**The 15% combination discount is fully automatable and deterministic** — unlike every other "discount" in the
+app. A cart holding both a rental and a non-rental item earns it, and it is applied **client-side and visible on
+the `/checkout` cart step**; no order needs to be placed to observe it. Verified live: `$14.15` product +
+`$136.50/h` rental → `Subtotal $150.65` / `Discount (15%) - $22.60` / `Total $128.05`.
+
+New locators/plumbing: `CartPage` gained `cartSubtotal` / `cartDiscount` / `cartDiscountLabel`
+(`[data-test="cart-subtotal"]`, `[data-test="cart-discount"]` — both clean); `InvoiceDetailPage` gained
+`subtotal` / `discount` / `discountLabel`; the `cartActionTest` fixture gained **`addRentalToCart`** (the
+`/rentals` listing is a distinct component, §13, so the existing `addProductToCart` can't reach a rental), and
+`placeCodOrderAsLoggedInUser` was split so its checkout half (**`placeCodOrderFromCart`**) can be reused against a
+cart the test seeded itself — the discounted cart needs two specific item types, so seeding had to move out.
+
+**Discrepancies to account for (docs/prod vs. actual):**
+
+- **The invoice detail page reuses `data-test="total"` on three different inputs** (subtotal, discount, grand
+  total). On a **discounted** invoice `[data-test="total"]` therefore matches 3 elements and fails Playwright's
+  strict mode — this is why `InvoiceDetailPage.total` had to be retargeted to **`#total`**. The three are
+  distinguishable only by `id`: `#subtotal`, `#additional_discount_percentage`, `#total`. (An undiscounted invoice
+  renders exactly one such input, still `id="total"`, so `invoices.spec.ts` AC1–AC3 are unaffected — re-verified.)
+- **`getByLabel` is unusable for these three fields**: all three of their `<label for>` attributes point at
+  `"total"`, so `getByLabel('Subtotal')` resolves to the _grand total_ input. The subtotal/discount inputs
+  effectively have no accessible name — an a11y defect worth reporting upstream, and the reason the page object
+  uses id selectors here.
+- **`#additional_discount_percentage` holds an amount, not a percentage** (`$ 22.60`). The **15% is only ever in
+  the label text** (`Discount (15%)`), on both the cart and the invoice — so §5.17 AC4's "discount %" is asserted
+  on the label, not on a value.
+- **The combination discount is order-level, not per-line.** The discounted invoice's line items keep their full
+  undiscounted prices; there is no strikethrough or discounted line price anywhere. §5.17 AC4's "discounted line
+  items show strikethrough" describes the _other_, unautomatable `is_location_offer` discount (§10) — the two ACs
+  conflate two different mechanisms.
+- **The subtotal/discount rows are conditional, not zeroed.** On an undiscounted cart `cart-subtotal` and
+  `cart-discount` do not exist at all (count 0), and only the total renders. AC8 is asserted as their _absence_.
+- **Rounding direction can't be pinned from the UI.** `150.65 × 0.15 = 22.5975` displays as `- $22.60`, and both
+  "subtotal − rounded discount" and "round(subtotal × 0.85)" yield the observed `128.05`. The tests therefore read
+  the amounts back from the DOM and assert the _relationships_ (`toBeCloseTo(…, 2)`: discount ≈ 15% of subtotal;
+  total ≈ subtotal − discount) rather than reconstructing literals — no hard-coded prices either way (§3, §9).
+- Money formats differ per surface: cart `$150.65` and `- $22.60`, invoice detail `$ 150.65` (space after `$`),
+  invoice list `$128.05`. `parsePrice()` was generalized to strip any non-digit/non-dot characters so it tolerates
+  the cart discount's leading `- ` (previously it only stripped `$`, and would have returned `NaN`).
+
+**Location-based discount (§5.22 AC2) — permanently skipped, by design.** It ships as a `test.skip` carrying the
+full explanation, so the AC stays visible in the suite instead of silently disappearing. Eligibility is decided
+**server-side from the request IP** via the product's `is_location_offer` flag; §10 already mocked the browser
+`geolocation` context to London for an `is_location_offer: true` product and saw no discounted price. The browser
+Geolocation API simply isn't the input, so no client-side mocking can trigger it from a non-eligible CI/dev IP.
+Note this required a **narrowly-scoped `eslint-disable`** for `playwright/no-skipped-test` +
+`playwright/expect-expect` (the repo lints at `--max-warnings=0`, which otherwise forbids any skipped test). The
+disable is deliberate and commented in place: this skip is a permanent marker for an unsatisfiable AC, not a
+temporarily-disabled test — worth a team decision on whether that convention is wanted.
+
+**Validation.** `lint` / `format:check` / `tsc:check` clean. `discounts.spec.ts` 3 passed + 1 skipped. Shared-code
+regression (this pass touched `CartPage`, `InvoiceDetailPage`, `parsePrice`, and `cart-action.fixture`):
+`invoices.spec.ts` 3/3, `cart.spec.ts` 5/5, `rentals.spec.ts` 3/3, `checkout-e2e.spec.ts` 2/2 green, and `@smoke`
+19/19 green.
+
+**Pre-existing flakiness observed (not a regression, but worth recording).** Running many checkout-touching specs
+in parallel (9 files, 4 workers) against shared production intermittently fails 1–2 tests — seen on
+`checkout-e2e` `@logged`, `checkout-address` `@logged`, and `invoices`. It reproduces **on a clean tree with no
+changes applied** (verified by stashing), the failing set differs run to run, and every affected test passes
+serially or in isolation (e.g. `invoices.spec.ts` takes ~8s/test serially vs. 39s–1.1m when failing). The cause
+looks like contention on the shared prod backend — the postcode-lookup geocoder and the invoice API slow down
+under concurrent order placement — rather than a test-side race. Worth a follow-up (cap workers for the
+order-placing specs, or make the checkout arrange steps more patient) if it starts biting CI.

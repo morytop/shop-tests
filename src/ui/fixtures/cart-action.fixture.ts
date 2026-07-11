@@ -14,7 +14,12 @@ export interface CartActions {
     index?: number,
     expectedBadgeCount?: string,
   ) => Promise<void>;
+  addRentalToCart: (
+    index?: number,
+    expectedBadgeCount?: string,
+  ) => Promise<void>;
   reachPaymentAsGuest: () => Promise<void>;
+  placeCodOrderFromCart: () => Promise<PlacedOrder>;
   placeCodOrderAsLoggedInUser: () => Promise<PlacedOrder>;
 }
 
@@ -24,6 +29,10 @@ export interface CartActions {
 //   badge to reach `expectedBadgeCount` (the running cart total, so a second add in
 //   the same test awaits '2', not '1'). Opening the cart / proceeding to checkout
 //   stays in the test, since where those happen varies per case.
+// - addRentalToCart: the same, from the /rentals listing. A rental is a distinct
+//   listing component (§13) but shares the product detail page, so this is the only
+//   way to get a rental into the cart — which the 15% rental + non-rental combination
+//   discount needs (§33). Pairs with addProductToCart to build a discounted cart.
 // - reachPaymentAsGuest: advance a guest all the way to the Payment step of the
 //   wizard (add to cart → cart → Continue as Guest → fill a valid billing address →
 //   proceed). Composes several page objects, so it belongs in an action fixture
@@ -37,6 +46,13 @@ export const cartActionTest = pageObjectTest.extend<CartActions>({
     await use(async (index = 0, expectedBadgeCount = '1'): Promise<void> => {
       await homePage.goto();
       await homePage.clickProductCard(index);
+      await productDetailPage.addToCartAndAwaitBadge(expectedBadgeCount);
+    });
+  },
+  addRentalToCart: async ({ rentalsPage, productDetailPage }, use) => {
+    await use(async (index = 0, expectedBadgeCount = '1'): Promise<void> => {
+      await rentalsPage.goto();
+      await rentalsPage.clickRentalCard(index);
       await productDetailPage.addToCartAndAwaitBadge(expectedBadgeCount);
     });
   },
@@ -62,25 +78,20 @@ export const cartActionTest = pageObjectTest.extend<CartActions>({
       await checkoutAddressPage.proceedToPayment();
     });
   },
-  // Place a Cash on Delivery order as a user who is *already logged in* (the spec
-  // registers + logs in a throwaway user first, so the same page context stays
-  // authenticated for the later invoice assertions — the fixture doesn't own auth).
-  // Advances add-to-cart → cart → "already logged in" proceed → billing via the
-  // postcode lookup (the invoice API cross-validates city ↔ country, §18) → COD →
-  // confirm, and returns the order facts the invoice should reflect: the invoice
-  // number (from the confirmation banner), the geocoded street, and the cart total.
-  placeCodOrderAsLoggedInUser: async (
-    {
-      addProductToCart,
-      cartPage,
-      checkoutSigninPage,
-      checkoutAddressPage,
-      checkoutPaymentPage,
-    },
+  // Place a Cash on Delivery order from whatever is *already* in the cart, as a user
+  // who is already logged in (the spec registers + logs in a throwaway user first, so
+  // the same page context stays authenticated for the later invoice assertions — the
+  // fixture doesn't own auth). Advances cart → "already logged in" proceed → billing
+  // via the postcode lookup (the invoice API cross-validates city ↔ country, §18) →
+  // COD → confirm, and returns the order facts the invoice should reflect: the invoice
+  // number (from the confirmation banner), the geocoded street, and the cart total —
+  // which is the *discounted* total when the cart holds a rental + non-rental (§33).
+  // Seeding is the caller's job, so a discounted cart can reuse the same flow.
+  placeCodOrderFromCart: async (
+    { cartPage, checkoutSigninPage, checkoutAddressPage, checkoutPaymentPage },
     use,
   ) => {
     await use(async (): Promise<PlacedOrder> => {
-      await addProductToCart();
       await cartPage.goto();
       const total = (await cartPage.cartTotal.innerText()).trim();
 
@@ -101,6 +112,18 @@ export const cartActionTest = pageObjectTest.extend<CartActions>({
       const invoiceNumber = await checkoutPaymentPage.readInvoiceNumber();
 
       return { invoiceNumber, street, total };
+    });
+  },
+  // The common single-product case: seed the cart with one non-rental product, then
+  // place the order. An undiscounted cart, so the returned total is the plain sum.
+  placeCodOrderAsLoggedInUser: async (
+    { addProductToCart, placeCodOrderFromCart },
+    use,
+  ) => {
+    await use(async (): Promise<PlacedOrder> => {
+      await addProductToCart();
+
+      return placeCodOrderFromCart();
     });
   },
 });

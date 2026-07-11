@@ -251,15 +251,31 @@ session user.
 
 ### 5.20 Admin dashboard (`tests/admin/*.spec.ts`) — smoke-level only, tagged `@admin`
 
-- Admin login lands on `/admin/dashboard` with sales chart + recent invoices list.
-- Products: list loads; create/edit/delete a **test-created** product only (never touch existing catalog products) round-trips correctly.
-- Categories/Brands: same create/edit/delete pattern using disposable test entities.
-- Orders: list loads, detail view opens, status can be changed among the 5 defined values for a test-generated order.
-- Users: list loads; disabling a **test-created** user immediately blocks their login, re-enabling restores it.
-- Messages management: admin can view and reply to a message (use a message created earlier by the test's own contact-form submission).
-- Reports: monthly/weekly/general statistics sections render without error.
+**Read-only smoke sweep implemented 2026-07-11 (see §31)** — `tests/admin/dashboard.spec.ts` (4 tests) and
+`tests/admin/sections.spec.ts` (10 tests). The seeded admin is now wired in via `ADMIN_EMAIL`/`ADMIN_PASSWORD`
+in `.env` (`adminUser` in `user.data.ts`). Every CRUD bullet below remains **deferred**.
+
+- Admin login lands on `/admin/dashboard` with sales chart + recent invoices list. **Implemented (§31)** —
+  tagged `@smoke` (this is §4's "one admin login check"). The recent-invoices list renders "No recent invoices."
+  _while loading_ and can also be legitimately empty (it filters to `AWAITING_FULFILLMENT`), so the spec asserts
+  the list resolved, never a row count.
+- Products: list loads; create/edit/delete a **test-created** product only (never touch existing catalog products) round-trips correctly. **List load implemented (§31); CRUD deferred.**
+- Categories/Brands: same create/edit/delete pattern using disposable test entities. **List loads implemented (§31); CRUD deferred.**
+- Orders: list loads, detail view opens, status can be changed among the 5 defined values for a test-generated order. **List load implemented (§31); detail + status change deferred.**
+- Users: list loads; disabling a **test-created** user immediately blocks their login, re-enabling restores it. **List load implemented (§31); disable/re-enable deferred** (it is also the precondition for §5.11's "disabled account" bullet).
+- Messages management: admin can view and reply to a message (use a message created earlier by the test's own contact-form submission). **List load implemented (§31); admin reply deferred** — note a customer can already reply to their own thread with no admin involvement (§30).
+- Reports: monthly/weekly/general statistics sections render without error. **Implemented (§31)** — these are
+  **three separate pages** (`/admin/reports/statistics`, `.../average-sales-per-month`, `.../average-sales-per-week`),
+  not three sections of one Reports page.
+- Settings (`/admin/settings`, undocumented in v5 — §9): page loads. **Implemented (§31).** ⚠ Never submitted —
+  the form rewrites **app-wide** configuration for every user of the shared demo site.
+- Non-admin users are redirected away from `/admin/dashboard` (to `/auth/login`). **Implemented (§31).**
 
 > Admin CRUD tests must only ever create, modify, or delete entities the test itself created — production catalog/order/user data must not be mutated by automated tests.
+>
+> **The seeded admin account itself is read-only fixture data (§3).** It is shared with every user of the public
+> demo site, so admin specs may sign in, navigate and assert — but must never submit a form, and must never send
+> a wrong password (3 failed attempts lock an account permanently, §20).
 
 ### 5.21 Chat widget (`tests/ui/chat-widget.spec.ts`)
 
@@ -1285,3 +1301,97 @@ Messages — so "the favorites page is not linked from the account dashboard" (�
 **Validation.** `npm run lint`, `npm run format:check` and `npm run tsc:check` clean. `messages.spec.ts` 3/3 green,
 and 6/6 under `--repeat-each=2`; the `@smoke` tag 18/18 green (it exercises `contact.page.ts`'s other consumer, the
 navbar/menu smoke spec).
+
+## 31. Admin dashboard smoke implementation findings (2026-07-11)
+
+Implemented the **read-only smoke sweep** of §5.20 — the first tests under `tests/admin/`
+(`dashboard.spec.ts`, 4 tests; `sections.spec.ts`, 10 tests), tagged `@admin` (the admin login check also
+carries `@smoke`, per §4's "one admin login check"). Every §5.20 CRUD bullet stays deferred by scope decision,
+not by blocker. New: `AdminPage` (abstract, holds the one locator common to the whole back office) →
+`AdminListPage` (abstract, the six list sections) and `AdminSalesReportPage` (abstract, the two chart reports),
+plus 11 concrete page objects registered in `src/ui/fixtures/page-object.fixture.ts`; a `loginAsAdmin()` action
+fixture (`src/ui/fixtures/admin-action.fixture.ts`, merged in `src/merge.fixture.ts`); `ADMIN_*` routes in
+`page-urls.ts`; the account dropdown + admin links on `NavbarComponent`. See
+`.ai-docs/admin-dashboard-smoke-plan.md`.
+
+**The seeded admin is now wired into config — and is read-only fixture data.** `ADMIN_EMAIL`/`ADMIN_PASSWORD`
+are new fail-fast vars in `config/env.config.ts` (`.env-template` updated; `adminUser` in
+`src/ui/test-data/user.data.ts`). The values are the documented defaults —
+`admin@practicesoftwaretesting.com` / `welcome01`
+(https://testsmith-io.github.io/practice-software-testing/#/?id=default-accounts, verified 2026-07-11; the same
+page also documents `customer@` / `welcome01`, i.e. `testUser1`). Two standing constraints on every admin spec:
+
+- 🚨 **Never submit anything as admin.** The account is shared with every user of the public demo site (§3).
+  These 14 tests sign in, navigate and assert — no create/edit/delete, no order status change, no user disable.
+  The `/admin/settings` form is the sharpest edge: it rewrites **app-wide** configuration (payment endpoint,
+  geolocation, CO₂ scale, eco badge) for everyone, so the spec asserts its controls exist and never touches them.
+- 🚨 **Never send the admin a wrong password.** Lockout is real, account-scoped and permanent at the 3rd failed
+  attempt (§20). No admin negative-login test exists, and the non-admin redirect test uses a **throwaway
+  API-registered user** rather than the seeded `customer@`, so no shared account is driven at all.
+
+**This closes §22's AC4 blocker** ("no admin password exists in `.env`, `.env-template`, or the test data, and
+guessing one risks permanently locking a shared admin account"). The credential now exists in config, so §5.13
+AC4's `admin@` TOTP-denial half is automatable if someone wants it — though §22's reasoning still holds that it
+adds no behavioural coverage over the `customer@` test (both emails hit one hardcoded 403 branch).
+
+**Confirmed contract (live).**
+
+- **There is no `/admin/reports` page.** §5.20's single "Reports" bullet is three separate routes:
+  `/admin/reports/statistics` (the "general" one), `/admin/reports/average-sales-per-month`,
+  `/admin/reports/average-sales-per-week`. Statistics renders four `<h4>` sections over four tables (Top 10 Best
+  Selling Categories, Top 10 Most Purchased Products, Customers By Country, Total Sales Per Country); the two
+  average-sales pages render a `[data-test="year"]` select over a bare `<canvas>`.
+- **Every admin page renders exactly one `<h1 data-test="page-title">`** — the one locator common to the whole
+  area, and what `AdminPage` is built on.
+- **Navigation confirms §9: the sections live in the collapsed account dropdown** (`[data-test="nav-menu"]`,
+  labelled with the admin's name, "John Doe"), not a sidebar. The links are in the DOM but hidden until it is
+  opened. `dashboard.spec.ts` asserts the dropdown links to all 11 sections + sign-out; the section specs then
+  navigate by direct URL.
+- **`data-test` ids:** `nav-admin-{dashboard,brands,categories,products,orders,users,messages,settings,statistics}`,
+  `nav-average-{month,week}-sales`, `nav-sign-out`. The six list sections are one `table.table-hover` each, with
+  **no `data-test` on the table, rows or cells** (same shape as the customer invoices/messages lists, §29/§30),
+  so rows and headers are located structurally by role. Column headers:
+
+  | Section    | Headers                                                                 |
+  | ---------- | ----------------------------------------------------------------------- |
+  | Brands     | `Id / Name / Slug / ""`                                                 |
+  | Categories | `Id / Parent_id / Name / Slug / ""`                                     |
+  | Products   | `Id / Name / Stock / Price / ""`                                        |
+  | Orders     | `Invoice Number / Billing Address / Invoice Date / Status / Total / ""` |
+  | Users      | `Id / Name / Email / ""`                                                |
+  | Messages   | `Name / Subject / Status / Date` — the only one with no actions column  |
+
+**Discrepancies to account for (docs/plan vs. actual production):**
+
+- **The dashboard's page title is "Sales over the years"** (the chart's own heading), not "Dashboard" — only the
+  `document.title` says `Dashboard - …`.
+- **The orders list's page title is the singular "Order"**, while its `document.title` and menu entry both say
+  "Orders". Pinned as-is in the spec.
+- 🚨 **The dashboard renders "No recent invoices." while `GET /invoices` is still in flight** — the fourth
+  instance of the same pre-load race (favorites §26, invoices §29, messages §30). A naive assertion passes
+  against the loading state. `AdminDashboardPage.gotoAndAwaitLoaded()` awaits the response. The list is
+  additionally filtered to `in=status,AWAITING_FULFILLMENT`, so it can be **legitimately empty** on shared prod
+  data — the spec asserts `latestOrdersTable.or(noRecentInvoicesMessage)` is visible (the list _resolved_),
+  rather than demanding rows (§3).
+- **A logged-in non-admin hitting `/admin/dashboard` is redirected to `/auth/login`**, not to `/account`. §9 only
+  recorded "redirected away"; the target is now pinned.
+- **Row action `data-test` ids are inconsistently ordered:** brands use `brand-<ULID>-edit`/`-delete`, while
+  categories/products/orders/users use `category-edit-<ULID>` etc. (verb before id). Not modelled in this
+  read-only pass; worth knowing for the deferred CRUD pass, which would otherwise write one helper that silently
+  misses brands.
+
+**Row assertions and shared data.** Each list test asserts its first row is visible — it is what proves the
+fetch landed rather than just the empty shell. No count, name, id or price is pinned (§3). This takes a seeded
+demo shop to have ≥1 brand/category/product/user/order/message, which is true in production and is arguably a
+state worth failing on if it ever isn't.
+
+**Validation.** `npm run lint`, `npm run format:check` and `npm run tsc:check` clean. `tests/admin/` 14/14 green
+both serially and under the default parallel worker count (concurrent logins as the same admin do not interfere
+— login is per-context). Shared-code regression: the sweep touches `env.config.ts`, `user.data.ts`,
+`navbar.component.ts`, `page-object.fixture.ts` and `merge.fixture.ts`, so the `@smoke` tag was re-run across
+both projects: **19/19 green** (18 pre-existing + the new admin login check).
+
+Deferred (per user scope decision, not gaps): all §5.20 CRUD — product/category/brand create-edit-delete, order
+detail + status change, user disable/re-enable (which is also the precondition for §5.11's "disabled account"
+bullet), and the admin message reply. The page objects above are the extension points; a CRUD pass must only
+ever touch entities it created itself, and must still never submit `/admin/settings`.

@@ -18,3 +18,9 @@ export const BASE_URL = requireEnvVariable('BASE_URL');
 export const API_URL = requireEnvVariable('API_URL');
 export const USER_EMAIL = requireEnvVariable('USER_EMAIL');
 export const USER_PASSWORD = requireEnvVariable('USER_PASSWORD');
+
+// The seeded admin account. It is shared with every other user of the public demo
+// site and must only ever be driven read-only (test_plan.md §3) — and never with a
+// wrong password: lockout triggers on the 3rd failed attempt and is permanent (§20).
+export const ADMIN_EMAIL = requireEnvVariable('ADMIN_EMAIL');
+export const ADMIN_PASSWORD = requireEnvVariable('ADMIN_PASSWORD');

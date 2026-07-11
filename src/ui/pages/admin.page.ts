@@ -6,7 +6,7 @@ import { NavbarComponent } from '@src/ui/components/navbar.component';
  * Shared shell of every page in the admin back office. All of them — dashboard, the six
  * list sections, settings and the three report pages — render exactly one
  * `<h1 data-test="page-title">`, which is the only locator common to the whole area and
- * the anchor for the smoke sweep (test_plan.md §31).
+ * the anchor for the smoke sweep (TEST_PLAN.md §31).
  *
  * Admin pages are entered by direct URL: the section links live in the collapsed account
  * dropdown (`NavbarComponent.userMenu`), not a sidebar (§9).

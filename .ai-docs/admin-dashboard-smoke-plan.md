@@ -2,11 +2,11 @@
 
 **Status:** ✅ COMPLETED 2026-07-11 — ready for review. 14 tests green (`tests/admin/dashboard.spec.ts` 4,
 `tests/admin/sections.spec.ts` 10), serially and in parallel; `@smoke` 19/19; lint/format/tsc clean. Findings
-written up as `test_plan.md` §31; §5.20 status notes updated. All §5.20 CRUD remains deferred by scope decision.
+written up as `TEST_PLAN.md` §31; §5.20 status notes updated. All §5.20 CRUD remains deferred by scope decision.
 
 ## Goal
 
-Implement the **read-only smoke sweep** of `test_plan.md` §5.20 (Admin dashboard) under `tests/admin/`,
+Implement the **read-only smoke sweep** of `TEST_PLAN.md` §5.20 (Admin dashboard) under `tests/admin/`,
 tagged `@admin`. Confirmed scope with the user (2026-07-11):
 
 1. Admin login lands on `/admin/dashboard` and the dashboard renders (sales chart + recent invoices list).
@@ -138,7 +138,7 @@ AC4 for `admin@` stays out of scope here — it is a §5.13 item, not §5.20.
    - `src/ui/pages/admin-dashboard.page.ts` (+ any further admin page objects the sweep needs), registered in
      `src/ui/fixtures/page-object.fixture.ts`.
    - `tests/admin/dashboard.spec.ts` — the sweep, tagged `@admin @smoke`/`@regression` per the §3 taxonomy.
-6. Update `test_plan.md`: §5.20 status note + a new numbered findings section (§31) with any doc/behavior
+6. Update `TEST_PLAN.md`: §5.20 status note + a new numbered findings section (§31) with any doc/behavior
    discrepancies found; correct §22's "no admin password exists in config" note if the env vars land.
 7. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run `tests/admin/`, and re-run `@smoke`
    (the sweep touches shared `user.data.ts` / `env.config.ts` / `page-object.fixture.ts`).

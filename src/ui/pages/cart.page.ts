@@ -44,7 +44,7 @@ export class CartPage extends BasePage {
     this.deleteButtons = this.cartTable.locator('a.btn-danger');
     // The subtotal/discount breakdown rows exist only while the 15% rental +
     // non-rental combination discount applies — an undiscounted cart renders
-    // neither (count 0), and shows just the total (test_plan.md §33).
+    // neither (count 0), and shows just the total (TEST_PLAN.md §33).
     this.cartSubtotal = this.page.locator('[data-test="cart-subtotal"]');
     this.cartDiscount = this.page.locator('[data-test="cart-discount"]');
     this.cartDiscountLabel = this.page.getByText('Discount (15%)');

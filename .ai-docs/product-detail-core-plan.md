@@ -1,4 +1,4 @@
-# Plan: Product Detail — core (test_plan.md §5.3, `tests/product-detail.spec.ts`)
+# Plan: Product Detail — core (TEST_PLAN.md §5.3, `tests/product-detail.spec.ts`)
 
 ## Goal
 
@@ -66,7 +66,7 @@ In scope this pass:
    - Register in `src/fixtures/pages.ts` (type + export).
    - Cart badge locator likely belongs on `NavbarComponent` (shared header) — add there if so.
    - `tests/product-detail.spec.ts` — AAA, tags per §3, reference §5.3 / v5 AC in a describe comment.
-6. [ ] Step 6: update `test_plan.md` (new implementation-findings section + any doc/behavior discrepancy).
+6. [ ] Step 6: update `TEST_PLAN.md` (new implementation-findings section + any doc/behavior discrepancy).
 7. [ ] Step 7: validate — `npm run lint`, `npm run format:check`, run the new spec + `@smoke`; run listing specs if `ProductListPage`/navbar touched.
 8. [ ] Step 8: report + mark this plan complete.
 
@@ -74,7 +74,7 @@ In scope this pass:
 
 - [x] Step 0 scope confirmed (Core, defer rental+favorites); [x] Step 1 plan; [x] Step 2 live exploration; [x] Step 3 assumptions confirmed.
 - [x] Step 5 implemented: `src/pages/product-detail.page.ts`, `NavbarComponent` cart locators, `PAGE_URLS.PRODUCT`, fixtures registration, `tests/product-detail.spec.ts`.
-- [x] Step 6 `test_plan.md` updated (new §12 + clamp/price/badge discrepancies).
+- [x] Step 6 `TEST_PLAN.md` updated (new §12 + clamp/price/badge discrepancies).
 - [x] Step 7 validated.
 
 ### Final test set (6 tests, all green)

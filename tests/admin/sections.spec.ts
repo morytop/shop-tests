@@ -1,6 +1,6 @@
 import { expect, test } from '@src/merge.fixture';
 
-// User Stories v5 — Admin dashboard (test_plan.md §5.20), smoke level only. One test per
+// User Stories v5 — Admin dashboard (TEST_PLAN.md §5.20), smoke level only. One test per
 // admin section, asserting it loads for an admin and renders its own shell: the page
 // title, and the list's column headers / the report's chart. CRUD (create/edit/delete a
 // test-created product, category, brand or user, order status changes, admin message

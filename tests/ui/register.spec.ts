@@ -2,13 +2,13 @@ import { registerUserWithApi } from '@src/api/factories/user-register.api.factor
 import { expect, test } from '@src/merge.fixture';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 
-// User Stories v5 — Registration (test_plan.md §5.10). The register form is one
+// User Stories v5 — Registration (TEST_PLAN.md §5.10). The register form is one
 // Angular reactive form built with `updateOn: 'blur'`, so validators, the inline
 // error blocks and the password requirements-list highlighting only recompute once
 // focus leaves a field — and every error block is additionally gated behind a
 // submit (`@if (f['x'].invalid && submitted)`), so there is no live per-field
 // validation before the first submit. Behaviour and exact copy were verified against
-// the live site and the sprint5 source; see test_plan.md §19 for the confirmed
+// the live site and the sprint5 source; see TEST_PLAN.md §19 for the confirmed
 // production discrepancies (broken strength meter, duplicate-email copy). Users are
 // generated per-test with faker (§3); see .ai-docs/register-validation-plan.md.
 
@@ -160,7 +160,7 @@ test.describe('Verify register @register', () => {
   );
 
   // AC3 — the strength indicator is BROKEN in production and this pins that behaviour
-  // (test_plan.md §19). The template updates it on the input event but reads the
+  // (TEST_PLAN.md §19). The template updates it on the input event but reads the
   // control's value, which — because the form is `updateOn:'blur'` — is still stale
   // at that moment, so `passwordStrength()` always sees the empty pre-blur value:
   // the bar never leaves 0% and no strength label ever activates, even for a fully

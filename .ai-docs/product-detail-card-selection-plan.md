@@ -2,7 +2,7 @@
 
 ## Goal
 
-Fix the suite weakness recorded in `test_plan.md` §26/§27: three tests in `tests/ui/product-detail.spec.ts` reach for
+Fix the suite weakness recorded in `TEST_PLAN.md` §26/§27: three tests in `tests/ui/product-detail.spec.ts` reach for
 `clickProductCard(0)` and then drive **cart** controls, so they break whenever another engineer mutates a product to
 the front of the shared grid (exactly what happened with `UpdatedProduct-test_products`, an out-of-stock item that
 disabled the cart controls, then reverted on its own).
@@ -61,7 +61,7 @@ AC. Scope confirmed by the user: these three tests only.
    back into this file.
 4. Design sign-off via plan mode (touches a shared base page object + rewrites three existing tests).
 5. Implement the locator/method on `ProductListPage`; rewrite the three tests' Arrange to use it.
-6. Update `test_plan.md`: close the §26 follow-up note, record the outcome.
+6. Update `TEST_PLAN.md`: close the §26 follow-up note, record the outcome.
 7. Validate: `lint`, `format:check`, `tsc:check`; run all of `product-detail.spec.ts`; **prove the fix** by simulating
    an unsuitable first card; re-run the specs sharing `ProductListPage`.
 8. New branch → conventional commit → PR.
@@ -126,7 +126,7 @@ assert that `findInStockCardAcrossPages()` + `inStockCard` select a _different_ 
 **COMPLETED 2026-07-09 — ready for review.** A1–A4 resolved, design signed off, all three tests converted.
 
 Files touched: `src/ui/pages/product-list.page.ts` (`inStockCard` + `findInStockCardAcrossPages()`, additive),
-`tests/ui/product-detail.spec.ts` (three Arrange blocks + header comment), `test_plan.md` (§26 note closed, new §28).
+`tests/ui/product-detail.spec.ts` (three Arrange blocks + header comment), `TEST_PLAN.md` (§26 note closed, new §28).
 
 Validation: `lint` / `format:check` / `tsc:check` clean; `product-detail.spec.ts` 9/9; `category.spec.ts` 7/7 in
 isolation.

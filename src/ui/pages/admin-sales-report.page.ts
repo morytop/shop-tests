@@ -4,7 +4,7 @@ import { Locator, Page } from '@playwright/test';
 /**
  * Shared shell of the two average-sales reports (per month, per week). Both render a
  * `[data-test="year"]` select over a bare `<canvas>` chart and carry no table
- * (test_plan.md §31); concrete subclasses supply only their `PAGE_URL`.
+ * (TEST_PLAN.md §31); concrete subclasses supply only their `PAGE_URL`.
  */
 export abstract class AdminSalesReportPage extends AdminPage {
   readonly yearSelect: Locator;

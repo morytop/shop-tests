@@ -6,7 +6,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 /**
  * Static privacy policy (`/privacy`). Rendered by the `app-privacy` component as bare
  * `<strong>`/`<p>` pairs: it carries **no `data-test` attributes and no headings at all**
- * (test_plan.md §35), so the section titles can only be located structurally — hence the
+ * (TEST_PLAN.md §35), so the section titles can only be located structurally — hence the
  * `strong` CSS step, which no role/label locator can replace here.
  *
  * The "Privacy Policy" link in the global footer is the page's only in-app entry point.

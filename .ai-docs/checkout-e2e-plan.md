@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement `tests/ui/checkout-e2e.spec.ts` (test_plan.md §5.9) — the critical-path
+Implement `tests/ui/checkout-e2e.spec.ts` (TEST_PLAN.md §5.9) — the critical-path
 smoke test that places a **real order** end-to-end and asserts the order
 confirmation (invoice number) + cart emptied. Two ACs:
 
@@ -64,7 +64,7 @@ plus `@checkout` / `@e2e`.
    AC2, OR compose inline if it's only used once — decide after step 3.
 6. Write `tests/ui/checkout-e2e.spec.ts`: AC1 guest (`@smoke @checkout @e2e`), AC2
    logged-in (`@smoke @checkout @e2e @logged`).
-7. Update `test_plan.md` (new §18 findings + §5.9 status) and `CLAUDE.md` spec list.
+7. Update `TEST_PLAN.md` (new §18 findings + §5.9 status) and `CLAUDE.md` spec list.
 8. Validate: lint, format:check, tsc:check, run the new spec (both projects), run `@smoke`.
 9. Report; mark this plan complete.
 

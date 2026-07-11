@@ -1,7 +1,7 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/merge.fixture';
 
-// User Stories v5 — Invoices (test_plan.md §5.17). Covers the three deterministic ACs:
+// User Stories v5 — Invoices (TEST_PLAN.md §5.17). Covers the three deterministic ACs:
 // AC1 the invoice appears in the list, AC2 the invoice detail page, AC3 a non-existent
 // id → not-found. AC4 (discounted invoice) and AC5 (PDF download) are deferred (§9/§29).
 //
@@ -11,7 +11,7 @@ import { expect, test } from '@src/merge.fixture';
 // (it IS the shared seeded `customer@`) or the `@logged` session (shared across specs;
 // `checkout-e2e` AC2 already places orders as it). Billing is completed via the postcode
 // lookup so the city ↔ country pair is orderable (§18); products are chosen dynamically
-// (§3, §9). See test_plan.md §29 and .ai-docs/invoices-plan.md.
+// (§3, §9). See TEST_PLAN.md §29 and .ai-docs/invoices-plan.md.
 
 test.describe('Verify invoices', () => {
   // AC1 — after checkout the order's invoice appears in the list with the right number,

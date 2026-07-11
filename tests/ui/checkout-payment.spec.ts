@@ -1,6 +1,6 @@
 import { expect, test } from '@src/merge.fixture';
 
-// User Stories v5 — Checkout Payment (test_plan.md §5.8). The Payment step is the
+// User Stories v5 — Checkout Payment (TEST_PLAN.md §5.8). The Payment step is the
 // last wizard step, reached by advancing a guest through cart → sign-in → billing
 // address (the `reachPaymentAsGuest` action fixture). The whole step is one Angular
 // reactive form: a `payment-method` <select> reveals a method-specific sub-form

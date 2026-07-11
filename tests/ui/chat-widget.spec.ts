@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@src/merge.fixture';
 
-// User Stories v5 — Chat widget (test_plan.md §5.21), covering the widget shell and the
+// User Stories v5 — Chat widget (TEST_PLAN.md §5.21), covering the widget shell and the
 // "Find a product" flow. Both are guest-usable and read-only: nothing here touches an
 // account, the cart or an order, so no throwaway user is needed (§3).
 //
@@ -12,7 +12,7 @@ import { expect, test } from '@src/merge.fixture';
 // Each test drives at most one search per page load: the chat transcript accumulates, so an
 // earlier search's cards would otherwise still be counted (§32).
 //
-// See test_plan.md §32 and .ai-docs/chat-widget-find-product-plan.md.
+// See TEST_PLAN.md §32 and .ai-docs/chat-widget-find-product-plan.md.
 
 test.describe('Verify chat widget', () => {
   // AC1 — the toggle is present bottom-right on any page, not just the home page.

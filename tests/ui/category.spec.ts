@@ -3,7 +3,7 @@ import { categories } from '@src/ui/test-data/category.data';
 import { parsePrice } from '@src/ui/utils/price.util';
 import { isSorted } from '@src/ui/utils/sort.util';
 
-// test_plan.md §5.2 Browse by Category
+// TEST_PLAN.md §5.2 Browse by Category
 test.describe('Verify browse by category', () => {
   for (const { name, slug } of categories) {
     test(
@@ -38,7 +38,7 @@ test.describe('Verify browse by category', () => {
         // The on-page "Category: <Name>" heading is the reliable cross-category
         // title signal, so it is the assertion used for all four categories.
         // The document <title> is intentionally not checked here: Special Tools
-        // renders the heading but never updates <title> (see test_plan.md §11),
+        // renders the heading but never updates <title> (see TEST_PLAN.md §11),
         // so a shared toHaveTitle would be a false negative for it. The <title>
         // is instead covered by smoke/menu.spec.ts for Hand/Power/Other, which
         // asserts Special Tools via its heading for that same reason.
@@ -68,7 +68,7 @@ test.describe('Verify browse by category', () => {
     },
   );
 
-  // Discrepancy vs test_plan.md §5.2 / §9: unlike the overview page, the
+  // Discrepancy vs TEST_PLAN.md §5.2 / §9: unlike the overview page, the
   // category page's sidebar omits the Price Range slider and the Search box —
   // it exposes only Sort, category/brand filters, and pagination. This codifies
   // that absence so a future app change re-adding them is caught.

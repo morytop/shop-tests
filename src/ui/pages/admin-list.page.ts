@@ -5,7 +5,7 @@ import { Locator, Page } from '@playwright/test';
  * Shared listing shell of the six admin list sections (Brands, Categories, Products,
  * Orders, Users, Messages). Each renders a single `table.table-hover` whose table, rows
  * and cells carry **no `data-test`** — the same shape as the customer invoices and
- * messages lists (test_plan.md §29/§30) — so everything is located structurally by role.
+ * messages lists (TEST_PLAN.md §29/§30) — so everything is located structurally by role.
  *
  * Concrete subclasses supply only their `PAGE_URL`; the per-row edit/delete controls are
  * keyed by entity ULID and are deliberately not modelled here, this pass being read-only

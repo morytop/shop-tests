@@ -10,7 +10,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  *
  * A customer can reply to their own thread with no admin involvement — the "Add Reply"
  * card is always present. It is a `bg-light` card just like a reply, so reply cards are
- * distinguished by *not* containing the form (test_plan.md §30). Posting a reply also
+ * distinguished by *not* containing the form (TEST_PLAN.md §30). Posting a reply also
  * flips the thread's status from NEW to IN_PROGRESS.
  */
 export class MessageDetailPage extends BasePage {

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Cover the two favorites ACs of `test_plan.md` §5.3 in the existing `tests/ui/product-detail.spec.ts` — the ones
+Cover the two favorites ACs of `TEST_PLAN.md` §5.3 in the existing `tests/ui/product-detail.spec.ts` — the ones
 deliberately deferred by the §5.16 pass (see §26 / `.ai-docs/favorites-plan.md`):
 
 1. **Favorites (logged in)** — add succeeds with a success message; adding the same product again shows an
@@ -14,7 +14,7 @@ Scope confirmed by the user: these §5.3 favorites ACs only. Nothing else in §5
 
 ## Assumptions and open questions
 
-- **A1.** The exact toast copy for AC1 is already known from the §5.16 exploration (recorded in `test_plan.md` §26):
+- **A1.** The exact toast copy for AC1 is already known from the §5.16 exploration (recorded in `TEST_PLAN.md` §26):
   add → `Product added to your favorites list.`; second add → `Product already in your favorites list.` Both are
   ngx-toastr `.toast-message` toasts. (Re-verify live; §26 was observed, not asserted.)
 - **A2.** The logged-out copy is documented only as `"Unauthorized..."` in §5.3, which reads like a placeholder
@@ -34,13 +34,13 @@ Scope confirmed by the user: these §5.3 favorites ACs only. Nothing else in §5
 
 ## Risks and constraints
 
-- **Data safety (`test_plan.md` §3).** AC1 mutates the account's favorites ⇒ it must register its own throwaway user
+- **Data safety (`TEST_PLAN.md` §3).** AC1 mutates the account's favorites ⇒ it must register its own throwaway user
   via `registerUserWithApi(usersRequest)` and log in inline. Never `testUser1` (it **is** the seeded `customer@`
   account) and never the `@logged` `storageState` session user (shared across every `@logged` spec in a run).
   AC2 is logged out, so it needs no account at all — and must not create one.
 - **`product-detail.spec.ts` currently fails 3 pre-existing tests on `main`** (quantity stepper, manual quantity
   clamp, add-to-cart confirmation) because the first home-grid card is an API-mutated, out-of-stock product
-  (`test_plan.md` §26). These are **not** mine to fix in this pass, but they are in the file I'm editing — I must not
+  (`TEST_PLAN.md` §26). These are **not** mine to fix in this pass, but they are in the file I'm editing — I must not
   mistake them for regressions, and I must confirm my additions pass independently of them.
 - Favorites work fine on an out-of-stock product, so the first card remains a valid target (verified in §26).
 - No hard-coded catalog data (§3/§9) — the product is the first live card, reached by clicking, not by URL.
@@ -58,7 +58,7 @@ Scope confirmed by the user: these §5.3 favorites ACs only. Nothing else in §5
    duplicate-add toast behavior (resolves A1/A5). Fold findings back into this file.
 4. Design sign-off via plan mode (3 tests + a rename touching an existing assertion is beyond a trivial addition).
 5. Implement page-object additions + the three tests in `product-detail.spec.ts`, tagged per §3.
-6. Update `test_plan.md`: mark the §5.3 favorites ACs implemented, correct the "Unauthorized..." copy if it differs,
+6. Update `TEST_PLAN.md`: mark the §5.3 favorites ACs implemented, correct the "Unauthorized..." copy if it differs,
    and note that §26's "still deferred" line is now closed.
 7. Validate: `lint`, `format:check`, `tsc:check`; run the new tests; run the whole `product-detail.spec.ts` and
    confirm the only failures are the 3 known pre-existing ones; re-run `favorites.spec.ts` and `rentals.spec.ts`
@@ -93,7 +93,7 @@ Measured, end to end:
 
 - **A1 CONFIRMED** — §26's recorded copy is exact.
 - **A2 RESOLVED.** §5.3's `"Unauthorized..."` is an abbreviation, not the copy. Real string is
-  `Unauthorized, can not add product to your favorite list.` ⇒ `test_plan.md` needs the full text.
+  `Unauthorized, can not add product to your favorite list.` ⇒ `TEST_PLAN.md` needs the full text.
 - **A3 RESOLVED — option (b).** The `POST` **is** fired while logged out and is rejected **server-side with 401**;
   nothing is written. So "does not persist anything" is observable as _the response status is 401 and no success
   toast appears_, not as "no request is made".
@@ -139,7 +139,7 @@ Test 3 creates no account at all. Product is always the first live card, never a
 
 Files touched: `src/ui/pages/product-detail.page.ts` (typed toast locators + method rename),
 `tests/ui/product-detail.spec.ts` (3 new tests + `cartToast` → `successToast`), `tests/ui/favorites.spec.ts`
-(3 call sites renamed), `test_plan.md` (§5.3 + amended §26 + new §27).
+(3 call sites renamed), `TEST_PLAN.md` (§5.3 + amended §26 + new §27).
 
 Validation: `lint` / `format:check` / `tsc:check` clean; the 3 new tests 3/3; **all 9** of `product-detail.spec.ts`
 passing; `favorites.spec.ts` + `rentals.spec.ts` (share `ProductDetailPage`) 6/6.

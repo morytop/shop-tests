@@ -1,7 +1,7 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/merge.fixture';
 
-// User Stories v5 — Product Detail (test_plan.md §5.3), core subset:
+// User Stories v5 — Product Detail (TEST_PLAN.md §5.3), core subset:
 // display fields, quantity stepper + manual clamp, add-to-cart, out-of-stock,
 // related products, favorites. Discount and the rental slider are deferred (see
 // .ai-docs/product-detail-core-plan.md). Detail pages are reached by clicking a
@@ -60,7 +60,7 @@ test.describe('Verify product detail', () => {
   );
 
   // The §5.3 AC documents a [1, 999999999] clamp, but production actually clamps
-  // manual entry to [1, 99] (verified live — see test_plan.md §12). Assert the
+  // manual entry to [1, 99] (verified live — see TEST_PLAN.md §12). Assert the
   // real bounds.
   test(
     'manual quantity entry is clamped to [1, 99]',

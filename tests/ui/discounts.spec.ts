@@ -2,7 +2,7 @@ import { registerUserWithApi } from '@src/api/factories/user-register.api.factor
 import { expect, test } from '@src/merge.fixture';
 import { parsePrice } from '@src/ui/utils/price.util';
 
-// User Stories v5 — Discounts (test_plan.md §5.22). Covers the one discount mechanism
+// User Stories v5 — Discounts (TEST_PLAN.md §5.22). Covers the one discount mechanism
 // that is actually automatable: the 15% combination discount a cart earns by holding
 // both a rental and a non-rental item. That is also §5.5 AC7/AC8 (cart breakdown + its
 // removal) and, carried through to the invoice, §5.17 AC4.

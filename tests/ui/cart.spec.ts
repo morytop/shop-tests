@@ -1,7 +1,7 @@
 import { expect, test } from '@src/merge.fixture';
 import { parsePrice } from '@src/ui/utils/price.util';
 
-// User Stories v5 — Cart (test_plan.md §5.5), core subset AC1–AC5: columns,
+// User Stories v5 — Cart (TEST_PLAN.md §5.5), core subset AC1–AC5: columns,
 // quantity update + confirmation, delete, empty-cart message, Proceed gating.
 // AC6 (per-item discount badge) is unautomatable (server/IP-side is_location_offer,
 // §10/§12); AC7/AC8 (15% combination discount) are deferred — see
@@ -19,7 +19,7 @@ test.describe('Verify cart', () => {
       await cartPage.goto();
 
       // The 5th (actions) column header is blank in production — the AC's
-      // "Actions" label does not exist (see test_plan.md §14).
+      // "Actions" label does not exist (see TEST_PLAN.md §14).
       await expect(cartPage.columnHeaders).toHaveText([
         'Item',
         'Quantity',

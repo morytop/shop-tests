@@ -1,4 +1,4 @@
-# Plan: Product Overview / Home — Search & Filters/Sort (test_plan.md §5.1, remainder)
+# Plan: Product Overview / Home — Search & Filters/Sort (TEST_PLAN.md §5.1, remainder)
 
 ## Goal
 
@@ -34,7 +34,7 @@ Still out of scope for this pass (per existing §10 note, discount mechanism con
 - **Sort**: native `<select data-test="sort">` with option values `name,asc` / `name,desc` / `price,desc` / `price,asc` (plus two undocumented `co2_rating,*` options tied to the unspec'd §9 "Sustainability" feature — **out of scope**, not part of the 4-order AC). Confirmed `price,asc` sort produces a monotonically non-decreasing price sequence live.
 - **Price range slider**: it's `ngx-slider`, a custom two-handle ARIA slider (`role="slider"`, `tabindex="0"`, `aria-valuenow`), not a native `<input type=range>`. Two handles distinguished by accessible name: `ngx-slider` (min) and `ngx-slider-max` (max) — must use `exact: true` since one name is a substring of the other. **Confirmed interaction mechanism**: click/focus the handle, then send `ArrowLeft`/`ArrowRight` keys to change value by 1 per press — far more reliable than pixel-based dragging. Confirmed live: focused max handle, pressed `ArrowLeft` ×85 to move it from 100→15, and the grid live-updated to only show products priced ≤$15.
 - **No URL/query-param reflection**: confirmed `window.location.href` stays `.../#/` regardless of active search/filter/sort/price-range state — this is a client-side Angular app with no query-string sync, so filter state must be asserted via DOM (grid content, checkbox/slider state), not the URL.
-- Data-quality risk (test_plan.md §9) is now empirically reconfirmed: the ForgeFlex Tools brand filter surfaced a leftover "Automated Test Hammer (Updated)" product from another automated run. Filter tests must assert structural behavior (narrowing occurred, intersection is a subset of each individual filter's results) rather than fixed names/counts.
+- Data-quality risk (TEST_PLAN.md §9) is now empirically reconfirmed: the ForgeFlex Tools brand filter surfaced a leftover "Automated Test Hammer (Updated)" product from another automated run. Filter tests must assert structural behavior (narrowing occurred, intersection is a subset of each individual filter's results) rather than fixed names/counts.
 
 ## Post-implementation fixes (2026-07-06)
 
@@ -44,11 +44,11 @@ First full run of both specs surfaced **1 failing test** — _"combined category
 - **Name-diff polling to detect "filter applied" is racy against pagination position.** The original test used `expect.poll(getProductNames).not.toEqual(previousFirstPage)`. After `getAllProductNamesAcrossPages` walks to the last page, the grid is no longer on page 1, so that poll passed _prematurely_ — before the new filter's `/products` response landed — and page-collection then started from a stale result set, leaking unrelated products (e.g. "Protective Gloves") into the "combined" set. Fixed by **synchronizing filter/pagination actions on the network response** instead of guessing via DOM diffs.
   - Both filter changes (`GET /products?by_category=…&by_brand=…`) and page turns (`QUERY /products`) share pathname `/products`. New `HomePage.triggerAndAwaitProducts()` awaits that response; new `filterByChildCategory` / `clearChildCategoryFilter` / `filterByBrand` helpers and the pagination walk use it.
   - The intersection test was rewritten to assert the true invariant: **combined result === set-intersection of the two filters applied in isolation** (order-independent via sorted arrays; no assumption of data overlap, so it stays valid even if the two filters share no products).
-- **Backend semantics confirmed authoritatively.** Direct API probes (`/products?by_category=…`, `?by_brand=…`, and both) showed category + brand combine as a genuine **intersection (AND)** — the app behaves as documented, so no `test_plan.md` discrepancy was recorded.
+- **Backend semantics confirmed authoritatively.** Direct API probes (`/products?by_category=…`, `?by_brand=…`, and both) showed category + brand combine as a genuine **intersection (AND)** — the app behaves as documented, so no `TEST_PLAN.md` discrepancy was recorded.
 
 ## Risks and constraints
 
-- No hard-coded product/category/brand names, IDs, or prices (test_plan.md §3) — select filter options dynamically (e.g. "the first available category checkbox") rather than by name.
+- No hard-coded product/category/brand names, IDs, or prices (TEST_PLAN.md §3) — select filter options dynamically (e.g. "the first available category checkbox") rather than by name.
 - Catalog and category/brand trees are shared/mutable production data — don't assume a clean tree, don't assert exact counts.
 - Fetch live card references immediately before use within a step, don't cache across long gaps (§9 finding).
 - No destructive actions needed (read-only browse/filter), so no shared-account risk here.
@@ -61,9 +61,9 @@ First full run of both specs surfaced **1 failing test** — _"combined category
 3. Walk through test case list, tags, and files to touch with the user via plan mode before implementing (multiple ACs, two new spec files, extending `home.page.ts`).
 4. Implement:
    - Extend `src/pages/home.page.ts` with search/filter/sort/price-range locators and action methods (no `expect()`).
-   - Create `tests/product-search.spec.ts` and `tests/product-filters.spec.ts`, AAA-structured, tagged per test_plan.md §3 taxonomy (`@regression`, `@product-overview` or similar feature tag — confirm naming during plan step).
-   - Reference test_plan.md §5.1 in a describe-block comment per §7 traceability convention.
-5. Update `test_plan.md` if any doc/behavior discrepancies are found during exploration (and update the §10 findings section / deferred note).
+   - Create `tests/product-search.spec.ts` and `tests/product-filters.spec.ts`, AAA-structured, tagged per TEST_PLAN.md §3 taxonomy (`@regression`, `@product-overview` or similar feature tag — confirm naming during plan step).
+   - Reference TEST_PLAN.md §5.1 in a describe-block comment per §7 traceability convention.
+5. Update `TEST_PLAN.md` if any doc/behavior discrepancies are found during exploration (and update the §10 findings section / deferred note).
 6. Validate: `npm run lint`, `npm run format:check`, run both new spec files, run `@smoke` tag suite, run full `product-overview.spec.ts` to check no regression from `home.page.ts` changes.
 7. Report: what was added, files touched, tests run + results, tags applied, open questions/risks. Mark this plan completed.
 
@@ -74,7 +74,7 @@ First full run of both specs surfaced **1 failing test** — _"combined category
 - [x] Step 2: live exploration
 - [x] Step 3: plan-mode sign-off
 - [x] Step 4: implementation (both spec files + `home.page.ts` extensions)
-- [x] Step 5: test_plan.md reviewed — no doc/behavior discrepancy found (intersection behaves as documented)
+- [x] Step 5: TEST_PLAN.md reviewed — no doc/behavior discrepancy found (intersection behaves as documented)
 - [x] Step 6: validation — all 13 tests pass (with `--retries=1`), `npm run lint` + `npm run format:check` clean
 - [x] Step 7: report delivered to user
 

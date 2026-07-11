@@ -1,6 +1,6 @@
-# Chat widget — shell + "Find a product" (test_plan.md §5.21)
+# Chat widget — shell + "Find a product" (TEST_PLAN.md §5.21)
 
-**Status:** completed / ready for review (2026-07-11) — see `test_plan.md` §32 for the findings write-up.
+**Status:** completed / ready for review (2026-07-11) — see `TEST_PLAN.md` §32 for the findings write-up.
 Delivered: `src/ui/components/chat-widget.component.ts`, `tests/ui/chat-widget.spec.ts` (5 tests, all green),
 `chatWidget` registered in `page-object.fixture.ts`.
 **Scope confirmed with user (2026-07-11):** the first two bullets of §5.21 only.
@@ -100,7 +100,7 @@ per flow; "Back to menu" restarts it (appending a fresh greeting to the transcri
    - `tests/ui/chat-widget.spec.ts` — AAA, `test` from `@src/merge.fixture`, tagged via the `tag` option
      with `@regression` + a `@chat` feature tag (new tag → must be added to the §3 taxonomy), and a
      `// Chat Widget ACn` traceability comment per §7.
-7. Update `test_plan.md`: mark the two implemented §5.21 bullets, add the new findings section, add `@chat`
+7. Update `TEST_PLAN.md`: mark the two implemented §5.21 bullets, add the new findings section, add `@chat`
    to the §3 tag taxonomy, and record any fresh doc/behavior discrepancy.
 8. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run the new spec file, and re-run
    `@smoke` (the widget component is shared code if it lands in `src/ui/components/`).

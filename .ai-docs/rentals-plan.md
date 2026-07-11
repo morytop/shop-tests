@@ -1,4 +1,4 @@
-# Plan: Rentals (test_plan.md §5.4, `tests/rentals.spec.ts`)
+# Plan: Rentals (TEST_PLAN.md §5.4, `tests/rentals.spec.ts`)
 
 ## Goal
 
@@ -87,7 +87,7 @@ In scope this pass:
 4. [x] Step 3: assumptions confirmed above; plan-mode sign-off obtained.
 5. [x] Step 5: implemented `RentalsPage`, `ProductDetailPage.durationSlider`, new `CartPage`
        (`PAGE_URLS.CHECKOUT`, fixtures registration), `tests/rentals.spec.ts`.
-6. [x] Step 6: `test_plan.md` §13 added (findings + both discrepancies).
+6. [x] Step 6: `TEST_PLAN.md` §13 added (findings + both discrepancies).
 7. [x] Step 7: validated — lint + format clean; `rentals.spec.ts` 3/3; `@smoke` 11/11.
 8. [x] Step 8: reported.
 

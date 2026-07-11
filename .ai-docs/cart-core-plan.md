@@ -1,4 +1,4 @@
-# Plan: Cart core (test_plan.md §5.5, `tests/cart.spec.ts`)
+# Plan: Cart core (TEST_PLAN.md §5.5, `tests/cart.spec.ts`)
 
 ## Goal
 
@@ -96,7 +96,7 @@ In scope this pass (AC1–AC5):
 - Add-to-cart / quantity update are async cart writes: wait for the badge/toast before asserting or
   navigating (learned in §13).
 - No account mutation — AC1–AC5 are fully guest-cart; never touch shared seeded accounts (§3).
-- Doc/behavior discrepancies (e.g. actual column headers, exact copy) must be folded back into `test_plan.md`
+- Doc/behavior discrepancies (e.g. actual column headers, exact copy) must be folded back into `TEST_PLAN.md`
   (§9-style) per CLAUDE.md.
 
 ## Planned steps
@@ -108,7 +108,7 @@ In scope this pass (AC1–AC5):
        empty-cart copy, blur-to-commit).
 4. [ ] Step 3 — assumptions folded back above; plan-mode sign-off for the design.
 5. [x] Step 5 — extended `CartPage`; wrote `tests/cart.spec.ts` (5 tests, AAA, `tag` option, traceability).
-6. [x] Step 6 — added `test_plan.md` §14 (findings + 3 discrepancies).
+6. [x] Step 6 — added `TEST_PLAN.md` §14 (findings + 3 discrepancies).
 7. [x] Step 7 — validated: lint clean, format:check clean; `cart.spec.ts` 5/5; `@smoke` 12/12.
 8. [x] Step 8 — reported.
 

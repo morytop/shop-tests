@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement `tests/ui/messages.spec.ts` covering the three ACs of `test_plan.md` §5.18:
+Implement `tests/ui/messages.spec.ts` covering the three ACs of `TEST_PLAN.md` §5.18:
 
 1. **AC1** — after submitting the contact form while logged in, the message appears in the paginated Messages
    list (subject, truncated body, NEW status badge, date).
@@ -50,7 +50,7 @@ form page object, since submitting a contact message is the precondition for eve
    the new page objects in `src/ui/fixtures/page-object.fixture.ts`.
 4. Write `tests/ui/messages.spec.ts` — AAA, tags `@auth @messages @regression` (`@messages` is a new feature tag),
    one AC per test, each with its own throwaway user.
-5. Update `test_plan.md` (§5.18 status + a new findings section + tag taxonomy if `@messages` is new).
+5. Update `TEST_PLAN.md` (§5.18 status + a new findings section + tag taxonomy if `@messages` is new).
 6. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run `messages.spec.ts` and `@smoke`.
 7. Report; mark this plan completed.
 
@@ -72,7 +72,7 @@ form page object, since submitting a contact message is the precondition for eve
   as 53 chars = 50 + `...`. Reuse `truncate(body, 50)` from `src/ui/utils/text.util.ts`.
 - A6 ✅ Status badge is `span.badge` reading **`NEW`** (`bg-info`); date is `YYYY-MM-DD HH:mm:ss`.
 
-**New findings to fold into `test_plan.md` §9:**
+**New findings to fold into `TEST_PLAN.md` §9:**
 
 - The list's Subject column shows the raw select **value** (`warranty`), not the human label (`Warranty`).
 - Posting a customer reply flips the message status **`NEW` → `IN_PROGRESS`** (visible in both the detail header

@@ -1,6 +1,6 @@
 import { expect, test } from '@src/merge.fixture';
 
-// test_plan.md §5.1 Product Overview / Home — search
+// TEST_PLAN.md §5.1 Product Overview / Home — search
 test.describe('Verify product overview / home — search', () => {
   test(
     'valid search query filters the grid to matching products only',

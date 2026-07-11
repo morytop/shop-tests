@@ -1,7 +1,7 @@
 import { expect, test } from '@src/merge.fixture';
 import { languages } from '@src/ui/test-data/language.data';
 
-// User Stories v5 — Multi-language (test_plan.md §5.23). Covers the three automatable
+// User Stories v5 — Multi-language (TEST_PLAN.md §5.23). Covers the three automatable
 // bullets: the selector's option list, that switching translates the visible UI, and
 // that the choice survives a reload and a new navigation. The optional fourth bullet
 // (first-visit browser-language auto-detection) is out of scope for this pass.

@@ -3,7 +3,7 @@ import { Locator, Page } from '@playwright/test';
 /**
  * The chat assistant (`<app-chat-widget>`), rendered outside the router outlet and so
  * present on every page — it is a component, not a page, and is injected as its own
- * fixture rather than hanging off a PAGE_URL (test_plan.md §32).
+ * fixture rather than hanging off a PAGE_URL (TEST_PLAN.md §32).
  *
  * The transcript accumulates: an earlier search's result cards stay in the DOM, and
  * "Back to menu" appends a fresh greeting rather than replacing the old one. Callers
@@ -64,7 +64,7 @@ export class ChatWidgetComponent {
     this.messageInput = this.page.locator('[data-test="chat-input"]');
     this.sendButton = this.page.locator('[data-test="chat-send"]');
     // Result cards are clickable in their own right — there is no "View Product" button
-    // (test_plan.md §32). Their name/price are plain classes, not the grid's data-test ids.
+    // (TEST_PLAN.md §32). Their name/price are plain classes, not the grid's data-test ids.
     this.productCards = this.page.locator('[data-test="chat-product"]');
     this.productCardNames = this.productCards.locator('.product-name');
     this.productCardPrices = this.productCards.locator('.product-price');

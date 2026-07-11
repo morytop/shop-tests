@@ -1,6 +1,6 @@
 # Checkout — Billing address (§5.7) — test plan
 
-**Scope (confirmed with user 2026-07-07):** all 5 ACs of `test_plan.md` §5.7, new spec
+**Scope (confirmed with user 2026-07-07):** all 5 ACs of `TEST_PLAN.md` §5.7, new spec
 `tests/checkout-address.spec.ts` + new `src/pages/checkout-address.page.ts`.
 
 ## Goal
@@ -52,7 +52,7 @@ Cover the Billing Address step of the checkout wizard (`/checkout`):
 5. Implement `CheckoutAddressPage` (locators + actions, no expect), register in
    `src/fixtures/pages.ts`; write `tests/checkout-address.spec.ts` (AAA, `tag` option,
    `@checkout` + `@regression`, AC references per §7).
-6. Update `test_plan.md` with a new implementation-findings section + any new discrepancies.
+6. Update `TEST_PLAN.md` with a new implementation-findings section + any new discrepancies.
 7. Validate: `npm run lint`, `npm run format:check`, run the new spec + `@smoke`; fix regressions.
 8. Report; mark this file completed.
 
@@ -94,5 +94,5 @@ country+postal(+house) auto-fills street/city/state from an external geocoding s
 DE + 12345 → street "Schüttegasse", city "Lampertheim", state "Sachsen-Anhalt" — external,
 nondeterministic, not suitable for a stable value assertion). **Plan:** implement AC5's test
 against the actual behavior (logged-in user reaches billing via `proceed-2` with **empty**,
-manually-entered fields) and record the discrepancy in `test_plan.md`, rather than asserting a
+manually-entered fields) and record the discrepancy in `TEST_PLAN.md`, rather than asserting a
 pre-fill that never happens. Surfaced to user in plan mode before implementing.

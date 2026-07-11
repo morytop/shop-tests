@@ -1,7 +1,7 @@
 # Forgot password (§5.12) — action plan
 
 **Status:** ✅ completed / ready for review (2026-07-09)
-**Scope confirmed:** 2026-07-09 — all four ACs of `test_plan.md` §5.12, in `tests/ui/forgot-password.spec.ts`.
+**Scope confirmed:** 2026-07-09 — all four ACs of `TEST_PLAN.md` §5.12, in `tests/ui/forgot-password.spec.ts`.
 
 ## Goal
 
@@ -26,7 +26,7 @@ Implement `tests/ui/forgot-password.spec.ts` covering §5.12:
    generous `toBeHidden()` timeout over pinning the exact duration.
 5. AC4 assumes the app distinguishes registered vs unregistered emails. **This may be false** — many apps
    return a generic success for unknown emails to prevent account enumeration. If so, AC4 as documented is a
-   doc/behavior discrepancy and must be pinned to actual behavior + recorded in `test_plan.md` §9-style notes.
+   doc/behavior discrepancy and must be pinned to actual behavior + recorded in `TEST_PLAN.md` §9-style notes.
 
 ## Source-of-truth read (pinned v5.0) — 2026-07-09, pre-live
 
@@ -110,7 +110,7 @@ copy mismatch.
   with its real copy, so the spec documents both halves.
 - **AC3 uses `registerUserWithApi(usersRequest)`** — a disposable user, per the destructive finding above.
   The spec deliberately does **not** re-login afterwards (that would be a §5.15-ish assertion and needs no
-  coverage here); the reset is documented in `test_plan.md` instead.
+  coverage here); the reset is documented in `TEST_PLAN.md` instead.
 - Tags: `@auth`, `@forgot-password`, `@regression` (AC1 also `@smoke`? — no: keep the smoke suite as defined in
   §4, which doesn't list forgot-password).
 
@@ -139,7 +139,7 @@ copy mismatch.
    `LoginPage.openForgotPassword()`. Done.
 6. ~~Implement `tests/ui/forgot-password.spec.ts`~~ — 5 test blocks / 7 cases (AC2 parametrized over 3
    malformed addresses). Done.
-7. ~~Update `test_plan.md`~~ — §5.12 marked implemented + destructive warning; new §21 findings section.
+7. ~~Update `TEST_PLAN.md`~~ — §5.12 marked implemented + destructive warning; new §21 findings section.
    `CLAUDE.md`'s spec inventory updated too. Done.
 8. ~~Validate.~~ `npm run lint` ✅, `npm run format:check` ✅, `npm run tsc:check` ✅,
    `forgot-password.spec.ts` 7/7 ✅, `login.spec.ts` 3/3 ✅ (proves `testUser1`'s password was not reset),

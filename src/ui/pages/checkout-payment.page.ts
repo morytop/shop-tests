@@ -11,7 +11,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * sub-form (each behind an `@if`, so switching method removes the previous
  * method's inputs from the DOM), and the "Confirm" button (`finish`) is disabled
  * until the form is valid. Validation errors surface as visible
- * `.alert.alert-danger` text only once a control is dirty/touched (test_plan.md
+ * `.alert.alert-danger` text only once a control is dirty/touched (TEST_PLAN.md
  * §17). Locators/validators mirror the pinned v5.0 source `checkout/payment`.
  */
 export class CheckoutPaymentPage extends BasePage {
@@ -50,7 +50,7 @@ export class CheckoutPaymentPage extends BasePage {
   readonly monthlyInstallmentsSelect: Locator;
   readonly monthlyInstallmentsOptions: Locator;
 
-  // Order placement (test_plan.md §18): the first "Confirm" click runs the payment
+  // Order placement (TEST_PLAN.md §18): the first "Confirm" click runs the payment
   // check and reveals the success message; the second places the order and renders
   // the confirmation with the invoice number.
   readonly paymentSuccessMessage: Locator;
@@ -103,7 +103,7 @@ export class CheckoutPaymentPage extends BasePage {
     // violation renders an empty `.alert-danger` box (the template only prints text
     // for a `required` error, but the field is pattern-only). So its invalidity is
     // asserted via the input's `ng-invalid` class + the disabled Confirm button,
-    // not visible text (test_plan.md §17).
+    // not visible text (TEST_PLAN.md §17).
 
     this.giftCardNumberInput = this.page.locator(
       '[data-test="gift_card_number"]',
@@ -111,7 +111,7 @@ export class CheckoutPaymentPage extends BasePage {
     this.validationCodeInput = this.page.locator(
       '[data-test="validation_code"]',
     );
-    // Production has diverged from the pinned v5.0 source (test_plan.md §17): the
+    // Production has diverged from the pinned v5.0 source (TEST_PLAN.md §17): the
     // gift card number must be exactly 16 letters/digits and the validation code
     // exactly 4 (the code input also carries maxlength=4), each with its own newer
     // message — not the source's "must be alphanumeric." copy.
@@ -185,7 +185,7 @@ export class CheckoutPaymentPage extends BasePage {
    * Place the order via the two-step Confirm: the first click runs the payment
    * check (waits for the success message), the second submits the order (waits for
    * the confirmation banner). Assertions on the invoice number / cart stay in the
-   * spec — this only synchronizes on each step landing (test_plan.md §18).
+   * spec — this only synchronizes on each step landing (TEST_PLAN.md §18).
    */
   async confirmOrder(): Promise<void> {
     await this.finishButton.click();

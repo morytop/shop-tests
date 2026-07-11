@@ -2,7 +2,7 @@ import { Language } from '@src/ui/models/language.model';
 
 /**
  * The seven languages the nav selector offers, in the order it renders them.
- * Production ships Greek on top of the six documented in v5 (test_plan.md §9).
+ * Production ships Greek on top of the six documented in v5 (TEST_PLAN.md §9).
  *
  * `navLabels` are the app's own translations of the four main-menu items, spot-checked
  * against production (§34). Note Dutch translates neither "Home" nor "Contact", so a

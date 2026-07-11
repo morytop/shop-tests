@@ -226,8 +226,8 @@ before and after. No logic changes — pure relocation + import rewrites to alia
 - **Locators remain `readonly` properties**, never returned from getters.
 - **No conditionals in `test()` bodies** (`playwright/no-conditional-in-test`); push nullable/branching into POM methods or utils.
 - **Arrange-Act-Assert** with blank-line separation, no AAA comment markers.
-- Keep the existing rich JSDoc/discrepancy comments (e.g. the `test_plan.md §` cross-refs) intact when moving files.
-- Update `test_plan.md` (data-strategy / structure sections) and `CLAUDE.md` (Architecture section) to describe the new `ui`/`api`/`config` layout once Phase 1 lands.
+- Keep the existing rich JSDoc/discrepancy comments (e.g. the `TEST_PLAN.md §` cross-refs) intact when moving files.
+- Update `TEST_PLAN.md` (data-strategy / structure sections) and `CLAUDE.md` (Architecture section) to describe the new `ui`/`api`/`config` layout once Phase 1 lands.
 
 ## Global verification
 

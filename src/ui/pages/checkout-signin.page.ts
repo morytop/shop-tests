@@ -9,7 +9,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * like `ProductDetailPage`. The step renders a tabbed panel ("Sign in" /
  * "Continue as Guest"); the default "Sign in" tab holds the login form. The
  * "Continue as Guest" tab is the wizard-only marker absent on `/auth/login`
- * (test_plan.md §15).
+ * (TEST_PLAN.md §15).
  */
 export class CheckoutSigninPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
@@ -60,7 +60,7 @@ export class CheckoutSigninPage extends BasePage {
       '[data-test="proceed-2-guest"]',
     );
     this.proceedAsUserButton = this.page.locator('[data-test="proceed-2"]');
-    // Shown on the sign-in step only when already authenticated (test_plan.md §9):
+    // Shown on the sign-in step only when already authenticated (TEST_PLAN.md §9):
     // "Hello {First} {Last}, you are already logged in. You can proceed to checkout."
     this.alreadyLoggedInMessage = this.page.getByText(
       'you are already logged in',

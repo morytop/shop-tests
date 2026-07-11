@@ -11,14 +11,14 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * The general/address/payment values render as read-only `<input>`s with clean
  * `data-test` ids (read via `value`). The line items are a separate `<table>` with
  * no `data-test` (the only table on the page). A missing/foreign id renders a bare
- * `<p>This invoice doesn't exist.</p>` instead of the fields (test_plan.md §29).
+ * `<p>This invoice doesn't exist.</p>` instead of the fields (TEST_PLAN.md §29).
  *
  * Money fields are the exception: on a **discounted** invoice the app renders three
  * inputs that all share `data-test="total"` (subtotal, discount, grand total), and
  * all three of their `<label for>` attributes point at `"total"` — so neither the
  * data-test nor `getByLabel` can tell them apart, and `[data-test="total"]` would
  * match 3 elements under strict mode. Their `id`s are the only distinguishing hook
- * (test_plan.md §33), hence the id selectors below.
+ * (TEST_PLAN.md §33), hence the id selectors below.
  */
 export class InvoiceDetailPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.INVOICES;

@@ -46,7 +46,7 @@ export function prepareRandomUser(): RegisterUser {
 /**
  * Build a fresh set of values for the profile form. Unlike registration, the profile
  * country/postcode are plain text inputs with no `<select>` option list and no
- * postcode lookup behind them (test_plan.md §23), so both can be faker-random.
+ * postcode lookup behind them (TEST_PLAN.md §23), so both can be faker-random.
  */
 export function prepareRandomProfileDetails(): ProfileDetails {
   return {

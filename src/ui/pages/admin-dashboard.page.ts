@@ -6,7 +6,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * Admin landing page (`/admin/dashboard`) — where a successful admin login redirects to.
  * Its page title is "Sales over the years" (the sales chart's own heading); the chart is
  * a bare `<canvas>` with no `data-test`, and "Latest orders" is a `table.table-hover`
- * with no `data-test` on the table/rows/cells (test_plan.md §31).
+ * with no `data-test` on the table/rows/cells (TEST_PLAN.md §31).
  *
  * The orders list is fed by `GET /invoices?…&in=status,AWAITING_FULFILLMENT` and renders
  * "No recent invoices." *while that request is still in flight* — the same pre-load race

@@ -4,7 +4,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 /**
  * The "general statistics" report (`/admin/reports/statistics`) — one of the three pages
- * behind §5.20's single "Reports" bullet (test_plan.md §31). It renders four `<h4>`
+ * behind §5.20's single "Reports" bullet (TEST_PLAN.md §31). It renders four `<h4>`
  * sections, each over its own table; none of the headings or tables carries a
  * `data-test`, so they are located by role.
  */

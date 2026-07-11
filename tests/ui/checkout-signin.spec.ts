@@ -1,6 +1,6 @@
 import { expect, test } from '@src/merge.fixture';
 
-// User Stories v5 — Checkout Sign in step (test_plan.md §5.6), AC1 only: a guest
+// User Stories v5 — Checkout Sign in step (TEST_PLAN.md §5.6), AC1 only: a guest
 // proceeding from the cart is shown a login form (email, password, submit) as part
 // of the checkout wizard. AC2 (TOTP prompt), AC3 (valid credentials → billing) and
 // AC4 (already-logged-in copy) are deferred — see .ai-docs/checkout-signin-plan.md.

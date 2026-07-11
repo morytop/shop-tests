@@ -1,7 +1,7 @@
 # Customer profile (§5.14) — action plan
 
-**Status:** completed (2026-07-09) — ready for review. Findings folded into `test_plan.md` §24.
-**Scope confirmed with user:** all four ACs of `test_plan.md` §5.14 → `tests/ui/profile.spec.ts`
+**Status:** completed (2026-07-09) — ready for review. Findings folded into `TEST_PLAN.md` §24.
+**Scope confirmed with user:** all four ACs of `TEST_PLAN.md` §5.14 → `tests/ui/profile.spec.ts`
 
 ## Goal
 
@@ -39,12 +39,12 @@ Implement §5.14 "Customer profile":
   user's own data), so they register their own user too. This keeps all four tests uniform and independent.
 - Each test registering + logging in via the UI is slow; acceptable and consistent with `totp-setup.spec.ts`.
 - **Docs may be stale (§9, §12, §14, §16, §17):** verify all copy/locators live before asserting. Record any
-  mismatch in `test_plan.md`.
+  mismatch in `TEST_PLAN.md`.
 - Faker data only; no hard-coded catalog data is involved here.
 
 ## Planned steps
 
-1. ✅ Read `test_plan.md` (§3, §5.14, §7, §9–§17), `CLAUDE.md`, `CODING_STANDARDS.md`, existing `ProfilePage`,
+1. ✅ Read `TEST_PLAN.md` (§3, §5.14, §7, §9–§17), `CLAUDE.md`, `CODING_STANDARDS.md`, existing `ProfilePage`,
    `totp-setup.spec.ts`, user model/factories.
 2. ✅ Confirm scope with the user (all four ACs).
 3. Explore `/account/profile` live with the `playwright-cli` skill, using a freshly-registered account:
@@ -57,9 +57,9 @@ Implement §5.14 "Customer profile":
    Reuse `RegisterUser` (or a narrower `ProfileUser` model) rather than a new ad hoc shape.
    No fixture change needed — `profilePage` is already registered.
 6. Write `tests/ui/profile.spec.ts` with the four ACs, tagged `['@auth', '@profile', '@regression']`
-   (`@profile` is a new feature tag in the §3 taxonomy's "plus feature tags" spirit; add it to `test_plan.md`).
+   (`@profile` is a new feature tag in the §3 taxonomy's "plus feature tags" spirit; add it to `TEST_PLAN.md`).
    Traceability comments per §7.
-7. Update `test_plan.md`: new findings section for §5.14, plus any doc/behavior discrepancies found.
+7. Update `TEST_PLAN.md`: new findings section for §5.14, plus any doc/behavior discrepancies found.
 8. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run `tests/ui/profile.spec.ts`,
    plus `--grep @smoke` and `totp-setup.spec.ts` (shares `ProfilePage`).
 9. Report; mark this plan completed.

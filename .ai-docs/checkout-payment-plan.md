@@ -1,6 +1,6 @@
 # Checkout — Payment (§5.8) — test plan
 
-**Scope (confirmed with user 2026-07-08):** the **validation** subset of `test_plan.md` §5.8 —
+**Scope (confirmed with user 2026-07-08):** the **validation** subset of `TEST_PLAN.md` §5.8 —
 payment-method dropdown + per-method field validation + form-reset-on-switch. **Order placement
 (the "successful order" AC) is explicitly OUT of this pass** (avoids writing real invoices to the
 shared production DB). New spec `tests/ui/checkout-payment.spec.ts` + new
@@ -53,7 +53,7 @@ cart cleared" AC (one happy path per method). Deferred — would place real orde
 - **Prod-vs-docs (§9):** billing step needs the postcode-lookup await already handled by
   `CheckoutAddressPage.fillAddress`. Reuse it to reach payment. Watch for the real confirm-button
   data-test and the actual validation mechanism (visible error text vs. `ng-invalid` only) — fold
-  findings back here and into `test_plan.md`.
+  findings back here and into `TEST_PLAN.md`.
 
 ## Planned steps
 
@@ -69,14 +69,14 @@ cart cleared" AC (one happy path per method). Deferred — would place real orde
    `src/ui/fixtures/page-object.fixture.ts`; write `tests/ui/checkout-payment.spec.ts` (AAA, `tag`
    option, `@checkout` + `@regression`, AC references per §7). Reuse `addProductToCart`,
    `CartPage`, `CheckoutSigninPage.continueAsGuest`, `CheckoutAddressPage.fillAddress`.
-6. Update `test_plan.md` with a new implementation-findings section + any new discrepancies.
+6. Update `TEST_PLAN.md` with a new implementation-findings section + any new discrepancies.
 7. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run the new spec +
    `@smoke`; fix regressions.
 8. Report; mark this file completed.
 
 ## Status: COMPLETED (2026-07-08) — ready for review
 
-17 tests implemented and **executed live** (all pass `--workers=1`, ~1.6m). `test_plan.md` §17
+17 tests implemented and **executed live** (all pass `--workers=1`, ~1.6m). `TEST_PLAN.md` §17
 records the findings, discrepancies, and the known parallel-load flake.
 
 ## Findings (2026-07-08)

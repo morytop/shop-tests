@@ -3,7 +3,7 @@ import { expect, test } from '@src/merge.fixture';
 import { testUser1 } from '@src/ui/test-data/user.data';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 
-// User Stories v5 — 2FA Setup (test_plan.md §5.13). The section lives on
+// User Stories v5 — 2FA Setup (TEST_PLAN.md §5.13). The section lives on
 // `/account/profile`, which POSTs `/totp/setup` on every load: for an eligible
 // account that mints and persists a NEW secret each visit, so the secret is read
 // from the DOM immediately before a code is derived from it (codes also rotate
@@ -17,7 +17,7 @@ import { generateTotpCode } from '@src/ui/utils/totp.util';
 // into specs like `checkout-e2e`. AC4 is a read-only denial check, the one use the
 // shared seeded `customer@` account is explicitly reserved for.
 //
-// See test_plan.md §22 and .ai-docs/totp-setup-plan.md.
+// See TEST_PLAN.md §22 and .ai-docs/totp-setup-plan.md.
 
 test.describe('Verify TOTP setup @totp', () => {
   // AC1 — a freshly-registered, logged-in user is offered the setup section with a

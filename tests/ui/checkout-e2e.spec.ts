@@ -1,7 +1,7 @@
 import { expect, test } from '@src/merge.fixture';
 import { makeValidAddress } from '@src/ui/factories/address.factory';
 
-// User Stories v5 — End-to-end checkout (test_plan.md §5.9), the critical-path
+// User Stories v5 — End-to-end checkout (TEST_PLAN.md §5.9), the critical-path
 // smoke test that places a real order through the full wizard and asserts the order
 // confirmation (invoice number) + emptied cart. Cash on Delivery = simulated payment
 // (§2), so no real money moves; orders are owned by a throwaway guest identity (AC1)

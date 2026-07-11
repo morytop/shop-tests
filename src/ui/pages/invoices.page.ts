@@ -12,7 +12,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * `Invoice Number | Billing Address | Invoice Date | Total | (Details link)`, and
  * the "Billing Address" column shows the street only. Rows/cells are therefore
  * located structurally by role, and the per-row "Details" link (a bare `<a>` with
- * no `data-test`) is composed off the matching row (test_plan.md §29).
+ * no `data-test`) is composed off the matching row (TEST_PLAN.md §29).
  */
 export class InvoicesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.INVOICES;

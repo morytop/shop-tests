@@ -1,7 +1,7 @@
 import { expect, test } from '@src/merge.fixture';
 import { privacySectionTitles } from '@src/ui/test-data/privacy.data';
 
-// User Stories v5 — Privacy policy (test_plan.md §5.24). The page is static prose, so the
+// User Stories v5 — Privacy policy (TEST_PLAN.md §5.24). The page is static prose, so the
 // AC is coverage of its content: the route loads, every documented section is present, and
 // the data-handling facts the policy commits to are actually stated.
 //

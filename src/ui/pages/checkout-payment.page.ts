@@ -193,4 +193,15 @@ export class CheckoutPaymentPage extends BasePage {
     await this.finishButton.click();
     await this.orderConfirmation.waitFor();
   }
+
+  /**
+   * Extract the `INV-…` number from the confirmation banner ("Thanks for your
+   * order! Your invoice number is INV-…."), so a caller can look the order up in
+   * the invoices list. Call after `confirmOrder()` has awaited the banner.
+   */
+  async readInvoiceNumber(): Promise<string> {
+    const text = await this.orderConfirmation.innerText();
+    const match = text.match(/INV-\d+/);
+    return match ? match[0] : '';
+  }
 }

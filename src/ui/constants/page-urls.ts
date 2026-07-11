@@ -6,6 +6,7 @@ export const PAGE_URLS = {
   FAVORITES: '/account/favorites',
   FORGOT_PASSWORD: '/auth/forgot-password',
   HAND_TOOLS: '/category/hand-tools',
+  INVOICES: '/account/invoices',
   LOGIN: '/auth/login',
   OTHER: '/category/other',
   POWER_TOOLS: '/category/power-tools',

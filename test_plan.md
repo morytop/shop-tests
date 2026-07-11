@@ -218,11 +218,15 @@ toasts, and the logged-out "Unauthorized" path) remain deferred — this pass co
 
 ### 5.17 Invoices (`tests/ui/invoices.spec.ts`)
 
-- After completing a checkout, the invoice appears in the paginated invoice list with correct number/street/date/total.
-- Invoice detail page shows number/date/total, full billing address, payment method+details, and line items.
-- Non-existent/foreign invoice ID → "not found" message.
-- Discounted order's invoice shows subtotal/discount %/amount/total, and discounted line items show strikethrough + discounted price.
-- "Download PDF" is disabled while generating, then enabled and triggers a real file download once ready (poll, allow for the ~20s status check).
+**AC1–AC3 implemented 2026-07-11 (see §29).** Each places a real Cash-on-Delivery order as
+its own throwaway API-registered user (deterministic single-invoice list). AC4 and AC5 remain
+deferred.
+
+- After completing a checkout, the invoice appears in the paginated invoice list with correct number/street/date/total. **Implemented (§29)** — number/date/total pinned exactly; the list "Billing Address" column (street only) is a real prod-data inconsistency and is asserted present, not pinned.
+- Invoice detail page shows number/date/total, full billing address, payment method+details, and line items. **Implemented (§29).**
+- Non-existent/foreign invoice ID → "not found" message. **Implemented (§29)** — copy is "This invoice doesn't exist." (a non-existent id is used; a foreign id isn't safely obtainable).
+- Discounted order's invoice shows subtotal/discount %/amount/total, and discounted line items show strikethrough + discounted price. **Deferred** — needs the rental+non-rental combination-discount flow (§5.5 AC7/AC8, still deferred); the `is_location_offer` per-item discount is unautomatable (§10).
+- "Download PDF" is disabled while generating, then enabled and triggers a real file download once ready (poll, allow for the ~20s status check). **Deferred** — best-effort/manual per §9; `[data-test="download-invoice"]` exists on the detail page for a future pass.
 
 ### 5.18 Messages (`tests/ui/messages.spec.ts`)
 
@@ -1152,3 +1156,60 @@ with an **enabled** add-to-cart and a quantity of 1. Both assertions passed; the
 tests in parallel), and passed 7/7 in isolation on both this branch and clean `main`. It looks load-induced rather
 than related to this change — the addition here is a locator and a method that `category.spec.ts` never calls — but
 the four-file parallel combo was **not** re-run on clean `main` as a control, so this is unconfirmed.
+
+## 29. Invoices implementation findings (2026-07-11)
+
+Implemented **§5.17 AC1–AC3** (`tests/ui/invoices.spec.ts`, new `src/ui/pages/invoices.page.ts` (list) +
+`src/ui/pages/invoice-detail.page.ts`, both registered in `src/ui/fixtures/page-object.fixture.ts`). Reused the
+existing checkout machinery: a new action fixture `placeCodOrderAsLoggedInUser()` in `cart-action.fixture.ts`
+(mirrors `reachPaymentAsGuest` but the logged-in confirm path) returns `{ invoiceNumber, street, total }`, and
+`CheckoutPaymentPage` gained `readInvoiceNumber()` (parses `INV-\d+` from the confirmation banner). Tagged
+`@auth @invoices @regression` (`@invoices` is a new feature tag). See `.ai-docs/invoices-plan.md`.
+
+**Data safety (§3):** AC1/AC2 place a **real Cash-on-Delivery order** (simulated payment, §2), so each registers
+its own throwaway user via `registerUserWithApi` and logs in inline — a fresh user yields a **single-invoice**
+list, so the assertions are deterministic. Never `testUser1` (the shared seeded `customer@`) or the `@logged`
+session (shared; `checkout-e2e` AC2 already places orders as it). Billing is completed via the postcode lookup so
+the city ↔ country pair is orderable (§18); products chosen dynamically (§3, §9). All three run in the default
+`chromium` project (no `@logged`).
+
+**Confirmed contract (live).**
+
+- **List `/account/invoices`** — `<h1 data-test="page-title">Invoices</h1>`, populated by `GET /invoices?page=1`
+  (await it on load, §26 pattern — `InvoicesPage.gotoAndAwaitLoaded()`). One `<table>` with **no `data-test`** on
+  the table, rows, or cells; columns `Invoice Number | Billing Address | Invoice Date | Total | (Details link)`.
+  Rows/cells located structurally by role; the per-row Details link is a bare `<a>` (no `data-test`), located as
+  `row.getByRole('link', { name: 'Details' })`. Invoices IS on the `/account` dashboard (a tile), unlike Favorites
+  (§26). No pagination component renders for a single invoice.
+- **Detail `/account/invoices/<id>`** — `<id>` is the invoice's **lowercase ULID** from the Details link, **not**
+  the `INV-…` number, so AC2 reaches detail by clicking the list row (only AC3 hand-builds a bogus URL). Values
+  render as read-only `<input>`s with clean `data-test` ids (read via `value`): `invoice-number`, `invoice-date`,
+  `total`, `street`/`postal_code`/`city`/`state`/`country`, `payment-method` (= `Cash on Delivery`). Line items
+  are a separate `<table>` (no `data-test`, the only table on the page): `Quantity | Product | Price | Total`.
+
+**Discrepancies to account for (docs/plan vs. actual production):**
+
+- **Total format differs between list and detail.** The list cell is `$14.15` (no space); the detail `total` input
+  is `$ 14.15` (**with a space**). The specs assert each verbatim (AC2 rebuilds `$ {amount}` / `${amount}` from the
+  captured cart total).
+- **The list "Billing Address" column is unreliable and can diverge from the submitted/detail street.** For one
+  order the list showed `Romaguera Mountain` while the detail (and the value actually submitted) showed the
+  geocoded `Schüttegasse`; for another order both agreed on `Schüttegasse`. This is why the AC1 street assertion is
+  **present-but-not-pinned** (`not.toBeEmpty()`), with number/date/total pinned exactly. AC2's detail street IS
+  reliable (== the captured billing street across repeated runs). Root cause not fully pinned down, but see next.
+- **The logged-in billing pre-fill is NOT the account's own address — it's a shared/stale prod value.** A
+  controlled user whose stored street was `ZZUNIQUEACCT` still had billing pre-fill `Romaguera Mountain` (the same
+  value seen for other users), confirmed against `/account/profile`. So the "billing pre-fills from account data"
+  behavior (§16 AC5) is really pre-filling from some shared source; combined with the async postcode-lookup patch,
+  this is the likely origin of the list-vs-detail street divergence above. Reinforces §9's shared-data warning.
+- **Not-found copy** for a missing/foreign id is a bare `<p>This invoice doesn't exist.</p>` (no `data-test`, not an
+  `.alert`/`role=alert`), matched by text. A well-formed-but-nonexistent ULID renders it (no hard error/redirect).
+
+**Validation.** `lint`/`format:check`/`tsc:check` clean. `invoices.spec.ts` passed 2×/test serially
+(`--repeat-each=2`, 6/6). Shared-code regression: `@smoke` (18/18, incl. both `checkout-e2e` tests that exercise
+the extended `CheckoutPaymentPage`) and `checkout-payment.spec.ts` (17/17, exercises the extended
+`cart-action.fixture`) both green serially.
+
+Deferred (not gaps): **AC4** discounted invoice (needs the §5.5 AC7/AC8 combination-discount flow, still deferred;
+the `is_location_offer` per-item discount is unautomatable, §10) and **AC5** PDF download (best-effort/manual, §9;
+`[data-test="download-invoice"]` is present on the detail page for a future pass).

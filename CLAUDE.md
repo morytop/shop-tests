@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Playwright + TypeScript end-to-end test suite for the **Toolshop** demo app (https://practicesoftwaretesting.com/#/, source: https://github.com/testsmith-io/practice-software-testing). Tests run against the public production site as a black box — no seeded DB access.
 
-`test_plan.md` is the living test plan: scope, out-of-scope items, data strategy, the tag taxonomy, and a full feature-area → spec-file mapping. Much of it is now implemented — `tests/ui/` holds `login`, `register`, `forgot-password`, `change-password`, `profile`, `totp-setup`, `cart`, `category`, `checkout-address`, `checkout-e2e`, `checkout-payment`, `checkout-signin`, `favorites`, `product-detail`, `product-filters`, `product-overview`, `product-search`, and `rentals` specs plus `smoke/{homepage,menu}`, and `tests/api/` holds `users.smoke`; check the per-section status notes in `test_plan.md` for what each area covers and what's still deferred. TOTP has no spec file of its own: enrolment lives in `totp-setup.spec.ts`, while logging in with a code is covered inside `login.spec.ts`. It also documents real discrepancies found between the app's docs and actual production behavior. Check it before writing tests for a feature area, and update it when adding specs or finding further doc/behavior mismatches.
+`test_plan.md` is the living test plan: scope, out-of-scope items, data strategy, the tag taxonomy, and a full feature-area → spec-file mapping. Much of it is now implemented — `tests/ui/` holds `login`, `register`, `forgot-password`, `change-password`, `profile`, `totp-setup`, `cart`, `category`, `checkout-address`, `checkout-e2e`, `checkout-payment`, `checkout-signin`, `favorites`, `product-detail`, `product-filters`, `product-overview`, `product-search`, and `rentals` specs plus `smoke/{homepage,menu}`, `tests/admin/` holds the read-only `dashboard`/`sections` admin smoke sweep, and `tests/api/` holds `users.smoke`; check the per-section status notes in `test_plan.md` for what each area covers and what's still deferred. TOTP has no spec file of its own: enrolment lives in `totp-setup.spec.ts`, while logging in with a code is covered inside `login.spec.ts`. It also documents real discrepancies found between the app's docs and actual production behavior. Check it before writing tests for a feature area, and update it when adding specs or finding further doc/behavior mismatches.
 
 ## Setup
 
@@ -14,10 +14,10 @@ Playwright + TypeScript end-to-end test suite for the **Toolshop** demo app (htt
 npm install
 npx playwright install --with-deps chromium
 npx husky
-cp .env-template .env   # then set BASE_URL, USER_EMAIL, USER_PASSWORD
+cp .env-template .env   # then set BASE_URL, USER_EMAIL, USER_PASSWORD, ADMIN_EMAIL, ADMIN_PASSWORD
 ```
 
-`USER_EMAIL`/`USER_PASSWORD` must be a real seeded account (`testUser1` in `src/ui/test-data/user.data.ts`). The shared seeded accounts (`customer@`/`admin@practicesoftwaretesting.com`) are read-only fixtures — never use them in destructive tests; register a fresh user via `@faker-js/faker` instead (see `register.spec.ts`).
+`USER_EMAIL`/`USER_PASSWORD` must be a real seeded account (`testUser1` in `src/ui/test-data/user.data.ts`). `ADMIN_EMAIL`/`ADMIN_PASSWORD` are the seeded admin (`adminUser`, documented default `admin@practicesoftwaretesting.com` / `welcome01`), used only by the `@admin` specs. The shared seeded accounts (`customer@`/`admin@practicesoftwaretesting.com`) are read-only fixtures — never use them in destructive tests; register a fresh user via `@faker-js/faker` instead (see `register.spec.ts`). Admin specs in particular must never submit a form (the `/admin/settings` form is app-wide) and must never send the admin a wrong password — 3 failed attempts lock an account permanently.
 
 > **`testUser1` is normally `customer@practicesoftwaretesting.com` itself** — it reads straight from `USER_EMAIL`, so it is _not_ a safe stand-in for "some logged-in user". Any test that mutates its account (password change/reset, TOTP enable, profile edit, disable) must register its own throwaway user instead. Anything that mutates the `@logged` `storageState` session user is also suspect: `tests/setup/login.setup.ts` shares one user across every `@logged` spec in a run.
 

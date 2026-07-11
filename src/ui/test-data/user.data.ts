@@ -1,4 +1,9 @@
-import { USER_EMAIL, USER_PASSWORD } from '@config/env.config';
+import {
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+  USER_EMAIL,
+  USER_PASSWORD,
+} from '@config/env.config';
 import {
   LoginUser,
   PasswordStrengthLevel,
@@ -8,6 +13,17 @@ import {
 export const testUser1: LoginUser = {
   email: USER_EMAIL,
   password: USER_PASSWORD,
+};
+
+/**
+ * The seeded admin (`admin@practicesoftwaretesting.com`). Shared with everyone using the
+ * public demo site, so it is **read-only fixture data** (test_plan.md §3): sign in, look,
+ * assert — never create/edit/delete, never submit a form as this user, and never send it a
+ * wrong password (3 failed attempts lock an account permanently, §20).
+ */
+export const adminUser: LoginUser = {
+  email: ADMIN_EMAIL,
+  password: ADMIN_PASSWORD,
 };
 
 /**

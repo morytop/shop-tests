@@ -8,6 +8,7 @@ export const PAGE_URLS = {
   HAND_TOOLS: '/category/hand-tools',
   INVOICES: '/account/invoices',
   LOGIN: '/auth/login',
+  MESSAGES: '/account/messages',
   OTHER: '/category/other',
   POWER_TOOLS: '/category/power-tools',
   PRODUCT: '/product',

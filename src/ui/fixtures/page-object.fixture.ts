@@ -12,6 +12,8 @@ import { HomePage } from '@src/ui/pages/home.page';
 import { InvoiceDetailPage } from '@src/ui/pages/invoice-detail.page';
 import { InvoicesPage } from '@src/ui/pages/invoices.page';
 import { LoginPage } from '@src/ui/pages/login.page';
+import { MessageDetailPage } from '@src/ui/pages/message-detail.page';
+import { MessagesPage } from '@src/ui/pages/messages.page';
 import { OtherPage } from '@src/ui/pages/other.page';
 import { PowerToolsPage } from '@src/ui/pages/power-tools.page';
 import { ProductDetailPage } from '@src/ui/pages/product-detail.page';
@@ -34,6 +36,8 @@ export type Pages = {
   invoiceDetailPage: InvoiceDetailPage;
   invoicesPage: InvoicesPage;
   loginPage: LoginPage;
+  messageDetailPage: MessageDetailPage;
+  messagesPage: MessagesPage;
   otherPage: OtherPage;
   powerToolsPage: PowerToolsPage;
   productDetailPage: ProductDetailPage;
@@ -82,6 +86,12 @@ export const pageObjectTest = base.extend<Pages>({
   },
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
+  },
+  messageDetailPage: async ({ page }, use) => {
+    await use(new MessageDetailPage(page));
+  },
+  messagesPage: async ({ page }, use) => {
+    await use(new MessagesPage(page));
   },
   otherPage: async ({ page }, use) => {
     await use(new OtherPage(page));

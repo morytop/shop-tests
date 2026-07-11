@@ -230,9 +230,14 @@ deferred.
 
 ### 5.18 Messages (`tests/ui/messages.spec.ts`)
 
-- After submitting a contact form while logged in, the message appears in the paginated Messages list (subject, truncated body, NEW status badge, date).
-- Message detail shows full original message + chronological replies.
-- Submitting a reply appends it to the thread.
+**All 3 ACs implemented 2026-07-11 (see §30).** Each test submits a contact message as its own throwaway
+API-registered user (a fresh user guarantees a single-message list, so the row assertions are deterministic).
+⚠ **Destructive:** a contact message can't be deleted by the customer, so never `testUser1` or the `@logged`
+session user.
+
+- After submitting a contact form while logged in, the message appears in the paginated Messages list (subject, truncated body, NEW status badge, date). **Implemented (§30)** — the Subject column holds the select's raw _value_ (`warranty`), not its label, and the body is cut by the app's `TruncatePipe` at **50** chars.
+- Message detail shows full original message + chronological replies. **Implemented (§30)** — replies render oldest-first.
+- Submitting a reply appends it to the thread. **Implemented (§30)** — a customer can reply to their own thread with no admin involvement; the first reply flips the status `NEW` → `IN_PROGRESS`.
 
 ### 5.19 Contact form (`tests/ui/contact.spec.ts` — extend existing `contact.page.ts`)
 
@@ -1213,3 +1218,70 @@ the extended `CheckoutPaymentPage`) and `checkout-payment.spec.ts` (17/17, exerc
 Deferred (not gaps): **AC4** discounted invoice (needs the §5.5 AC7/AC8 combination-discount flow, still deferred;
 the `is_location_offer` per-item discount is unautomatable, §10) and **AC5** PDF download (best-effort/manual, §9;
 `[data-test="download-invoice"]` is present on the detail page for a future pass).
+
+## 30. Messages implementation findings (2026-07-11)
+
+Implemented **all 3 ACs** of §5.18 (`tests/ui/messages.spec.ts`). Added `src/ui/pages/messages.page.ts` and
+`src/ui/pages/message-detail.page.ts` (both registered in `src/ui/fixtures/page-object.fixture.ts`),
+`PAGE_URLS.MESSAGES`, `src/ui/test-data/contact.data.ts` (`CONTACT_SUBJECTS`) and
+`src/ui/factories/contact.factory.ts` (`prepareRandomMessage()`), and grew the `contact.page.ts` stub into a real
+form page object (subject/message/attachment/submit + `sendMessage()`). Tagged `@auth @messages @regression`
+(`@messages` is a new feature tag). See `.ai-docs/messages-plan.md`.
+
+**Data safety (§3):** a customer cannot delete a message, so every submission is a permanent mutation of the
+account's list (and lands in the shared admin inbox). Each test therefore registers its own throwaway user via
+`registerUserWithApi` and logs in inline — never `testUser1` (it _is_ the shared seeded `customer@`) and never the
+`@logged` storageState session. The fresh user is also what makes "the list has exactly one row" assertable.
+
+**Confirmed page contract (live).**
+
+- List `/account/messages` (`<app-messages>`, fed by `GET /messages?page=1`): a `table.table-hover` whose rows and
+  cells carry **no `data-test`** (same shape as invoices, §29). Columns are `Subject | Message | Status | Date |
+(Details link)`. Like the invoices and favorites lists it renders before its response lands, so `MessagesPage`
+  exposes `gotoAndAwaitLoaded()` and the spec never uses a bare `goto()`.
+- Detail `/account/messages/<ulid>` (`<app-message-detail>`): the original message is a `div.card.bg-secondary`
+  (header `"{name} | Subject: {subject} | {status badge}"`, `p.card-text` body, `div.card-footer` date); replies are
+  `div.card.bg-light` cards, oldest first, header `"{name} | {date}"`.
+- Contact form: `select[data-test="subject"]`, `textarea[data-test="message"]`, `input[data-test="attachment"]`,
+  `input[data-test="contact-submit"]`; success renders `div[role="alert"].alert-success` reading
+  **"Thanks for your message! We will contact you shortly."**
+
+**New finding — the message body has an undocumented 250-character _maximum_.** §5.19 documents only the ≥50
+minimum, but a longer body is rejected server-side with **"The message field must not be greater than 250
+characters."**, rendered in the form (not as a `role="alert"`). This was caught the hard way: `faker.lorem.
+sentences(5)` is unbounded, so the first spec run passed or failed depending on the roll of the dice.
+`prepareRandomMessage(length)` now builds a body of an exact length inside the 50–250 window. **§5.19 should add a
+boundary case for 250 vs 251 chars when it is implemented.**
+
+**New finding — a reply posted before the thread has loaded is silently dropped.** The "Add Reply" form renders
+immediately, while `GET /messages/{id}` is still in flight; clicking Reply in that window posts nothing and the
+thread stays empty (observed as an intermittent `replyCards → 0`). Both reply tests therefore assert something from
+the loaded thread (the original message, or the NEW badge) _before_ replying — that assertion doubles as the load
+gate. Same class of trap as the favorites empty-state race (§26).
+
+**New finding — the list's Subject column shows the raw option value.** The `<select>` submits
+`customer-service`/`webmaster`/`return`/`payments`/`warranty`/`status-of-order`, and both the list and the detail
+header echo that value, never the human label ("Customer service"). `CONTACT_SUBJECTS` holds the values, and the
+spec asserts against them directly.
+
+**New finding — the first customer reply flips the status `NEW` → `IN_PROGRESS`** (badge changes from `bg-info` to
+`bg-warning`, in both the detail header and the list). AC1's "NEW badge" assertion is therefore only true before
+anyone replies, so that test must not post a reply. The status flip is asserted in AC3 as the server-side proof the
+reply landed.
+
+**New finding — a customer can reply to their own thread with no admin involvement**, so §5.18 AC3 needed no admin
+credentials. (§5.20's "admin can view and reply to a message" remains a separate, still-deferred item.)
+
+**Doc corrections for §5.19 (contact form, still unimplemented).**
+
+- The logged-in greeting is **"Hello {name}, please fill out this form to submit your message."**, not
+  "Known user, {name}".
+- The body limit is a **range**: ≥50 _and_ ≤250 characters.
+
+**Stale §26 finding corrected.** The `/account` dashboard now renders **four** tiles — Favorites, Profile, Invoices,
+Messages — so "the favorites page is not linked from the account dashboard" (§26) no longer holds as of app build
+2026-07-06. The `FavoritesPage` doc comment repeating that claim should be updated in a future pass.
+
+**Validation.** `npm run lint`, `npm run format:check` and `npm run tsc:check` clean. `messages.spec.ts` 3/3 green,
+and 6/6 under `--repeat-each=2`; the `@smoke` tag 18/18 green (it exercises `contact.page.ts`'s other consumer, the
+navbar/menu smoke spec).

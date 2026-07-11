@@ -3,7 +3,7 @@ import { Locator, Page } from '@playwright/test';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 /**
- * Admin settings (`/admin/settings`) — undocumented in the v5 user stories (test_plan.md
+ * Admin settings (`/admin/settings`) — undocumented in the v5 user stories (TEST_PLAN.md
  * §9), covered here at smoke level only.
  *
  * ⚠ This form rewrites **app-wide** configuration (payment endpoint, geolocation, the CO₂

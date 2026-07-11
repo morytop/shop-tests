@@ -6,7 +6,7 @@ import {
   PASSWORD_STRENGTH_LEVELS,
 } from '@src/ui/test-data/user.data';
 
-// User Stories v5 — Change password (test_plan.md §5.15). The form is the middle of the
+// User Stories v5 — Change password (TEST_PLAN.md §5.15). The form is the middle of the
 // three on `/account/profile`, so every test gates on `waitForProfileLoaded()` after
 // navigating (§24) and reads its banners from the password form, not page-wide.
 //
@@ -17,9 +17,9 @@ import {
 // `@logged` spec.
 //
 // Two of §5.15's ACs describe production inaccurately; both are pinned below and
-// recorded in test_plan.md §25.
+// recorded in TEST_PLAN.md §25.
 //
-// See test_plan.md §25 and .ai-docs/change-password-plan.md.
+// See TEST_PLAN.md §25 and .ai-docs/change-password-plan.md.
 
 test.describe('Verify change password', () => {
   // AC1 — the form offers exactly the three password fields, all empty and masked.

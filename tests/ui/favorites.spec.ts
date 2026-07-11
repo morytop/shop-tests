@@ -2,7 +2,7 @@ import { registerUserWithApi } from '@src/api/factories/user-register.api.factor
 import { expect, test } from '@src/merge.fixture';
 import { truncate } from '@src/ui/utils/text.util';
 
-// User Stories v5 — Favorites (test_plan.md §5.16). The favorites page is entered via
+// User Stories v5 — Favorites (TEST_PLAN.md §5.16). The favorites page is entered via
 // `gotoAndAwaitLoaded()` in every test: the component renders its empty-state message
 // while `GET /favorites` is still in flight, so a bare `goto()` makes "not loaded yet"
 // look exactly like "no favorites" (§26).
@@ -16,7 +16,7 @@ import { truncate } from '@src/ui/utils/text.util';
 // The catalog is shared, mutable production data (§3/§9), so product names and
 // descriptions are read off the live detail page rather than hard-coded.
 //
-// See test_plan.md §26 and .ai-docs/favorites-plan.md.
+// See TEST_PLAN.md §26 and .ai-docs/favorites-plan.md.
 
 test.describe('Verify favorites', () => {
   // AC1 — a user with no favorites sees the empty-state message and no cards.

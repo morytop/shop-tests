@@ -5,7 +5,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 /**
  * A single product's detail page (`/product/<id>`). The id is dynamic and the
- * catalog is shared/mutable (test_plan.md §9), so this page is always reached by
+ * catalog is shared/mutable (TEST_PLAN.md §9), so this page is always reached by
  * clicking a product card from a listing rather than a hard-coded URL — PAGE_URL
  * is only the base path to satisfy BasePage, and goto() is not the entry point.
  */

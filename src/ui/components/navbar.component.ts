@@ -51,7 +51,7 @@ export class NavbarComponent {
     this.cartQuantity = this.page.locator('[data-test="cart-quantity"]');
 
     // Account dropdown, labelled with the signed-in user's name. For an admin it also
-    // holds every admin section link — there is no sidebar (test_plan.md §9, §31). The
+    // holds every admin section link — there is no sidebar (TEST_PLAN.md §9, §31). The
     // links are in the DOM but hidden until the dropdown is opened.
     this.userMenu = this.page.locator('[data-test="nav-menu"]');
     this.signOutNavLink = this.page.locator('[data-test="nav-sign-out"]');
@@ -90,7 +90,7 @@ export class NavbarComponent {
     // Language dropdown: the toggle shows the active code ("EN"), and its menu is
     // labelled by it (`aria-labelledby`), which scopes the option menuitems away from
     // the main menubar's own menuitems. The nav's `data-test` ids are language-agnostic,
-    // so every other locator here keeps working after a switch (test_plan.md §34).
+    // so every other locator here keeps working after a switch (TEST_PLAN.md §34).
     this.languageSelect = this.page.locator('[data-test="language-select"]');
     this.languageMenu = this.page.getByRole('menu', {
       name: 'Select language',

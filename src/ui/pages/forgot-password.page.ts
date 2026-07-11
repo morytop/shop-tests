@@ -6,7 +6,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * Forgot-password form (`/auth/forgot-password`).
  *
  * Careful: submitting a *registered* address is destructive — the endpoint resets
- * that account's password outright rather than mailing a reset link (test_plan.md
+ * that account's password outright rather than mailing a reset link (TEST_PLAN.md
  * §21). Only ever drive it with a disposable user or an unregistered address.
  */
 export class ForgotPasswordPage extends BasePage {

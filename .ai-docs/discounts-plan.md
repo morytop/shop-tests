@@ -1,13 +1,13 @@
 # Discounts (§5.22) — action plan
 
 Status: **completed / ready for review** (2026-07-11). Implemented as scoped: 3 executable tests + 1 documented
-skip in `tests/ui/discounts.spec.ts`; findings written up in `test_plan.md` §33; lint/format/tsc clean; the spec
+skip in `tests/ui/discounts.spec.ts`; findings written up in `TEST_PLAN.md` §33; lint/format/tsc clean; the spec
 and every spec sharing the code it touches re-run green. Two items need a human decision — see "Open questions"
 at the bottom.
 
 ## Goal
 
-Implement `tests/ui/discounts.spec.ts` covering test_plan.md **§5.22 Discounts**, as confirmed with the user:
+Implement `tests/ui/discounts.spec.ts` covering TEST_PLAN.md **§5.22 Discounts**, as confirmed with the user:
 
 1. **Cart-level combination discount** — a cart holding both a rental and a non-rental item gets the additional
    15% combined-product discount and renders a subtotal / discount / total breakdown. (Also closes §5.5 **AC7**.)
@@ -44,7 +44,7 @@ resulting invoice, plus a second **non-discounted** control order.
 - **Q1 — ANSWERED.** The invoice shows the discount as an **amount** (`$ 22.60`); the **15% is only in the label
   text** (`Discount (15%)`). So the "discount %" half of §5.17 AC4 is asserted on the label, not a value.
 
-### New discrepancies found (for test_plan.md §9-style findings)
+### New discrepancies found (for TEST_PLAN.md §9-style findings)
 
 - **The invoice detail page reuses `data-test="total"` on three different inputs** (subtotal, discount, total) —
   distinguished only by their `id`s (`#subtotal`, `#additional_discount_percentage`, `#total`). On a **discounted**
@@ -100,7 +100,7 @@ resulting invoice, plus a second **non-discounted** control order.
    - Write `tests/ui/discounts.spec.ts`: 3 executable tests + 1 `test.skip`, AAA, tagged per the §3 taxonomy
      (`@regression`, `@checkout`; `@smoke` only if the combination-discount case earns it), with a traceability
      comment referencing §5.22 / §5.5 AC7-AC8 / §5.17 AC4.
-6. Update `test_plan.md`: mark §5.22, §5.5 AC7/AC8 and §5.17 AC4 as implemented, add a findings section for any
+6. Update `TEST_PLAN.md`: mark §5.22, §5.5 AC7/AC8 and §5.17 AC4 as implemented, add a findings section for any
    doc/behavior discrepancy found in step 4.
 7. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run `discounts.spec.ts`, plus
    `cart.spec.ts` / `rentals.spec.ts` / `checkout-e2e.spec.ts` (they share `CartPage` and the cart action fixture)

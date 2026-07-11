@@ -4,7 +4,7 @@ Status: **completed / ready-for-review** (created & completed 2026-07-08)
 
 Outcome: `register.spec.ts` extended with AC1/AC2/AC4/AC6 (AC3 pinned as a documented
 production bug; AC5 already covered). All 10 register specs green; lint/format/tsc clean.
-Findings written up in `test_plan.md` §19. Two production discrepancies documented there:
+Findings written up in `TEST_PLAN.md` §19. Two production discrepancies documented there:
 the broken strength meter (AC3) and the actual duplicate-email banner copy.
 
 ## Goal (scope confirmed with user)
@@ -65,7 +65,7 @@ already covered by the existing happy-path test — no change needed.
        and the requirements-list + strength-indicator behavior. Findings folded in below.
 4. [x] Extend `register.page.ts` with locators + `enterPassword()` helper (no `expect()`).
 5. [x] Write the new specs in `register.spec.ts` (AAA, `tag` option, AC traceability).
-6. [x] Update `test_plan.md` — added §19 findings + discrepancies.
+6. [x] Update `TEST_PLAN.md` — added §19 findings + discrepancies.
 7. [x] Validate: lint / format:check / tsc:check clean; `register.spec.ts` 10/10 green.
        `@smoke` re-run green (initial 3 failures were environmental teardown timeouts on
        cart/checkout/setup, unrelated to this additive change — confirmed on re-run).
@@ -105,7 +105,7 @@ observed behavior matches this sprint5 source exactly.
   Moderate 40% / Strong 60% / Very Strong 80% / Excellent 100% mapping — but it's never fed
   a current value. **Decision:** cannot assert AC3's intended mapping; write a test that
   PINS the actual broken behavior (bar 0% / no active label for a valid password) per repo
-  convention (§17 pattern), and document the bug in test_plan.md.
+  convention (§17 pattern), and document the bug in TEST_PLAN.md.
 - **AC4 duplicate**: `register-error` banner (`data-test="register-error"`) shows
   "Email is already in use." when the API returns `Duplicate Entry` (register.component.ts:177).
   Plan: pre-create a user via `registerUserWithApi(usersRequest)` (API factory), then UI-register

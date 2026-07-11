@@ -1,11 +1,11 @@
 # Multi-language (§5.23) — action plan
 
-**Status:** completed / ready for review (2026-07-11) — see `test_plan.md` §34 for the findings.
+**Status:** completed / ready for review (2026-07-11) — see `TEST_PLAN.md` §34 for the findings.
 All planned steps done; `language.spec.ts` 8/8 green (16/16 under `--repeat-each=2`), `@smoke` 19/19.
 One design change during implementation: the tests are anchored on the contact/login pages, not the
 home page, because home's product grid was slow enough on prod to blow the 60s test timeout under
 parallel workers (§34).
-**Scope confirmed with user (2026-07-11):** first three bullets of `test_plan.md` §5.23 only.
+**Scope confirmed with user (2026-07-11):** first three bullets of `TEST_PLAN.md` §5.23 only.
 The optional fourth bullet (first-visit browser-language auto-detection / fallback to English via
 Playwright's `locale` option in a fresh context) is **out of scope for this pass**.
 
@@ -64,7 +64,7 @@ language">` showing the active code (`EN`), opening a bootstrap `<ul role="menu"
 4. Implement: extend `navbar.component.ts` with the language selector locators + a `selectLanguage()`
    action (no `expect()`); add `tests/ui/language.spec.ts` with the three tests, tagged per §3
    taxonomy (`@regression`, `@language`), AAA structure, traceability comment per §7.
-5. Update `test_plan.md`: mark §5.23 implemented and add an implementation-findings section.
+5. Update `TEST_PLAN.md`: mark §5.23 implemented and add an implementation-findings section.
 6. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run the new spec, and run
    `@smoke` (navbar is shared code — also re-run every spec that touches the navbar component).
 7. Report.

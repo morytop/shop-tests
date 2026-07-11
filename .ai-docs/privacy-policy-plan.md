@@ -1,7 +1,7 @@
 # Privacy policy (§5.24) — action plan
 
-**Status:** completed / ready for review (2026-07-11) — see `test_plan.md` §35 for the written-up findings.
-**Scope (confirmed from the request):** `test_plan.md` §5.24 — the single bullet:
+**Status:** completed / ready for review (2026-07-11) — see `TEST_PLAN.md` §35 for the written-up findings.
+**Scope (confirmed from the request):** `TEST_PLAN.md` §5.24 — the single bullet:
 
 > `/privacy` loads and contains expected sections (Google Sign-In, data collection, automatic removal,
 > third-party services, data security, contact info) — assert on presence of key headings/text.
@@ -19,7 +19,7 @@ present. Nothing else — no form submission, no auth, no catalog data.
   non-hash route, never `/#/...`).
 - A2: The page is fully static — no XHR-driven content, so no first-paint race like the product grid (§10).
 - A3: The AC's six "sections" map to real headings on the page. **The section names in §5.24 come from the
-  plan, not from a doc that mentions privacy at all** (`grep -i privacy` over the repo hits only `test_plan.md`),
+  plan, not from a doc that mentions privacy at all** (`grep -i privacy` over the repo hits only `TEST_PLAN.md`),
   so the real heading text must be read from the live page, not guessed.
 - Q1: Is the page reachable from the UI (footer/nav link), or URL-only? If there is a link, worth asserting
   navigation from it; if not, the spec drives `goto()` only.
@@ -37,7 +37,7 @@ present. Nothing else — no form submission, no auth, no catalog data.
 
 ## Planned steps
 
-1. Read `test_plan.md` §5.24 / §3 tags / §7 traceability, `CODING_STANDARDS.md`, existing static-ish page
+1. Read `TEST_PLAN.md` §5.24 / §3 tags / §7 traceability, `CODING_STANDARDS.md`, existing static-ish page
    objects (`ContactPage`) as the template. — done
 2. Explore the live `/privacy` page with the `playwright-cli` skill: capture the real headings, the page
    title, whether a footer/nav link exists, and whether the AC's six sections are actually present under
@@ -47,7 +47,7 @@ present. Nothing else — no form submission, no auth, no catalog data.
 5. Register it in both the `Pages` type and `pageObjectTest` in `src/ui/fixtures/page-object.fixture.ts`.
 6. Write `tests/ui/privacy.spec.ts`: page loads (URL + main heading), and the AC's content sections are
    present. Tags: `@regression`, `@privacy` (per the §3 taxonomy's "feature tags" convention).
-7. Update `test_plan.md` §5.24 status + a new numbered findings section, plus §9 if the live page contradicts
+7. Update `TEST_PLAN.md` §5.24 status + a new numbered findings section, plus §9 if the live page contradicts
    the AC.
 8. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run `privacy.spec.ts` and `@smoke`.
 
@@ -68,5 +68,5 @@ present. Nothing else — no form submission, no auth, no catalog data.
 
 Files: `tests/ui/privacy.spec.ts` (new, 4 tests), `src/ui/pages/privacy.page.ts` (new),
 `src/ui/test-data/privacy.data.ts` (new), `src/ui/constants/page-urls.ts` (+`PRIVACY`),
-`src/ui/fixtures/page-object.fixture.ts` (+`privacyPage`), `test_plan.md` (§5.24 status, §9 discrepancy, §35).
+`src/ui/fixtures/page-object.fixture.ts` (+`privacyPage`), `TEST_PLAN.md` (§5.24 status, §9 discrepancy, §35).
 Validation: lint / format:check / tsc:check clean; `privacy.spec.ts` 4/4; `@smoke` 19/19.

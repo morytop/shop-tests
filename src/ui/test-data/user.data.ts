@@ -17,7 +17,7 @@ export const testUser1: LoginUser = {
 
 /**
  * The seeded admin (`admin@practicesoftwaretesting.com`). Shared with everyone using the
- * public demo site, so it is **read-only fixture data** (test_plan.md §3): sign in, look,
+ * public demo site, so it is **read-only fixture data** (TEST_PLAN.md §3): sign in, look,
  * assert — never create/edit/delete, never submit a form as this user, and never send it a
  * wrong password (3 failed attempts lock an account permanently, §20).
  */
@@ -29,7 +29,7 @@ export const adminUser: LoginUser = {
 /**
  * The error the profile form shows for each blanked required field. The copy comes
  * from the API's 422 response, hence the dotted `address.*` payload paths rather
- * than the form's own field labels (test_plan.md §24).
+ * than the form's own field labels (TEST_PLAN.md §24).
  */
 export const REQUIRED_PROFILE_FIELD_ERRORS: Record<
   RequiredProfileField,
@@ -45,7 +45,7 @@ export const REQUIRED_PROFILE_FIELD_ERRORS: Record<
 /**
  * The three ways the change-password form can be rejected. All are enforced
  * server-side — the submit button never disables and `POST /users/change-password`
- * always fires (test_plan.md §25). `confirmationMismatch` is the API's 422 copy, not
+ * always fires (TEST_PLAN.md §25). `confirmationMismatch` is the API's 422 copy, not
  * the "Passwords do not match." the plan originally documented.
  */
 export const CHANGE_PASSWORD_ERRORS = {
@@ -60,7 +60,7 @@ export const CHANGE_PASSWORD_ERRORS = {
  * The change-password strength meter, one criterion per step: non-empty, then ≥8
  * characters, an uppercase letter, a digit and a symbol. Each sample adds exactly one
  * criterion to the one above it. Unlike the register form's meter — which is broken in
- * production (test_plan.md §19) — this one tracks the typed value correctly (§25).
+ * production (TEST_PLAN.md §19) — this one tracks the typed value correctly (§25).
  */
 export const PASSWORD_STRENGTH_LEVELS: PasswordStrengthLevel[] = [
   { password: 'a', label: 'Weak', width: '20%' },

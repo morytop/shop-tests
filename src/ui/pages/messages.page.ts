@@ -11,7 +11,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * Neither the table nor its cells carry a `data-test`; columns are
  * `Subject | Message | Status | Date | (Details link)`, where Subject is the raw select
  * value and Message is the body truncated by the app's `TruncatePipe` at 50 chars
- * (test_plan.md §30).
+ * (TEST_PLAN.md §30).
  */
 export class MessagesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.MESSAGES;

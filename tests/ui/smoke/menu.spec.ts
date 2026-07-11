@@ -53,7 +53,7 @@ test.describe('Verify menu bookmarks @smoke', () => {
   }
 
   // Special Tools is the one category whose page renders the heading but never
-  // updates <title> (test_plan.md §11/§14), so it is asserted via its heading.
+  // updates <title> (TEST_PLAN.md §11/§14), so it is asserted via its heading.
   test('special tools link navigates to category: special tools page', async ({
     specialToolsPage,
   }) => {

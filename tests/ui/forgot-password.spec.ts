@@ -3,7 +3,7 @@ import { expect, test } from '@src/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 
-// User Stories v5 — Forgot password (test_plan.md §5.12). The form is one Angular
+// User Stories v5 — Forgot password (TEST_PLAN.md §5.12). The form is one Angular
 // reactive form whose error block is submit-gated (`@if (email.invalid && submitted)`),
 // so nothing validates before the first submit. Both server banners are removed from
 // the DOM ~3s after they render, so every server-path assertion first awaits the
@@ -12,7 +12,7 @@ import { prepareRandomUser } from '@src/ui/factories/user.factory';
 // DESTRUCTIVE ENDPOINT: submitting a registered address does not mail a reset link —
 // it overwrites that account's password on the spot. AC3 therefore runs against a
 // throwaway API-registered user and never `testUser1` or the shared seeded accounts
-// (§3). See test_plan.md §21 and .ai-docs/forgot-password-plan.md.
+// (§3). See TEST_PLAN.md §21 and .ai-docs/forgot-password-plan.md.
 
 // RFC-format boundary cases rejected by the email pattern validator.
 const INVALID_EMAILS = ['plainaddress', 'foo@', '@example.com'];
@@ -35,7 +35,7 @@ test.describe('Verify forgot password @forgot-password', () => {
   );
 
   // AC2 — a malformed address is rejected client-side. NB: the error block renders
-  // EMPTY (test_plan.md §21) — the control uses `Validators.pattern`, which sets
+  // EMPTY (TEST_PLAN.md §21) — the control uses `Validators.pattern`, which sets
   // `errors.pattern`, but the template only prints copy for `errors.required` and
   // `errors['email']`. This pins the actual behaviour, as §19 does for the register
   // strength meter. The absence of a server banner proves nothing reached the API.

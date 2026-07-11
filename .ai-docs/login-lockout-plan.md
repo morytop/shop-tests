@@ -1,7 +1,7 @@
 # Login account lockout — plan
 
-**Status:** completed / ready for review (2026-07-09) — all 5 assumptions confirmed live; findings recorded in `test_plan.md` §20.
-**Scope (confirmed with user):** `test_plan.md` §5.11, the single bullet:
+**Status:** completed / ready for review (2026-07-09) — all 5 assumptions confirmed live; findings recorded in `TEST_PLAN.md` §20.
+**Scope (confirmed with user):** `TEST_PLAN.md` §5.11, the single bullet:
 
 > Account locking: 3 consecutive failed attempts → 4th attempt shows "Account locked, too many failed attempts..." (use a disposable freshly-registered account, never the shared seeded ones, since lockout is destructive to that account for the remainder of the run).
 
@@ -21,7 +21,7 @@ Extend `tests/ui/login.spec.ts` with one test proving that repeated failed login
 
 ## Risks and constraints
 
-- **Destructive by nature.** The account under test is permanently locked afterwards. Mitigation: register a fresh faker user per test run via `registerUserWithApi(usersRequest)` (the existing API factory) — never `testUser1`, never the seeded `customer@`/`admin@` accounts (`test_plan.md` §3).
+- **Destructive by nature.** The account under test is permanently locked afterwards. Mitigation: register a fresh faker user per test run via `registerUserWithApi(usersRequest)` (the existing API factory) — never `testUser1`, never the seeded `customer@`/`admin@` accounts (`TEST_PLAN.md` §3).
 - **Parallel-safety.** `fullyParallel: true`. If lockout turns out to be IP-scoped rather than account-scoped, this test would break every other concurrently-running login test. Assumption 5 gates whether this test is safe to add at all.
 - **Docs are unreliable.** §9 records multiple docs-vs-production copy mismatches (checkout copy, "Add to favourites", chat labels). Assert on the string production actually renders, and record any mismatch back into §9.
 - Test is a spec-level state mutation with no cleanup path — that is inherent to lockout and accepted, since the account is disposable.
@@ -33,7 +33,7 @@ Extend `tests/ui/login.spec.ts` with one test proving that repeated failed login
 3. Probe assumption 5 (account- vs IP-scoped) by attempting a _valid_ login as a different, unlocked user from the same browser/IP immediately after locking the first one.
 4. Fold confirmed/rejected findings back into this file.
 5. Implement: add the test to `tests/ui/login.spec.ts` (AAA, tagged per §3 taxonomy). Add a `loginRepeatedly`-style action method to `LoginPage` only if the loop is not cleanly expressible in the spec — prefer no new page-object surface.
-6. Update `test_plan.md` §5.11 status note and, if exploration finds a copy/behavior mismatch, §9.
+6. Update `TEST_PLAN.md` §5.11 status note and, if exploration finds a copy/behavior mismatch, §9.
 7. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`, run `tests/ui/login.spec.ts`, then run `--grep @smoke` for regressions.
 
 ## Exploration results (2026-07-09)
@@ -46,7 +46,7 @@ All five assumptions **confirmed** against production using two throwaway API-re
 4. Confirmed — the correct password is also rejected once locked, and the user stays on `/auth/login`. The spec spends its 4th attempt on the _valid_ password to assert exactly this.
 5. Confirmed — **account-scoped, not IP-scoped.** A second unlocked user logged in fine from the same browser/IP right after. The test is therefore safe under `fullyParallel: true`.
 
-**Extra discrepancy found (recorded in §20):** production no longer uses hash routing. `/#/auth/login` silently lands on home; the real route is `/auth/login`. `PAGE_URLS` was already correct, so no code change — but the header of `test_plan.md` and `CLAUDE.md` still advertise the `#/` form.
+**Extra discrepancy found (recorded in §20):** production no longer uses hash routing. `/#/auth/login` silently lands on home; the real route is `/auth/login`. `PAGE_URLS` was already correct, so no code change — but the header of `TEST_PLAN.md` and `CLAUDE.md` still advertise the `#/` form.
 
 ## Open questions
 

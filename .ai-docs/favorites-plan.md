@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement `tests/ui/favorites.spec.ts` covering all three ACs of `test_plan.md` §5.16:
+Implement `tests/ui/favorites.spec.ts` covering all three ACs of `TEST_PLAN.md` §5.16:
 
 1. Empty state message when no favorites.
 2. Adding a product from the detail page surfaces it on the favorites page with image / name / truncated description.
@@ -21,7 +21,7 @@ will be reported as a remaining gap, not implemented here.
 - **A2.** "Add to favourites" is on the product detail page (British spelling per §9's 2026-07-05 finding, line 314),
   so `product-detail.page.ts` likely needs an `addToFavourites()` action + button locator added. Whether it already
   has one is unverified. (To verify.)
-- **A3.** The empty-state copy for AC1 is undocumented in `test_plan.md` — must be read off the live app, not guessed.
+- **A3.** The empty-state copy for AC1 is undocumented in `TEST_PLAN.md` — must be read off the live app, not guessed.
 - **A4.** AC2's "truncated description" — the truncation rule (character count? CSS ellipsis? server-side substring?)
   is undocumented. Must be measured live. If it's pure CSS ellipsis there is no text assertion to make and the AC
   becomes "description is displayed"; if it's a server/JS substring, assert the truncation contract.
@@ -32,7 +32,7 @@ will be reported as a remaining gap, not implemented here.
 
 ## Risks and constraints
 
-- **Destructive by definition (`test_plan.md` §3).** All three ACs mutate a user's favorites collection.
+- **Destructive by definition (`TEST_PLAN.md` §3).** All three ACs mutate a user's favorites collection.
   - Never `testUser1` — per `CLAUDE.md` it reads straight from `USER_EMAIL` and **is** the shared seeded
     `customer@practicesoftwaretesting.com` account.
   - Never the `@logged` `storageState` session user — `tests/setup/login.setup.ts` shares one user across every
@@ -59,7 +59,7 @@ will be reported as a remaining gap, not implemented here.
 4. Get design sign-off via plan mode (new page object + fixture change + 3 tests is beyond a trivial addition).
 5. Implement: `favorites.page.ts`, `page-urls.ts` + `page-object.fixture.ts` registration, any
    `product-detail.page.ts` additions, `tests/ui/favorites.spec.ts` (AAA, per-test AC comment per §7, tagged per §3).
-6. Update `test_plan.md`: mark §5.16 implemented, record any new doc/behavior discrepancy in §9.
+6. Update `TEST_PLAN.md`: mark §5.16 implemented, record any new doc/behavior discrepancy in §9.
 7. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`; run the new spec; run `@smoke`; re-run
    `product-detail.spec.ts` (and any other spec importing a page object I touch).
 8. New branch → conventional commit → PR.
@@ -141,7 +141,7 @@ passing.
 
 Files touched: `src/ui/constants/page-urls.ts`, `src/ui/utils/text.util.ts` (new),
 `src/ui/pages/favorites.page.ts` (new), `src/ui/pages/product-detail.page.ts`,
-`src/ui/fixtures/page-object.fixture.ts`, `tests/ui/favorites.spec.ts` (new), `test_plan.md` (§5.16 + new §26),
+`src/ui/fixtures/page-object.fixture.ts`, `tests/ui/favorites.spec.ts` (new), `TEST_PLAN.md` (§5.16 + new §26),
 `CLAUDE.md` (spec list).
 
 Validation: `lint` / `format:check` / `tsc:check` clean; `favorites.spec.ts` 3/3; AC1 3/3 under `--repeat-each=3`
@@ -149,7 +149,7 @@ Validation: `lint` / `format:check` / `tsc:check` clean; `favorites.spec.ts` 3/3
 
 **Pre-existing failures, not caused by this change:** `product-detail.spec.ts` fails 3 tests (quantity stepper,
 manual quantity clamp, add-to-cart confirmation) identically on clean `main` — the first home-grid card is now an
-API-mutated, out-of-stock product. Recorded in `test_plan.md` §26 as a follow-up gap.
+API-mutated, out-of-stock product. Recorded in `TEST_PLAN.md` §26 as a follow-up gap.
 
 **Not run** (cut short at the user's request): `cart.spec.ts`, the `checkout-*` specs, and the `@smoke` tag.
 

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement the first acceptance criterion of `test_plan.md` §5.6 in a new spec file
+Implement the first acceptance criterion of `TEST_PLAN.md` §5.6 in a new spec file
 `tests/checkout-signin.spec.ts`:
 
 - **AC1**: A guest proceeding from the cart is shown a login form (email, password,
@@ -45,7 +45,7 @@ Scope confirmed with the user (2026-07-07): **AC1 only**. AC2 (TOTP prompt), AC3
        `expect()`); register it in `src/fixtures/pages.ts` (both `Pages` type and `pages`).
 5. [x] Write `tests/checkout-signin.spec.ts` with the AC1 test, tagged per taxonomy,
        with a §5.6 traceability comment.
-6. [x] Update `test_plan.md` with a §15 implementation-findings note + any discrepancies.
+6. [x] Update `TEST_PLAN.md` with a §15 implementation-findings note + any discrepancies.
 7. [x] Validate: lint + format:check green; new spec passes (14.7s); full `@smoke`
        suite 13/13 passing.
 8. [x] Report; plan marked completed.

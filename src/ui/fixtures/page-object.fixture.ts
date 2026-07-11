@@ -50,7 +50,7 @@ export type Pages = {
   adminUsersPage: AdminUsersPage;
   cartPage: CartPage;
   // Rendered on every page and owning no URL of its own, so it is injected directly
-  // rather than hanging off one page object (test_plan.md §32).
+  // rather than hanging off one page object (TEST_PLAN.md §32).
   chatWidget: ChatWidgetComponent;
   checkoutAddressPage: CheckoutAddressPage;
   checkoutPaymentPage: CheckoutPaymentPage;

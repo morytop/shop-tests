@@ -11,7 +11,7 @@ import { Address, AddressTextField } from '@src/ui/models/address.model';
  * an Angular reactive form: every field is required and the "Proceed to checkout"
  * button (`proceed-3`) stays disabled until the whole form is valid. There are no
  * native `maxlength` attributes and no visible error text — an empty/over-long
- * field only carries the `ng-invalid` class (test_plan.md §16).
+ * field only carries the `ng-invalid` class (TEST_PLAN.md §16).
  */
 export class CheckoutAddressPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
@@ -32,7 +32,7 @@ export class CheckoutAddressPage extends BasePage {
     this.bookmarks = new NavbarComponent(this.page);
     this.heading = this.page.getByRole('heading', { name: 'Billing Address' });
     // Country is a `<select>` (ISO-code values, full-name option text), not the
-    // free-text field the docs imply (test_plan.md §9).
+    // free-text field the docs imply (TEST_PLAN.md §9).
     this.countrySelect = this.page.locator('[data-test="country"]');
     this.postalCodeInput = this.page.locator('[data-test="postal_code"]');
     this.houseNumberInput = this.page.locator('[data-test="house_number"]');
@@ -57,7 +57,7 @@ export class CheckoutAddressPage extends BasePage {
     await this.selectCountry(address.country);
     await this.postalCodeInput.fill(address.postalCode);
     // Country + postal + house triggers an async postcode-lookup that auto-fills
-    // street/city/state from an external geocoder (test_plan.md §16). Await it so a
+    // street/city/state from an external geocoder (TEST_PLAN.md §16). Await it so a
     // stale in-flight lookup can't resolve later and overwrite a field the boundary
     // tests deliberately set over-long (the response echoes the valid values back).
     const lookup = this.page.waitForResponse((response) =>
@@ -76,7 +76,7 @@ export class CheckoutAddressPage extends BasePage {
    * auto-fill street/city/state, leaving those geocoded values untouched. The
    * invoice API cross-validates city ↔ country, so a manually-typed city is
    * rejected (422) — only the geocoded triple is internally consistent and
-   * orderable (test_plan.md §18). House number is cleared then refilled to force
+   * orderable (TEST_PLAN.md §18). House number is cleared then refilled to force
    * the lookup even when the field is already pre-filled (logged-in path).
    */
   async fillAddressViaLookup(

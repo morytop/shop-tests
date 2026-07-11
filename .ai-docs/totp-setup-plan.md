@@ -1,7 +1,7 @@
 # Two-Factor Authentication setup (§5.13) — action plan
 
 **Status:** ✅ completed / ready for review (2026-07-09)
-**Scope confirmed:** 2026-07-09 — all four ACs of `test_plan.md` §5.13, in `tests/ui/totp-setup.spec.ts`.
+**Scope confirmed:** 2026-07-09 — all four ACs of `TEST_PLAN.md` §5.13, in `tests/ui/totp-setup.spec.ts`.
 **Dependency decision:** add `otplib` as a **devDependency** (user-approved). Installed `otplib@^13.4.1`.
 
 ## Goal
@@ -18,7 +18,7 @@ Implement `tests/ui/totp-setup.spec.ts` covering §5.13:
 
 ## Assumptions (to confirm/reject during exploration)
 
-1. The TOTP setup section lives on the profile/account page. `test_plan.md` §9 says "TOTP setup section on
+1. The TOTP setup section lives on the profile/account page. `TEST_PLAN.md` §9 says "TOTP setup section on
    profile page" and quotes the exact denial copy for `customer@`: _"Access denied: If you want to configure
    TOTP, please create your own account."_ — that string is from a 2026-07-04 pass and must be re-verified.
 2. Route is likely `/account/profile` (or the TOTP section is on `/account`). `PAGE_URLS` has no entry;
@@ -78,7 +78,7 @@ Implement `tests/ui/totp-setup.spec.ts` covering §5.13:
   QR/secret/form renders. The `admin@` half is **reported as blocked on credentials**, not silently skipped or
   guessed — following §5.11's precedent ("if this can't be verified without touching the shared admin, mark as
   manual/skip with a comment explaining why"). Source evidence that both emails share one `in_array` branch is
-  recorded in `test_plan.md` so the gap is understood rather than merely noted.
+  recorded in `TEST_PLAN.md` so the gap is understood rather than merely noted.
 - **AC1–AC3 each register their own disposable user.** They must not ride the `@logged` storageState session:
   `login.setup.ts` shares one user across every `@logged` spec in a run, and enabling TOTP on it could change
   behaviour for `checkout-e2e` AC2. They log in inline instead.
@@ -120,7 +120,7 @@ Implement `tests/ui/totp-setup.spec.ts` covering §5.13:
    register it in the `Pages` type + `pageObjectTest`.
 7. Implement `tests/ui/totp-setup.spec.ts` — AAA, tags `@auth`/`@totp`/`@regression` per the §3 taxonomy,
    one `// 2FA Setup ACn` traceability comment per §7.
-8. Update `test_plan.md`: mark §5.13 implemented, add a numbered findings section (§22) for discrepancies.
+8. Update `TEST_PLAN.md`: mark §5.13 implemented, add a numbered findings section (§22) for discrepancies.
 9. Validate: `npm run lint`, `format:check`, `tsc:check`, the new spec, then `@smoke`; plus any spec importing
    code I touched.
 10. Report; mark this file completed.
@@ -166,7 +166,7 @@ All four ACs implemented; 4/4 green, and AC2 (time-sensitive) passed 3/3 under `
 regressions: `login.spec.ts` 3/3 (its happy path proves the seeded `customer@` password is untouched) and
 `--grep @smoke` 18/18. `lint` / `format:check` / `tsc:check` all clean.
 
-Two further production bugs found and recorded in `test_plan.md` §22 (one pinned by AC3, one merely noted):
+Two further production bugs found and recorded in `TEST_PLAN.md` §22 (one pinned by AC3, one merely noted):
 
 1. An invalid code **tears down the QR/secret/form** — the template hides them behind `!errorMessage` — so a
    single typo forces a page reload before retrying.

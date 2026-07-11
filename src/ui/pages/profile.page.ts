@@ -79,7 +79,7 @@ export class ProfilePage extends BasePage {
     this.postalCodeInput = this.page.locator('[data-test="postal_code"]');
     this.cityInput = this.page.locator('[data-test="city"]');
     this.stateInput = this.page.locator('[data-test="state"]');
-    // Free text here, unlike the billing step's <select> (test_plan.md §24).
+    // Free text here, unlike the billing step's <select> (TEST_PLAN.md §24).
     this.countryInput = this.page.locator('[data-test="country"]');
     this.updateProfileButton = this.page.locator(
       '[data-test="update-profile-submit"]',
@@ -118,7 +118,7 @@ export class ProfilePage extends BasePage {
     this.passwordSuccess = this.passwordForm.locator('.alert-success');
     this.passwordError = this.passwordForm.locator('.alert-danger');
     // The register form renders the same meter markup, but its copy is broken in
-    // production (test_plan.md §19); this one tracks the typed value (§25).
+    // production (TEST_PLAN.md §19); this one tracks the typed value (§25).
     this.strengthFill = this.passwordForm.locator('.strength-bar .fill');
     this.activeStrengthLabel = this.passwordForm.locator(
       '.strength-labels span.active',

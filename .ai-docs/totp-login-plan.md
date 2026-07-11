@@ -31,7 +31,7 @@ Three assertions, all against a **TOTP-enabled disposable account**:
 ## Assumptions (to confirm/reject during exploration)
 
 1. The prompt renders **on `/auth/login`** after submitting valid credentials (same route, swapped form), not a
-   separate route. `test_plan.md` §5.6 AC2 describes the analogous checkout-wizard prompt, so the login page
+   separate route. `TEST_PLAN.md` §5.6 AC2 describes the analogous checkout-wizard prompt, so the login page
    likely has a `totp`-ish `data-test` input + submit. **Read `auth/login/login.component.html`, then verify.**
 2. The invalid-code copy is literally **"Invalid TOTP"** (per §5.11). §21/§22 both showed the plan's copy can be
    stale or template-prefixed (`Error: …`). **Verify live; assert the real string.**
@@ -76,7 +76,7 @@ Three assertions, all against a **TOTP-enabled disposable account**:
    `/auth/login`).
 7. Add the three tests to `tests/ui/login.spec.ts`, tags `@auth`/`@login`/`@totp`/`@regression`, AC comment
    per §7.
-8. Update `test_plan.md`: strike the §5.11 bullet, add a numbered findings section (§23).
+8. Update `TEST_PLAN.md`: strike the §5.11 bullet, add a numbered findings section (§23).
 9. Validate: `lint`, `format:check`, `tsc:check`, `login.spec.ts`, `totp-setup.spec.ts` (shares `totp.util`),
    plus `@smoke`.
 10. Report; mark this file completed.
@@ -133,7 +133,7 @@ Both open questions resolved:
 - **No**, failed TOTP attempts do not count toward the §20 lockout threshold (verified: 4 consecutive bad codes,
   account still logs in). Each test still gets its own disposable user.
 
-Two security-relevant checks came back **clean** and are recorded in `test_plan.md` §23: the provisional
+Two security-relevant checks came back **clean** and are recorded in `TEST_PLAN.md` §23: the provisional
 `access_token` issued alongside `requires_totp: true` is properly scoped (`GET /users/me` → 401 "Unauthorized
 token usage"), and the lockout counter is not reachable via the TOTP leg. Unlike §21's forgot-password work,
 nothing alarming turned up here.

@@ -31,9 +31,9 @@ test.describe('Verify login @login', () => {
 
   // Login AC3: lockout is permanent for the account and can only be undone by an
   // administrator, so it must be driven against a disposable freshly-registered user
-  // — never testUser1 or the shared seeded accounts (test_plan.md §3). Verified live
+  // — never testUser1 or the shared seeded accounts (TEST_PLAN.md §3). Verified live
   // that the lock is keyed on the account, not the caller's IP or browser session, so
-  // this stays safe under fullyParallel (test_plan.md §20).
+  // this stays safe under fullyParallel (TEST_PLAN.md §20).
   test(
     'lock the account after three consecutive failed login attempts',
     { tag: ['@auth', '@login', '@regression'] },
@@ -64,7 +64,7 @@ test.describe('Verify login @login', () => {
   // Each test enrols its own disposable user over the API (register → login →
   // /totp/setup → /totp/verify). Enabling TOTP is a permanent mutation, and
   // testUser1 IS the shared seeded customer@ account, which the API refuses TOTP
-  // setup for anyway (403) — see test_plan.md §22/§23. The second leg reuses
+  // setup for anyway (403) — see TEST_PLAN.md §22/§23. The second leg reuses
   // POST /users/login with {totp, access_token}, and its errors surface in the
   // same [data-test="login-error"] element as the credential errors.
   test.describe('with a TOTP-enabled account', () => {

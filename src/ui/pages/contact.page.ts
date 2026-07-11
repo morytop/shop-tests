@@ -7,7 +7,7 @@ import { ContactSubject } from '@src/ui/test-data/contact.data';
 /**
  * Contact form (`/contact`). For a logged-in user the name/email fields are replaced by
  * a "Hello {name}, …" greeting, so `sendMessage()` only needs subject + body; the body
- * must be at least 50 characters or the form refuses to submit (test_plan.md §5.19).
+ * must be at least 50 characters or the form refuses to submit (TEST_PLAN.md §5.19).
  *
  * The subject `<select>` is submitted (and later listed) by its option *value*
  * (`warranty`), not its visible label ("Warranty") — see `ContactSubject`.

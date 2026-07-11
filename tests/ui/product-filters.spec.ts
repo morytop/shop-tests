@@ -3,7 +3,7 @@ import { HomePage } from '@src/ui/pages/home.page';
 import { parsePrice } from '@src/ui/utils/price.util';
 import { isSorted, isSortedByString } from '@src/ui/utils/sort.util';
 
-// test_plan.md §5.1 Product Overview / Home — category/brand filters, sorting, price range
+// TEST_PLAN.md §5.1 Product Overview / Home — category/brand filters, sorting, price range
 test.describe('Verify product overview / home — filters, sort, price range', () => {
   test(
     'selecting one category narrows the grid',

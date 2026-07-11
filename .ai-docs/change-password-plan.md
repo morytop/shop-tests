@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement `tests/ui/change-password.spec.ts` covering all six ACs of `test_plan.md` §5.15:
+Implement `tests/ui/change-password.spec.ts` covering all six ACs of `TEST_PLAN.md` §5.15:
 
 1. Form shows current / new / confirm fields.
 2. Password strength indicator mirrors registration behavior for the new password field.
@@ -35,7 +35,7 @@ Scope confirmed by the user: §5.15 only, all ACs. Finish with a new branch, a c
 
 ## Risks and constraints
 
-- **Destructive by definition (test_plan.md §3).** Every AC drives a form that changes the account password.
+- **Destructive by definition (TEST_PLAN.md §3).** Every AC drives a form that changes the account password.
   - Never `testUser1` — it reads straight from `USER_EMAIL` and **is** the shared seeded
     `customer@practicesoftwaretesting.com` account (CLAUDE.md).
   - Never the `@logged` storageState session user — `tests/setup/login.setup.ts` shares one user across every
@@ -68,7 +68,7 @@ Scope confirmed by the user: §5.15 only, all ACs. Finish with a new branch, a c
    - `tests/ui/change-password.spec.ts`, AAA structure, `test.describe('Verify change password')`, per-test AC
      comments per §7 traceability, tagged `@auth @profile @regression` (reusing the `@profile` tag added in §24 —
      the form is part of the profile page).
-6. Update `test_plan.md`: mark §5.15 implemented, add a §25 findings section, record any new doc/behavior mismatch
+6. Update `TEST_PLAN.md`: mark §5.15 implemented, add a §25 findings section, record any new doc/behavior mismatch
    (especially the A2 strength-meter contradiction in §9).
 7. Validate: `npm run lint`, `npm run format:check`, `npm run tsc:check`; run the new spec; run `@smoke`; re-run
    `tests/ui/profile.spec.ts` and `tests/ui/totp-setup.spec.ts` since they share `ProfilePage`.
@@ -98,7 +98,7 @@ Explored with `playwright-cli` against a throwaway API-registered user (`cpw.178
 
   So AC2 must assert the **intended** behavior, not registration's broken 0%/no-label behavior. "Mirrors
   registration behavior" is false as written — the two components diverge. This confirms §9's 2026-07-04 note and
-  contradicts §5.15; `test_plan.md` needs correcting.
+  contradicts §5.15; `TEST_PLAN.md` needs correcting.
 
 - **A3 RESOLVED.** All three error paths are **server-side** — the submit button never disables, the
   `POST /users/change-password` always fires, and the message renders in a single `.alert.alert-danger.mt-3`
@@ -152,7 +152,7 @@ own throwaway user via `registerUserWithApi` and logging in inline, all tagged `
 implemented and passing.
 
 Files touched: `src/ui/pages/profile.page.ts`, `src/ui/models/user.model.ts`, `src/ui/test-data/user.data.ts`,
-`src/ui/factories/user.factory.ts`, `tests/ui/change-password.spec.ts` (new), `test_plan.md` (§5.15 + new §25).
+`src/ui/factories/user.factory.ts`, `tests/ui/change-password.spec.ts` (new), `TEST_PLAN.md` (§5.15 + new §25).
 
 Validation: `lint` / `format:check` / `tsc:check` clean; `change-password.spec.ts` 6/6; AC6 3/3 under
 `--repeat-each=3`; `profile.spec.ts` + `totp-setup.spec.ts` (shared `ProfilePage`) 12/12; `@smoke` 18/18.

@@ -2,7 +2,7 @@ import { registerUserWithApi } from '@src/api/factories/user-register.api.factor
 import { expect, test } from '@src/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
-// User Stories v5 — Admin dashboard (test_plan.md §5.20), smoke level only. Covers the
+// User Stories v5 — Admin dashboard (TEST_PLAN.md §5.20), smoke level only. Covers the
 // first bullet ("admin login lands on /admin/dashboard with sales chart + recent invoices
 // list"), the menu that reaches every other section, and the non-admin negative path.
 //
@@ -11,7 +11,7 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 // wrong password: 3 failed attempts lock an account permanently (§20), and this one is
 // shared with every user of the public demo site. The non-admin path uses a throwaway
 // API-registered user rather than the seeded `customer@`, so no shared account is touched
-// at all. See test_plan.md §31 and .ai-docs/admin-dashboard-smoke-plan.md.
+// at all. See TEST_PLAN.md §31 and .ai-docs/admin-dashboard-smoke-plan.md.
 
 test.describe('Verify admin dashboard', () => {
   // AC1 — admin credentials redirect straight to the dashboard, which renders the sales

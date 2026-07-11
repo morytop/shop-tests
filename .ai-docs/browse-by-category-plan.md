@@ -1,4 +1,4 @@
-# Plan: Browse by Category (test_plan.md §5.2, `tests/category.spec.ts`)
+# Plan: Browse by Category (TEST_PLAN.md §5.2, `tests/category.spec.ts`)
 
 ## Goal
 
@@ -62,7 +62,7 @@ Open: cover all 4 categories for AC1 or just a representative one? Cover the ful
    - Refactor `HomePage` to extend it (public API preserved).
    - Enrich category page objects (extend `ProductListPage`, add `heading`).
    - `tests/category.spec.ts` — AAA, tagged per §3, reference §5.2 in a describe comment.
-6. [ ] Update `test_plan.md` if any doc/behavior discrepancy found; mark §5.2 status.
+6. [ ] Update `TEST_PLAN.md` if any doc/behavior discrepancy found; mark §5.2 status.
 7. [ ] Validate: `npm run lint`, `npm run format:check`, run `category.spec.ts`, the three §5.1 specs (regression from the refactor), and `@smoke`.
 8. [ ] Report + mark this plan complete.
 
@@ -70,7 +70,7 @@ Open: cover all 4 categories for AC1 or just a representative one? Cover the ful
 
 - [x] Step 0 scope confirmed; [x] Step 1 plan; [x] Step 2 exploration; [x] Step 3 sign-off (plan mode).
 - [x] Step 5 implemented: `ProductListPage` extraction, `HomePage` thin subclass, 4 category pages enriched, `navbar.openCategories()`, `tests/category.spec.ts`.
-- [x] Step 6 `test_plan.md` updated (new §11 + §10 regression note + §9-type discrepancies).
+- [x] Step 6 `TEST_PLAN.md` updated (new §11 + §10 regression note + §9-type discrepancies).
 - [x] Step 7 validated.
 
 ### Final test set (7 tests, all green)
@@ -90,4 +90,4 @@ Open: cover all 4 categories for AC1 or just a representative one? Cover the ful
 - `npm run lint` + `npm run format:check`: clean.
 - `tests/category.spec.ts`: 7/7 pass.
 - `@smoke`: 9/9 pass.
-- §5.1 regression (`product-overview`/`product-search`/`product-filters`): 17/18 pass; the 1 failure — `product-overview` "last page's next pagination control is disabled" — is **pre-existing and app-driven**, reproduced identically on the original pre-refactor code (see `test_plan.md` §10 regression note). Not caused by this work.
+- §5.1 regression (`product-overview`/`product-search`/`product-filters`): 17/18 pass; the 1 failure — `product-overview` "last page's next pagination control is disabled" — is **pre-existing and app-driven**, reproduced identically on the original pre-refactor code (see `TEST_PLAN.md` §10 regression note). Not caused by this work.

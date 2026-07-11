@@ -1,4 +1,4 @@
-# Plan: Product Overview / Home — Core Browse (test_plan.md §5.1, subset)
+# Plan: Product Overview / Home — Core Browse (TEST_PLAN.md §5.1, subset)
 
 ## Goal
 
@@ -26,11 +26,11 @@ New spec file: `tests/product-overview.spec.ts`. New/extended page object: `src/
   - The products API (`api.practicesoftwaretesting.com/products`) has no generic sale/discount field. The only price-related flag is `is_location_offer` (boolean per product) — this is the same mechanism as the already-documented §5.22 geo-location discount, not a separate "sale" feature.
   - Tested directly: mocked Playwright browser geolocation to London (a supported discount city per §9) for a product with `is_location_offer: true` — no strikethrough/discounted price rendered on reload. This is consistent with (and now empirically corroborates) the §9/§5.22 hypothesis that eligibility is determined server-side by request IP, not the browser Geolocation API, so it cannot be forced from an automated test running from a non-UK CI/dev IP.
   - No discounted card was found live on any of the 5 home grid pages either, so there's no way to assert the visual (strikethrough + discounted price) even opportunistically.
-  - **Decision:** treat this the same as the existing §5.22 geo-discount item — write it as `test.skip` with a comment explaining why (IP-based eligibility, unautomatable against prod), rather than a flaky/impossible-to-trigger positive assertion. Will note this in `test_plan.md` §5.1 and cross-reference §5.22/§9 findings.
+  - **Decision:** treat this the same as the existing §5.22 geo-discount item — write it as `test.skip` with a comment explaining why (IP-based eligibility, unautomatable against prod), rather than a flaky/impossible-to-trigger positive assertion. Will note this in `TEST_PLAN.md` §5.1 and cross-reference §5.22/§9 findings.
 
 ## Risks and constraints
 
-- No hard-coded product IDs/names/prices — assert on structural properties only (test_plan.md §3).
+- No hard-coded product IDs/names/prices — assert on structural properties only (TEST_PLAN.md §3).
 - Catalog is shared/mutable production data — a product ID/card position captured once may not be stable a moment later (§9 finding); fetch card references immediately before use within a step, don't cache across long gaps.
 - No destructive actions needed for this subset (read-only browse), so no shared-account risk here.
 - Category/brand trees are known to contain leftover test-data pollution (§9) — not directly relevant to this subset (no filter tests here) but worth remembering if grid content assertions inadvertently rely on category cleanliness.
@@ -43,9 +43,9 @@ New spec file: `tests/product-overview.spec.ts`. New/extended page object: `src/
 4. Implement:
    - Extend `src/pages/home.page.ts` with grid/pagination/card locators and action methods (no `expect()`).
    - Register page object (already registered in `src/fixtures/pages.ts` as `homePage` — confirm no changes needed there since it already exists).
-   - Create `tests/product-overview.spec.ts` with AAA-structured tests, tagged per test_plan.md §3 taxonomy (`@regression`, `@smoke` if applicable, plus a feature tag e.g. `@product-overview` or `@home` — confirm naming during plan step).
-   - Reference test_plan.md §5.1 / relevant AC in a describe-block comment per §7 traceability convention.
-5. Update `test_plan.md` if any doc/behavior discrepancies are found during exploration.
+   - Create `tests/product-overview.spec.ts` with AAA-structured tests, tagged per TEST_PLAN.md §3 taxonomy (`@regression`, `@smoke` if applicable, plus a feature tag e.g. `@product-overview` or `@home` — confirm naming during plan step).
+   - Reference TEST_PLAN.md §5.1 / relevant AC in a describe-block comment per §7 traceability convention.
+5. Update `TEST_PLAN.md` if any doc/behavior discrepancies are found during exploration.
 6. Validate: `npm run lint`, `npm run format:check`, run the new spec file, run `@smoke` tag suite.
 7. Report: what was added, files touched, tests run + results, tags applied, open questions/risks. Mark this plan completed.
 
@@ -56,7 +56,7 @@ New spec file: `tests/product-overview.spec.ts`. New/extended page object: `src/
 - [x] Step 2: live exploration
 - [x] Step 3: plan-mode sign-off
 - [x] Step 4: implementation
-- [x] Step 5: test_plan.md updates (§5.1 bullet + new §10 findings section)
+- [x] Step 5: TEST_PLAN.md updates (§5.1 bullet + new §10 findings section)
 - [x] Step 6: validation (lint, format, new spec, @smoke suite, login/register regression check all pass)
 - [x] Step 7: report delivered to user
 

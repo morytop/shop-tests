@@ -11,7 +11,7 @@ export interface AdminActions {
 // so it belongs in an action fixture rather than on a single page object
 // (CODING_STANDARDS.md → Fixtures).
 //
-// ⚠ The admin account is shared, seeded, READ-ONLY fixture data (test_plan.md §3): admin
+// ⚠ The admin account is shared, seeded, READ-ONLY fixture data (TEST_PLAN.md §3): admin
 // specs may look and assert, never create/edit/delete or submit. The credentials come
 // from `.env` (ADMIN_EMAIL/ADMIN_PASSWORD) — a wrong password would permanently lock the
 // account for everyone at the 3rd attempt (§20), so no admin spec drives a failed login.

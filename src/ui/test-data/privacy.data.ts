@@ -1,5 +1,5 @@
 /**
- * The privacy policy's section titles, in the order the page renders them (test_plan.md §5.24).
+ * The privacy policy's section titles, in the order the page renders them (TEST_PLAN.md §5.24).
  *
  * They are `<strong>` elements, not headings — the page has no `<h1>`–`<h6>` at all (§35), so
  * the trailing colon is part of the rendered text and must be kept for an exact-text assertion.

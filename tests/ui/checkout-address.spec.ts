@@ -4,7 +4,7 @@ import { makeValidAddress } from '@src/ui/factories/address.factory';
 import { AddressTextField } from '@src/ui/models/address.model';
 import { ADDRESS_MAX_LENGTHS } from '@src/ui/test-data/address.data';
 
-// User Stories v5 — Checkout Billing Address (test_plan.md §5.7). The billing step
+// User Stories v5 — Checkout Billing Address (TEST_PLAN.md §5.7). The billing step
 // is reached by advancing past the sign-in step: as a guest via the "Continue as
 // Guest" tab + details form, or (AC5) as an already-logged-in user via proceed-2.
 // The form is an Angular reactive form with no native maxlength and no visible
@@ -141,7 +141,7 @@ test.describe('Verify checkout billing address step', () => {
   );
 
   // AC5 — a logged-in user's billing address IS pre-filled from account data. This
-  // pins that (correcting an earlier finding to the contrary; test_plan.md §9/§16).
+  // pins that (correcting an earlier finding to the contrary; TEST_PLAN.md §9/§16).
   // It runs under the @logged project, inheriting the storageState session from
   // tests/setup/login.setup.ts (a user registered via the API with a full address),
   // so it only advances to billing and asserts the pre-fill. The account's country

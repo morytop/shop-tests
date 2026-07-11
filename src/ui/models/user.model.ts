@@ -23,7 +23,7 @@ export interface LoginUser {
 /**
  * The editable fields of the profile form (`/account/profile`). Email is excluded:
  * it renders readonly. Date of birth and house number are collected at registration
- * but are absent from this form (test_plan.md §24).
+ * but are absent from this form (TEST_PLAN.md §24).
  */
 export interface ProfileDetails {
   firstName: string;
@@ -38,7 +38,7 @@ export interface ProfileDetails {
 
 /**
  * The profile fields the API rejects when blank. Phone, postal code and state are
- * optional — blanking them saves successfully (test_plan.md §24).
+ * optional — blanking them saves successfully (TEST_PLAN.md §24).
  */
 export type RequiredProfileField =
   | 'firstName'
@@ -49,7 +49,7 @@ export type RequiredProfileField =
 
 /**
  * One step of the change-password strength meter: a sample password, and the bar
- * width + label the meter is expected to show for it (test_plan.md §25).
+ * width + label the meter is expected to show for it (TEST_PLAN.md §25).
  */
 export interface PasswordStrengthLevel {
   password: string;

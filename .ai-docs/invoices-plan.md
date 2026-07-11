@@ -96,7 +96,7 @@ Cover the three deterministic invoice ACs against production as a black box:
    - `tests/ui/invoices.spec.ts`: AC1 (list), AC2 (detail), AC3 (not-found). Tag
      `@auth @invoices @regression` (`@invoices` is a new feature tag — add to §3 taxonomy if
      not present). Reference §5.17 ACs per §7.
-6. **Update `test_plan.md`** — add a §29 findings section + mark §5.17 AC1–AC3 implemented,
+6. **Update `TEST_PLAN.md`** — add a §29 findings section + mark §5.17 AC1–AC3 implemented,
    AC4/AC5 deferred; record any doc/behavior discrepancies found.
 7. **Validate:** `npm run lint`, `npm run format:check`, `npm run tsc:check`; run
    `invoices.spec.ts` (both projects — AC1/AC2 don't need `@logged`, all run in `chromium`),
@@ -153,4 +153,4 @@ total (no discount). (5) COD label = `Cash on Delivery`, no extra details.
   invoices.spec 6/6 under `--repeat-each=2`; `@smoke` 18/18 + checkout-payment 17/17 as
   regression). AC1's list-street assertion relaxed to present-not-pinned after discovering the
   list "Billing Address" column can diverge from the submitted street (shared-prefill / async
-  race — see test_plan.md §29). AC4/AC5 deferred as planned.
+  race — see TEST_PLAN.md §29). AC4/AC5 deferred as planned.

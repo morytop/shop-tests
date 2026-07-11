@@ -5,7 +5,7 @@ import { prepareRandomMessage } from '@src/ui/factories/contact.factory';
 import { CONTACT_SUBJECTS } from '@src/ui/test-data/contact.data';
 import { truncate } from '@src/ui/utils/text.util';
 
-// User Stories v5 — Messages (test_plan.md §5.18). All three ACs: the submitted contact
+// User Stories v5 — Messages (TEST_PLAN.md §5.18). All three ACs: the submitted contact
 // message appears in the list (AC1), the detail page shows the full original message and
 // its replies in chronological order (AC2), and a reply is appended to the thread (AC3).
 //
@@ -19,7 +19,7 @@ import { truncate } from '@src/ui/utils/text.util';
 // Message bodies come from `prepareRandomMessage()`, which respects the app's 50–250
 // character window (the 250 ceiling is undocumented — §30); the messages list is entered
 // via `gotoAndAwaitLoaded()`, since like invoices and favorites the table renders before
-// `GET /messages` lands (§29/§26). See test_plan.md §30 and .ai-docs/messages-plan.md.
+// `GET /messages` lands (§29/§26). See TEST_PLAN.md §30 and .ai-docs/messages-plan.md.
 
 test.describe('Verify messages', () => {
   // AC1 — the submitted message shows up in the list with its subject, the body truncated

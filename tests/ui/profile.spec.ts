@@ -4,7 +4,7 @@ import { prepareRandomProfileDetails } from '@src/ui/factories/user.factory';
 import { RequiredProfileField } from '@src/ui/models/user.model';
 import { REQUIRED_PROFILE_FIELD_ERRORS } from '@src/ui/test-data/user.data';
 
-// User Stories v5 — Customer profile (test_plan.md §5.14). The form on
+// User Stories v5 — Customer profile (TEST_PLAN.md §5.14). The form on
 // `/account/profile` is populated by an async `GET /users/me`, so every test gates on
 // `waitForProfileLoaded()` before reading or filling a field — a `fill()` issued
 // earlier is silently overwritten when the response lands (§24).
@@ -16,7 +16,7 @@ import { REQUIRED_PROFILE_FIELD_ERRORS } from '@src/ui/test-data/user.data';
 // shares one user across every `@logged` spec, and `checkout-address.spec.ts` asserts
 // on that user's stored address.
 //
-// See test_plan.md §24 and .ai-docs/profile-plan.md.
+// See TEST_PLAN.md §24 and .ai-docs/profile-plan.md.
 
 test.describe('Verify customer profile', () => {
   // AC1 — the form reflects the account's own data, straight from registration.

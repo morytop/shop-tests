@@ -22,6 +22,7 @@ export const PAGE_URLS = {
   MESSAGES: '/account/messages',
   OTHER: '/category/other',
   POWER_TOOLS: '/category/power-tools',
+  PRIVACY: '/privacy',
   PRODUCT: '/product',
   PROFILE: '/account/profile',
   REGISTER: '/auth/register',

@@ -28,6 +28,7 @@ import { MessageDetailPage } from '@src/ui/pages/message-detail.page';
 import { MessagesPage } from '@src/ui/pages/messages.page';
 import { OtherPage } from '@src/ui/pages/other.page';
 import { PowerToolsPage } from '@src/ui/pages/power-tools.page';
+import { PrivacyPage } from '@src/ui/pages/privacy.page';
 import { ProductDetailPage } from '@src/ui/pages/product-detail.page';
 import { ProfilePage } from '@src/ui/pages/profile.page';
 import { RegisterPage } from '@src/ui/pages/register.page';
@@ -66,6 +67,7 @@ export type Pages = {
   messagesPage: MessagesPage;
   otherPage: OtherPage;
   powerToolsPage: PowerToolsPage;
+  privacyPage: PrivacyPage;
   productDetailPage: ProductDetailPage;
   profilePage: ProfilePage;
   registerPage: RegisterPage;
@@ -160,6 +162,9 @@ export const pageObjectTest = base.extend<Pages>({
   },
   powerToolsPage: async ({ page }, use) => {
     await use(new PowerToolsPage(page));
+  },
+  privacyPage: async ({ page }, use) => {
+    await use(new PrivacyPage(page));
   },
   productDetailPage: async ({ page }, use) => {
     await use(new ProductDetailPage(page));

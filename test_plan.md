@@ -305,7 +305,9 @@ by scope decision, not gaps.
 
 ### 5.24 Privacy policy (`tests/ui/privacy.spec.ts`)
 
-- `/privacy` loads and contains expected sections (Google Sign-In, data collection, automatic removal, third-party services, data security, contact info) — assert on presence of key headings/text.
+**Implemented 2026-07-11 (see §35).**
+
+- `/privacy` loads and contains expected sections (Google Sign-In, data collection, automatic removal, third-party services, data security, contact info) — assert on presence of key headings/text. **Implemented (§35)** — the page has **no headings at all** (the section titles are `<strong>` tags, §9), so the assertions are on exact text; production also ships two sections the AC omits ("Information Sharing", "Changes to the Privacy Policy"). Coverage: route loads (direct + via the footer link, its only in-app entry point), the full ordered section list, and the key data-handling statements.
 
 ### 5.25 Accessibility & cross-cutting checks (`tests/ui/a11y.spec.ts`, tagged `@a11y`)
 
@@ -354,6 +356,7 @@ Explored `https://practicesoftwaretesting.com` directly (page title confirms `To
 - Admin dropdown menu includes an extra **"Settings"** entry (`/admin/settings`) not covered anywhere in the v5 docs — worth at least a smoke-level access check.
 - Chat widget menu button labels are _"Find a product" / "Order a product" / "Checkout" / "Create support ticket"_ (lowercase, slightly reworded vs. the docs' "Find Product" / "Order Product" / "Checkout" / "Support"). Use the actual labels in locators.
 - "Add to Favorites" button is rendered as **"Add to favourites"** (British spelling) on the product detail page — use the actual label in locators/assertions.
+- **The privacy policy page has no headings and no `data-test` attributes** (added 2026-07-11, §35). `/privacy` renders as bare `<strong>`/`<p>` pairs inside `app-privacy` — not even an `<h1>`, so §5.24's "assert on presence of key headings" is not literally satisfiable and the spec asserts exact `<strong>` text instead. Its content is also **not translated** by the language selector (§5.23): switching to German flips the nav and `<html lang>`, but the policy body stays English. Both are worth flagging as real app issues (the missing `<h1>` is an accessibility defect for §5.25).
 
 **Data-quality risk observed directly (reinforces §3):** the shared category/brand filter lists on production are visibly polluted with leftover test data from other users' automated runs (e.g. repeated "E2E Cat", "Patched Cat", "Cat A/B", "X" entries, several levels deep). Tests must not assume a clean/predictable category or brand tree — always assert on structural behavior (e.g., "checking a category filters the grid") rather than exact counts or a fixed list of names. A product ID captured from one page load also 404'd moments later when reloaded fresh, confirming products can be deleted mid-session by concurrent test runs elsewhere — tests should always fetch a live product link/ID immediately before use rather than caching one across steps.
 
@@ -1564,3 +1567,36 @@ the cheapest page that renders the nav, not the home page.
 **Validation.** `lint` / `format:check` / `tsc:check` clean. `language.spec.ts` 8/8 green, and 16/16 under
 `--repeat-each=2`. Shared-code regression (this pass touched `NavbarComponent`, which every page object embeds):
 `@smoke` **19/19 green** across both projects.
+
+## 35. Privacy policy implementation findings (2026-07-11)
+
+Implemented §5.24 (`tests/ui/privacy.spec.ts`, 4 tests) with a new `PrivacyPage`
+(`src/ui/pages/privacy.page.ts`, `PAGE_URLS.PRIVACY = '/privacy'`, registered in
+`page-object.fixture.ts`) and `src/ui/test-data/privacy.data.ts`. Read-only static page: no account, no catalog,
+no cart, not `@logged` — none of the §3 data-safety constraints apply.
+
+**The page has no headings — the AC's "assert on presence of key headings" is not literally satisfiable (§9).**
+`app-privacy` renders a flat sequence of `<strong>Section Title:</strong>` + `<p>` pairs. There is **no `<h1>`–`<h6>`
+anywhere in the component** and **no `data-test` attribute on any element**, so the section titles can only be
+reached structurally (`app-privacy` → `strong`) — one of the rare cases where a CSS step is unavoidable under
+`CODING_STANDARDS.md`'s locator rules. The missing `<h1>` is a genuine accessibility defect and should surface
+again under §5.25.
+
+**Production ships 8 sections, not the 6 the AC lists** — in order: Information We Collect, Use of Google Sign-In,
+Data Removal, Third-Party Services, Data Security, **Information Sharing**, **Changes to the Privacy Policy**,
+Contact Us (the trailing colon is part of the rendered text). The spec asserts the full ordered list via
+`toHaveText(privacySectionTitles)`, so a section added or dropped upstream fails rather than passing silently.
+Body assertions use short distinctive phrases (hourly wipe, Google Sign-In integration, the
+`info [at] testsmith [dot] io` contact) rather than whole paragraphs, to stay robust to prose edits.
+
+**The policy is not translated (cross-check against §5.23).** Switching to German flips the nav labels and
+`<html lang="de">`, but every `<strong>`/`<p>` in the policy stays English. The spec therefore doesn't need a
+language guard, but it is a real i18n gap in the app.
+
+**Entry point.** The only in-app link to `/privacy` is in the global footer (`<footer>` → "Privacy Policy",
+`routerLink="privacy"`); nothing in the nav points to it. That link is modelled as `PrivacyPage.footerLink`
+(scoped by `getByRole('contentinfo')`) and covered by its own test driven from the lightweight **contact** page,
+per §34's rule about not using the heavy home page as a backdrop.
+
+**Validation.** `lint` / `format:check` / `tsc:check` clean. `privacy.spec.ts` 4/4 green. Shared-code regression
+(this pass only added to `page-object.fixture.ts` / `page-urls.ts`): `@smoke` **19/19 green** across both projects.

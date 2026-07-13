@@ -33,65 +33,45 @@ export class NavbarComponent {
 
   constructor(page: Page) {
     this.page = page;
-    this.homeNavLink = this.page.locator('[data-test="nav-home"]');
-    this.categoriesNavDropdown = this.page.locator(
-      '[data-test="nav-categories"]',
-    );
-    this.handToolsNavLink = this.page.locator('[data-test="nav-hand-tools"]');
-    this.powerToolsNavLink = this.page.locator('[data-test="nav-power-tools"]');
-    this.otherNavLink = this.page.locator('[data-test="nav-other"]');
-    this.specialToolsNavLink = this.page.locator(
-      '[data-test="nav-special-tools"]',
-    );
-    this.rentalsNavLink = this.page.locator('[data-test="nav-rentals"]');
-    this.contactNavLink = this.page.locator('[data-test="nav-contact"]');
-    this.signInNavLink = this.page.locator('[data-test="nav-sign-in"]');
+    this.homeNavLink = this.page.getByTestId('nav-home');
+    this.categoriesNavDropdown = this.page.getByTestId('nav-categories');
+    this.handToolsNavLink = this.page.getByTestId('nav-hand-tools');
+    this.powerToolsNavLink = this.page.getByTestId('nav-power-tools');
+    this.otherNavLink = this.page.getByTestId('nav-other');
+    this.specialToolsNavLink = this.page.getByTestId('nav-special-tools');
+    this.rentalsNavLink = this.page.getByTestId('nav-rentals');
+    this.contactNavLink = this.page.getByTestId('nav-contact');
+    this.signInNavLink = this.page.getByTestId('nav-sign-in');
     // Cart badge is rendered only once the cart is non-empty.
-    this.cartLink = this.page.locator('[data-test="nav-cart"]');
-    this.cartQuantity = this.page.locator('[data-test="cart-quantity"]');
+    this.cartLink = this.page.getByTestId('nav-cart');
+    this.cartQuantity = this.page.getByTestId('cart-quantity');
 
     // Account dropdown, labelled with the signed-in user's name. For an admin it also
     // holds every admin section link — there is no sidebar (TEST_PLAN.md §9, §31). The
     // links are in the DOM but hidden until the dropdown is opened.
-    this.userMenu = this.page.locator('[data-test="nav-menu"]');
-    this.signOutNavLink = this.page.locator('[data-test="nav-sign-out"]');
-    this.adminDashboardNavLink = this.page.locator(
-      '[data-test="nav-admin-dashboard"]',
+    this.userMenu = this.page.getByTestId('nav-menu');
+    this.signOutNavLink = this.page.getByTestId('nav-sign-out');
+    this.adminDashboardNavLink = this.page.getByTestId('nav-admin-dashboard');
+    this.adminBrandsNavLink = this.page.getByTestId('nav-admin-brands');
+    this.adminCategoriesNavLink = this.page.getByTestId('nav-admin-categories');
+    this.adminProductsNavLink = this.page.getByTestId('nav-admin-products');
+    this.adminOrdersNavLink = this.page.getByTestId('nav-admin-orders');
+    this.adminUsersNavLink = this.page.getByTestId('nav-admin-users');
+    this.adminMessagesNavLink = this.page.getByTestId('nav-admin-messages');
+    this.adminSettingsNavLink = this.page.getByTestId('nav-admin-settings');
+    this.adminStatisticsNavLink = this.page.getByTestId('nav-admin-statistics');
+    this.averageMonthSalesNavLink = this.page.getByTestId(
+      'nav-average-month-sales',
     );
-    this.adminBrandsNavLink = this.page.locator(
-      '[data-test="nav-admin-brands"]',
-    );
-    this.adminCategoriesNavLink = this.page.locator(
-      '[data-test="nav-admin-categories"]',
-    );
-    this.adminProductsNavLink = this.page.locator(
-      '[data-test="nav-admin-products"]',
-    );
-    this.adminOrdersNavLink = this.page.locator(
-      '[data-test="nav-admin-orders"]',
-    );
-    this.adminUsersNavLink = this.page.locator('[data-test="nav-admin-users"]');
-    this.adminMessagesNavLink = this.page.locator(
-      '[data-test="nav-admin-messages"]',
-    );
-    this.adminSettingsNavLink = this.page.locator(
-      '[data-test="nav-admin-settings"]',
-    );
-    this.adminStatisticsNavLink = this.page.locator(
-      '[data-test="nav-admin-statistics"]',
-    );
-    this.averageMonthSalesNavLink = this.page.locator(
-      '[data-test="nav-average-month-sales"]',
-    );
-    this.averageWeekSalesNavLink = this.page.locator(
-      '[data-test="nav-average-week-sales"]',
+    this.averageWeekSalesNavLink = this.page.getByTestId(
+      'nav-average-week-sales',
     );
 
     // Language dropdown: the toggle shows the active code ("EN"), and its menu is
     // labelled by it (`aria-labelledby`), which scopes the option menuitems away from
     // the main menubar's own menuitems. The nav's `data-test` ids are language-agnostic,
     // so every other locator here keeps working after a switch (TEST_PLAN.md §34).
-    this.languageSelect = this.page.locator('[data-test="language-select"]');
+    this.languageSelect = this.page.getByTestId('language-select');
     this.languageMenu = this.page.getByRole('menu', {
       name: 'Select language',
     });

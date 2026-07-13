@@ -33,10 +33,10 @@ export class ChatWidgetComponent {
 
   constructor(page: Page) {
     this.page = page;
-    this.toggleButton = this.page.locator('[data-test="chat-toggle"]');
+    this.toggleButton = this.page.getByTestId('chat-toggle');
     // The toggle is swapped out for the window while open, so the two are never both present.
-    this.window = this.page.locator('[data-test="chat-window"]');
-    this.closeButton = this.page.locator('[data-test="chat-close"]');
+    this.window = this.page.getByTestId('chat-window');
+    this.closeButton = this.page.getByTestId('chat-close');
     this.title = this.window.locator('.chat-title');
     // Message bubbles carry no data-test; bot and user turns differ only by class.
     this.botMessages = this.window.locator('.chat-message.bot-message');
@@ -46,26 +46,20 @@ export class ChatWidgetComponent {
       .first()
       .locator('.action-buttons')
       .getByRole('button');
-    this.findProductAction = this.page.locator(
-      '[data-test="chat-action-find-product"]',
+    this.findProductAction = this.page.getByTestId('chat-action-find-product');
+    this.orderProductAction = this.page.getByTestId(
+      'chat-action-order-product',
     );
-    this.orderProductAction = this.page.locator(
-      '[data-test="chat-action-order-product"]',
+    this.checkoutAction = this.page.getByTestId('chat-action-start-checkout');
+    this.supportTicketAction = this.page.getByTestId(
+      'chat-action-support-ticket',
     );
-    this.checkoutAction = this.page.locator(
-      '[data-test="chat-action-start-checkout"]',
-    );
-    this.supportTicketAction = this.page.locator(
-      '[data-test="chat-action-support-ticket"]',
-    );
-    this.backToMenuAction = this.page.locator(
-      '[data-test="chat-action-back-to-menu"]',
-    );
-    this.messageInput = this.page.locator('[data-test="chat-input"]');
-    this.sendButton = this.page.locator('[data-test="chat-send"]');
+    this.backToMenuAction = this.page.getByTestId('chat-action-back-to-menu');
+    this.messageInput = this.page.getByTestId('chat-input');
+    this.sendButton = this.page.getByTestId('chat-send');
     // Result cards are clickable in their own right — there is no "View Product" button
     // (TEST_PLAN.md §32). Their name/price are plain classes, not the grid's data-test ids.
-    this.productCards = this.page.locator('[data-test="chat-product"]');
+    this.productCards = this.page.getByTestId('chat-product');
     this.productCardNames = this.productCards.locator('.product-name');
     this.productCardPrices = this.productCards.locator('.product-price');
     this.productCardImages = this.productCards.locator('img.product-image');

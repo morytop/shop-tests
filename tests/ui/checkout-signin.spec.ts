@@ -11,10 +11,8 @@ test.describe('Verify checkout sign-in step', () => {
   test(
     'guest proceeding from the cart is shown the login form',
     { tag: ['@smoke', '@checkout', '@auth'] },
-    async ({ homePage, productDetailPage, cartPage, checkoutSigninPage }) => {
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToCartAndAwaitBadge('1');
+    async ({ addProductToCart, cartPage, checkoutSigninPage }) => {
+      await addProductToCart();
       await cartPage.goto();
 
       await cartPage.proceedToCheckout();

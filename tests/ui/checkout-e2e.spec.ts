@@ -17,7 +17,7 @@ test.describe('Verify end-to-end checkout', () => {
   test(
     'guest completes checkout and gets an invoice number',
     { tag: ['@smoke', '@checkout', '@e2e'] },
-    async ({ reachPaymentAsGuest, checkoutPaymentPage }) => {
+    async ({ reachPaymentAsGuest, checkoutPaymentPage, navbar }) => {
       await reachPaymentAsGuest();
 
       await checkoutPaymentPage.selectPaymentMethod('cash-on-delivery');
@@ -26,7 +26,7 @@ test.describe('Verify end-to-end checkout', () => {
       await expect(checkoutPaymentPage.orderConfirmation).toContainText(
         /Your invoice number is INV-\d+/,
       );
-      await expect(checkoutPaymentPage.bookmarks.cartQuantity).toBeHidden();
+      await expect(navbar.cartQuantity).toBeHidden();
     },
   );
 
@@ -46,6 +46,7 @@ test.describe('Verify end-to-end checkout', () => {
       checkoutSigninPage,
       checkoutAddressPage,
       checkoutPaymentPage,
+      navbar,
     }) => {
       await addProductToCart();
       await cartPage.goto();
@@ -73,7 +74,7 @@ test.describe('Verify end-to-end checkout', () => {
       await expect(checkoutPaymentPage.orderConfirmation).toContainText(
         /Your invoice number is INV-\d+/,
       );
-      await expect(checkoutPaymentPage.bookmarks.cartQuantity).toBeHidden();
+      await expect(navbar.cartQuantity).toBeHidden();
     },
   );
 });

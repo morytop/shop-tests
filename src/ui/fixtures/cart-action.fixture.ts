@@ -42,18 +42,20 @@ export interface CartActions {
 //   thus orderable — the invoice API rejects a manually-typed mismatched city
 //   (§3, §16, §18). So the checkout-e2e spec can reuse this and then place the order.
 export const cartActionTest = pageObjectTest.extend<CartActions>({
-  addProductToCart: async ({ homePage, productDetailPage }, use) => {
+  addProductToCart: async ({ homePage, productDetailPage, navbar }, use) => {
     await use(async (index = 0, expectedBadgeCount = '1'): Promise<void> => {
       await homePage.goto();
       await homePage.clickProductCard(index);
-      await productDetailPage.addToCartAndAwaitBadge(expectedBadgeCount);
+      await productDetailPage.addToCart();
+      await navbar.waitForCartQuantity(expectedBadgeCount);
     });
   },
-  addRentalToCart: async ({ rentalsPage, productDetailPage }, use) => {
+  addRentalToCart: async ({ rentalsPage, productDetailPage, navbar }, use) => {
     await use(async (index = 0, expectedBadgeCount = '1'): Promise<void> => {
       await rentalsPage.goto();
       await rentalsPage.clickRentalCard(index);
-      await productDetailPage.addToCartAndAwaitBadge(expectedBadgeCount);
+      await productDetailPage.addToCart();
+      await navbar.waitForCartQuantity(expectedBadgeCount);
     });
   },
   reachPaymentAsGuest: async (

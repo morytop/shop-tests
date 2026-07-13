@@ -7,6 +7,6 @@ export class AccountPage extends BasePage {
   readonly title: Locator;
   constructor(page: Page) {
     super(page);
-    this.title = this.page.locator('[data-test="page-title"]');
+    this.title = this.page.getByTestId('page-title');
   }
 }

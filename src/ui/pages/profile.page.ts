@@ -57,33 +57,31 @@ export class ProfilePage extends BasePage {
     name: 'Set up Two-Factor Authentication',
   });
   totpQrCode = this.page.locator('qrcode canvas');
-  totpSecret = this.page.locator('[data-test="totp-secret"]');
+  totpSecret = this.page.getByTestId('totp-secret');
   // The <p> is rendered before `/totp/setup` resolves, so it is briefly empty —
   // this narrows to the populated state for use as a synchronization gate.
   populatedTotpSecret = this.totpSecret.filter({ hasText: /^[A-Z2-7]{16}$/ });
-  totpCodeInput = this.page.locator('[data-test="totp-code"]');
-  verifyTotpButton = this.page.locator('[data-test="verify-totp"]');
+  totpCodeInput = this.page.getByTestId('totp-code');
+  verifyTotpButton = this.page.getByTestId('verify-totp');
 
   // Both banners are prefixed in the template (`Error:` / `Success:`).
-  totpError = this.page.locator('[data-test="totp-error"]');
-  totpSuccess = this.page.locator('[data-test="totp-success"]');
+  totpError = this.page.getByTestId('totp-error');
+  totpSuccess = this.page.getByTestId('totp-success');
 
   constructor(page: Page) {
     super(page);
-    this.heading = this.page.locator('[data-test="page-title"]');
+    this.heading = this.page.getByTestId('page-title');
     this.firstNameInput = this.page.locator(FIRST_NAME_SELECTOR);
-    this.lastNameInput = this.page.locator('[data-test="last-name"]');
-    this.emailInput = this.page.locator('[data-test="email"]');
-    this.phoneInput = this.page.locator('[data-test="phone"]');
-    this.streetInput = this.page.locator('[data-test="street"]');
-    this.postalCodeInput = this.page.locator('[data-test="postal_code"]');
-    this.cityInput = this.page.locator('[data-test="city"]');
-    this.stateInput = this.page.locator('[data-test="state"]');
+    this.lastNameInput = this.page.getByTestId('last-name');
+    this.emailInput = this.page.getByTestId('email');
+    this.phoneInput = this.page.getByTestId('phone');
+    this.streetInput = this.page.getByTestId('street');
+    this.postalCodeInput = this.page.getByTestId('postal_code');
+    this.cityInput = this.page.getByTestId('city');
+    this.stateInput = this.page.getByTestId('state');
     // Free text here, unlike the billing step's <select> (TEST_PLAN.md §24).
-    this.countryInput = this.page.locator('[data-test="country"]');
-    this.updateProfileButton = this.page.locator(
-      '[data-test="update-profile-submit"]',
-    );
+    this.countryInput = this.page.getByTestId('country');
+    this.updateProfileButton = this.page.getByTestId('update-profile-submit');
     this.profileFields = {
       firstName: this.firstNameInput,
       lastName: this.lastNameInput,
@@ -102,16 +100,10 @@ export class ProfilePage extends BasePage {
     this.profileSuccess = this.profileForm.locator('.alert-success');
     this.profileError = this.profileForm.locator('.alert-danger');
 
-    this.currentPasswordInput = this.page.locator(
-      '[data-test="current-password"]',
-    );
-    this.newPasswordInput = this.page.locator('[data-test="new-password"]');
-    this.confirmPasswordInput = this.page.locator(
-      '[data-test="new-password-confirm"]',
-    );
-    this.changePasswordButton = this.page.locator(
-      '[data-test="change-password-submit"]',
-    );
+    this.currentPasswordInput = this.page.getByTestId('current-password');
+    this.newPasswordInput = this.page.getByTestId('new-password');
+    this.confirmPasswordInput = this.page.getByTestId('new-password-confirm');
+    this.changePasswordButton = this.page.getByTestId('change-password-submit');
     this.passwordForm = this.page
       .locator('form')
       .filter({ has: this.changePasswordButton });

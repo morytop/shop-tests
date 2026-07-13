@@ -7,16 +7,16 @@ export class LoginPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.LOGIN;
   heading = this.page.getByRole('heading', { name: 'Login' });
   bookmarks = new NavbarComponent(this.page);
-  emailInput = this.page.locator('[data-test="email"]');
-  passwordInput = this.page.locator('[data-test="password"]');
-  loginButton = this.page.locator('[data-test="login-submit"]');
-  loginError = this.page.locator('[data-test="login-error"]');
-  forgotPasswordLink = this.page.locator('[data-test="forgot-password-link"]');
+  emailInput = this.page.getByTestId('email');
+  passwordInput = this.page.getByTestId('password');
+  loginButton = this.page.getByTestId('login-submit');
+  loginError = this.page.getByTestId('login-error');
+  forgotPasswordLink = this.page.getByTestId('forgot-password-link');
 
   // Second-factor prompt: replaces the credentials form in place on /auth/login once
   // the account is TOTP-enabled. `loginError` is shared with the credential errors.
-  totpCodeInput = this.page.locator('[data-test="totp-code"]');
-  verifyTotpButton = this.page.locator('[data-test="verify-totp"]');
+  totpCodeInput = this.page.getByTestId('totp-code');
+  verifyTotpButton = this.page.getByTestId('verify-totp');
 
   constructor(page: Page) {
     super(page);

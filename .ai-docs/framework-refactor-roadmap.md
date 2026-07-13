@@ -121,6 +121,7 @@ area also run that area's spec(s).
 - **Files:** new `network.util.ts` + `API_PATHS` constants; `api.util.ts`; the ~8 page objects/components from A4; `cart-action.fixture.ts`; `product-list.page.ts`.
 - **Validation:** `@smoke` + the specs behind the touched page objects (product-list-backed, favorites, messages, invoices, checkout).
 - **Risk:** low — behaviour-preserving; the matcher change from `includes` → `pathname.endsWith` is a tightening, verify the postcode-lookup and users/login waits still fire. The `ok` check is opt-in per call-site, so no wait gets stricter silently.
+- **✅ Implemented 2026-07-13** on `refactor/phase-3-network-helpers` (4 commits: helpers → 11 call-site migrations → walker dedup → `PaymentMethod` union). `waitForApi` supports `{ method, ok }` but **no call site opts into `ok` yet** (behaviour-preserving; several waits deliberately capture error responses). Q4 resolved: `getAllProductNamesAcrossPages` skipping the first-card wait **is deliberate** — all callers run it post-filter (possibly-empty result set) and the one post-goto spec waits for the first card itself; now explicit via `walkPages`'s `waitForFirstCard` flag. Gated on `lint`/`tsc:check`; browser validation runs separately (owner).
 
 ### Phase 4 — Component objects for repeated form clusters _(B5)_
 
@@ -197,4 +198,4 @@ Phases 1–3 deliver the bulk of the DRY/best-practice win and are all low-risk.
 1. ~~**Comment strip scope.**~~ **Decided:** strip _all_ comments incl. JSDoc, keep the one `eslint-disable` directive, update `CODING_STANDARDS.md` (Phase 8). **Review recommendation:** narrow to "strip _what_, keep _why_" — re-confirm before executing (see Phase 8).
 2. ~~**C2 contention.**~~ **Recommendation:** land the Phase 6 CI retry first and measure; only add the split `@order` CI invocation if those specs still fail on retry. (Per-project worker caps don't exist in Playwright, so the split run is the only real mechanism.)
 3. ~~**Phase 5.**~~ **Recommendation:** keep it, but fold the conversions/renames into Phases 2 and 4 wherever those already rewrite a file; run Phase 5 standalone only for the leftovers.
-4. **B9 `waitForGrid()` gap:** is `getAllProductNamesAcrossPages` skipping the first-card wait deliberate (post-filter callers with legitimately-empty results) or a latent pre-load race? Decide during Phase 3 and encode it in the `walkPages` flag.
+4. ~~**B9 `waitForGrid()` gap.**~~ **Resolved (Phase 3):** deliberate — every caller runs it after a filter change whose `/products` fetch was already awaited and whose result set may legitimately be empty; the one post-`goto` use waits for the first card in the spec. Now explicit via `walkPages`'s `waitForFirstCard` flag.

@@ -96,4 +96,15 @@ export class NavbarComponent {
       .filter({ hasText: new RegExp(`^${code}$`) })
       .click();
   }
+
+  /**
+   * Wait for the cart badge to show exactly `count`. The cart write is async, so
+   * this both confirms an add landed and serialises consecutive adds — a second
+   * add fired before the badge updates is otherwise silently lost.
+   */
+  async waitForCartQuantity(count: string): Promise<void> {
+    await this.cartQuantity
+      .filter({ hasText: new RegExp(`^${count}$`) })
+      .waitFor();
+  }
 }

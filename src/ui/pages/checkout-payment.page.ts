@@ -1,6 +1,7 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { PaymentMethod } from '@src/ui/models/payment.model';
 
 /**
  * The "Payment" step of the checkout wizard (`/checkout`), reached by advancing
@@ -120,7 +121,7 @@ export class CheckoutPaymentPage extends BasePage {
     this.orderConfirmation = this.page.locator('#order-confirmation');
   }
 
-  async selectPaymentMethod(value: string): Promise<void> {
+  async selectPaymentMethod(value: PaymentMethod): Promise<void> {
     await this.paymentMethodSelect.selectOption(value);
   }
 

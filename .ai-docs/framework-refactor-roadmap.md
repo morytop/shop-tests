@@ -108,6 +108,7 @@ area also run that area's spec(s).
 - **Files:** `page-object.fixture.ts`, the 11 page objects above, ~8 specs, `CODING_STANDARDS.md`, `CLAUDE.md`.
 - **Validation:** `@smoke` + `category` + `language` + `product-detail` + `rentals` + `admin`.
 - **Risk:** low/mechanical, but wide — do it as ~3 commits (register → migrate specs → delete fields) so a regression is easy to bisect.
+- **✅ Implemented 2026-07-13** on `refactor/phase-2-navbar-fixture` (3 commits: register `navbar` fixture + `NavbarComponent.waitForCartQuantity()` → migrate 7 specs + `cart-action.fixture` → delete the 12 `bookmarks` fields). Step 3 resolved via option (b): `ProductDetailPage.addToCartAndAwaitBadge()` deleted; the badge wait is `navbar.waitForCartQuantity()`, called by the cart-action fixture (`checkout-signin.spec` now uses `addProductToCart()`). `CODING_STANDARDS.md` example and CLAUDE.md fixtures bullet updated (B10). Gated on `lint`/`tsc:check`; browser validation runs separately (owner).
 
 ### Phase 3 — Extract shared network + constant helpers _(A4/A6/B7/B9/D3)_
 

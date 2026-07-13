@@ -24,12 +24,12 @@ test.describe('Verify multi-language support', () => {
   test(
     'language selector offers all supported languages',
     { tag: ['@language', '@regression'] },
-    async ({ contactPage }) => {
+    async ({ contactPage, navbar }) => {
       await contactPage.goto();
 
-      await contactPage.bookmarks.openLanguageMenu();
+      await navbar.openLanguageMenu();
 
-      await expect(contactPage.bookmarks.languageOptions).toHaveText(
+      await expect(navbar.languageOptions).toHaveText(
         languages.map(({ code }) => code),
       );
     },
@@ -42,25 +42,19 @@ test.describe('Verify multi-language support', () => {
     test(
       `switching to ${name} translates the nav labels`,
       { tag: ['@language', '@regression'] },
-      async ({ contactPage }) => {
+      async ({ contactPage, navbar }) => {
         await contactPage.goto();
-        await expect(contactPage.bookmarks.homeNavLink).toHaveText('Home');
+        await expect(navbar.homeNavLink).toHaveText('Home');
 
-        await contactPage.bookmarks.selectLanguage(code);
+        await navbar.selectLanguage(code);
 
-        await expect(contactPage.bookmarks.languageSelect).toContainText(code);
-        await expect(contactPage.bookmarks.homeNavLink).toHaveText(
-          navLabels.home,
-        );
-        await expect(contactPage.bookmarks.categoriesNavDropdown).toHaveText(
+        await expect(navbar.languageSelect).toContainText(code);
+        await expect(navbar.homeNavLink).toHaveText(navLabels.home);
+        await expect(navbar.categoriesNavDropdown).toHaveText(
           navLabels.categories,
         );
-        await expect(contactPage.bookmarks.contactNavLink).toHaveText(
-          navLabels.contact,
-        );
-        await expect(contactPage.bookmarks.signInNavLink).toHaveText(
-          navLabels.signIn,
-        );
+        await expect(navbar.contactNavLink).toHaveText(navLabels.contact);
+        await expect(navbar.signInNavLink).toHaveText(navLabels.signIn);
       },
     );
   }
@@ -70,31 +64,21 @@ test.describe('Verify multi-language support', () => {
   test(
     'selected language persists across a reload and a new navigation',
     { tag: ['@language', '@regression'] },
-    async ({ contactPage, loginPage, page }) => {
+    async ({ contactPage, loginPage, navbar, page }) => {
       const german = languages.find(({ code }) => code === 'DE')!;
       await contactPage.goto();
 
-      await contactPage.bookmarks.selectLanguage(german.code);
-      await expect(contactPage.bookmarks.homeNavLink).toHaveText(
-        german.navLabels.home,
-      );
+      await navbar.selectLanguage(german.code);
+      await expect(navbar.homeNavLink).toHaveText(german.navLabels.home);
       await page.reload();
 
-      await expect(contactPage.bookmarks.languageSelect).toContainText(
-        german.code,
-      );
-      await expect(contactPage.bookmarks.homeNavLink).toHaveText(
-        german.navLabels.home,
-      );
+      await expect(navbar.languageSelect).toContainText(german.code);
+      await expect(navbar.homeNavLink).toHaveText(german.navLabels.home);
 
       await loginPage.goto();
 
-      await expect(loginPage.bookmarks.languageSelect).toContainText(
-        german.code,
-      );
-      await expect(loginPage.bookmarks.signInNavLink).toHaveText(
-        german.navLabels.signIn,
-      );
+      await expect(navbar.languageSelect).toContainText(german.code);
+      await expect(navbar.signInNavLink).toHaveText(german.navLabels.signIn);
     },
   );
 });

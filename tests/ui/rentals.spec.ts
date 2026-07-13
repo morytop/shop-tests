@@ -42,14 +42,14 @@ test.describe('Verify rentals', () => {
   test(
     'rental item added to cart is labelled as a rental',
     { tag: ['@smoke', '@regression'] },
-    async ({ rentalsPage, productDetailPage, cartPage }) => {
+    async ({ rentalsPage, productDetailPage, cartPage, navbar }) => {
       await rentalsPage.goto();
       await rentalsPage.clickRentalCard(0);
 
       await productDetailPage.addToCart();
       // The add is async; wait for the cart badge before navigating so goto()
       // doesn't abort the in-flight cart write and land on an empty cart.
-      await expect(productDetailPage.bookmarks.cartQuantity).toHaveText('1');
+      await expect(navbar.cartQuantity).toHaveText('1');
       await cartPage.goto();
 
       await expect(cartPage.rentalItemLabel).toBeVisible();

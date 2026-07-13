@@ -12,16 +12,17 @@ test.describe('Verify browse by category', () => {
       async ({
         homePage,
         handToolsPage,
+        navbar,
         powerToolsPage,
         otherPage,
         specialToolsPage,
         page,
       }) => {
         const navLinks = {
-          'Hand Tools': homePage.bookmarks.handToolsNavLink,
-          'Power Tools': homePage.bookmarks.powerToolsNavLink,
-          Other: homePage.bookmarks.otherNavLink,
-          'Special Tools': homePage.bookmarks.specialToolsNavLink,
+          'Hand Tools': navbar.handToolsNavLink,
+          'Power Tools': navbar.powerToolsNavLink,
+          Other: navbar.otherNavLink,
+          'Special Tools': navbar.specialToolsNavLink,
         };
         const categoryHeadings = {
           'Hand Tools': handToolsPage.heading,
@@ -32,7 +33,7 @@ test.describe('Verify browse by category', () => {
 
         await homePage.goto();
 
-        await homePage.bookmarks.openCategories();
+        await navbar.openCategories();
         await navLinks[name].click();
 
         // The on-page "Category: <Name>" heading is the reliable cross-category

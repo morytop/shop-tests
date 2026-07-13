@@ -85,7 +85,7 @@ test.describe('Verify product detail', () => {
   test(
     'adding to cart shows a confirmation and updates the cart badge',
     { tag: ['@smoke', '@regression'] },
-    async ({ homePage, productDetailPage }) => {
+    async ({ homePage, productDetailPage, navbar }) => {
       await homePage.goto();
       const found = await homePage.findInStockCardAcrossPages();
       expect(found).toBe(true);
@@ -96,7 +96,7 @@ test.describe('Verify product detail', () => {
       await expect(productDetailPage.successToast).toHaveText(
         'Product added to shopping cart.',
       );
-      await expect(productDetailPage.bookmarks.cartQuantity).toHaveText('1');
+      await expect(navbar.cartQuantity).toHaveText('1');
     },
   );
 

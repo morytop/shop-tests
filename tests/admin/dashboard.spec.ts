@@ -57,12 +57,11 @@ test.describe('Verify admin dashboard', () => {
   test(
     'admin menu links to every admin section',
     { tag: ['@admin', '@regression'] },
-    async ({ adminDashboardPage, loginAsAdmin }) => {
+    async ({ loginAsAdmin, navbar }) => {
       await loginAsAdmin();
 
-      await adminDashboardPage.bookmarks.openUserMenu();
+      await navbar.openUserMenu();
 
-      const navbar = adminDashboardPage.bookmarks;
       await expect(navbar.adminDashboardNavLink).toHaveAttribute(
         'href',
         PAGE_URLS.ADMIN_DASHBOARD,

@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 /**
@@ -11,7 +10,6 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  */
 export class ProductDetailPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.PRODUCT;
-  readonly bookmarks: NavbarComponent;
   readonly productImage: Locator;
   readonly productName: Locator;
   readonly productPrice: Locator;
@@ -32,7 +30,6 @@ export class ProductDetailPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.bookmarks = new NavbarComponent(this.page);
     // The main product image is the only `.figure-img`; related cards use `.card-img-top`.
     this.productImage = this.page.locator('img.figure-img');
     this.productName = this.page.getByTestId('product-name');
@@ -83,18 +80,6 @@ export class ProductDetailPage extends BasePage {
 
   async addToCart(): Promise<void> {
     await this.addToCartButton.click();
-  }
-
-  /**
-   * Add to cart and wait for the navbar badge to reach `count`. The cart write is
-   * async, so this both confirms the add landed and serialises consecutive adds —
-   * a second add fired before the badge updates is otherwise silently lost.
-   */
-  async addToCartAndAwaitBadge(count: string): Promise<void> {
-    await this.addToCart();
-    await this.bookmarks.cartQuantity
-      .filter({ hasText: new RegExp(`^${count}$`) })
-      .waitFor();
   }
 
   /**

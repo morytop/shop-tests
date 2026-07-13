@@ -1,5 +1,6 @@
 import { test as base } from '@playwright/test';
 import { ChatWidgetComponent } from '@src/ui/components/chat-widget.component';
+import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { AccountPage } from '@src/ui/pages/account.page';
 import { AdminAverageSalesPerMonthPage } from '@src/ui/pages/admin-average-sales-per-month.page';
 import { AdminAverageSalesPerWeekPage } from '@src/ui/pages/admin-average-sales-per-week.page';
@@ -65,6 +66,9 @@ export type Pages = {
   loginPage: LoginPage;
   messageDetailPage: MessageDetailPage;
   messagesPage: MessagesPage;
+  // Global chrome like chatWidget: rendered on every page, owns no URL, so it is
+  // injected once here rather than duplicated as a field on each page object.
+  navbar: NavbarComponent;
   otherPage: OtherPage;
   powerToolsPage: PowerToolsPage;
   privacyPage: PrivacyPage;
@@ -156,6 +160,9 @@ export const pageObjectTest = base.extend<Pages>({
   },
   messagesPage: async ({ page }, use) => {
     await use(new MessagesPage(page));
+  },
+  navbar: async ({ page }, use) => {
+    await use(new NavbarComponent(page));
   },
   otherPage: async ({ page }, use) => {
     await use(new OtherPage(page));

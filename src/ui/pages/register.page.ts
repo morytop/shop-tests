@@ -1,13 +1,11 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { RegisterUser } from '@src/ui/models/user.model';
 
 export class RegisterPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.REGISTER;
   heading = this.page.getByRole('heading', { name: 'Customer registration' });
-  bookmarks = new NavbarComponent(this.page);
   firstNameInput = this.page.getByTestId('first-name');
   lastNameInput = this.page.getByTestId('last-name');
   dateOfBirthInput = this.page.getByTestId('dob');

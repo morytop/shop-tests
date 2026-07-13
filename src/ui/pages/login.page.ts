@@ -1,12 +1,10 @@
 import { BasePage } from './base.page';
 import { Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 export class LoginPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.LOGIN;
   heading = this.page.getByRole('heading', { name: 'Login' });
-  bookmarks = new NavbarComponent(this.page);
   emailInput = this.page.getByTestId('email');
   passwordInput = this.page.getByTestId('password');
   loginButton = this.page.getByTestId('login-submit');

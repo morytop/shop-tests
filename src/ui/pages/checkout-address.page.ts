@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { Address, AddressTextField } from '@src/ui/models/address.model';
 
@@ -15,7 +14,6 @@ import { Address, AddressTextField } from '@src/ui/models/address.model';
  */
 export class CheckoutAddressPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
-  readonly bookmarks: NavbarComponent;
   readonly heading: Locator;
   readonly countrySelect: Locator;
   readonly postalCodeInput: Locator;
@@ -29,7 +27,6 @@ export class CheckoutAddressPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.bookmarks = new NavbarComponent(this.page);
     this.heading = this.page.getByRole('heading', { name: 'Billing Address' });
     // Country is a `<select>` (ISO-code values, full-name option text), not the
     // free-text field the docs imply (TEST_PLAN.md §9).

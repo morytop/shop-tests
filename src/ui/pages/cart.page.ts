@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 /**
@@ -10,7 +9,6 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  */
 export class CartPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
-  readonly bookmarks: NavbarComponent;
   readonly cartTable: Locator;
   readonly columnHeaders: Locator;
   readonly productTitles: Locator;
@@ -30,7 +28,6 @@ export class CartPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.bookmarks = new NavbarComponent(this.page);
     this.cartTable = this.page.getByRole('table');
     this.columnHeaders = this.cartTable.getByRole('columnheader');
     this.productTitles = this.page.getByTestId('product-title');

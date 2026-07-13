@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 /**
@@ -12,7 +11,6 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  */
 export class RentalsPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.RENTALS;
-  readonly bookmarks: NavbarComponent;
   readonly pageHeading: Locator;
   readonly rentalCards: Locator;
   readonly rentalCardImages: Locator;
@@ -21,7 +19,6 @@ export class RentalsPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.bookmarks = new NavbarComponent(this.page);
     this.pageHeading = this.page.getByRole('heading', {
       name: 'Rentals',
       exact: true,

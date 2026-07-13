@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 /**
@@ -16,7 +15,6 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  */
 export class CheckoutPaymentPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
-  readonly bookmarks: NavbarComponent;
   readonly heading: Locator;
   readonly paymentMethodSelect: Locator;
   readonly paymentMethodOptions: Locator;
@@ -58,7 +56,6 @@ export class CheckoutPaymentPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.bookmarks = new NavbarComponent(this.page);
     this.heading = this.page.getByRole('heading', { name: 'Payment' });
     this.paymentMethodSelect = this.page.getByTestId('payment-method');
     this.paymentMethodOptions = this.paymentMethodSelect.locator('option');

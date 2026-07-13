@@ -118,21 +118,26 @@ test('should register new user', async ({ page }) => {
 
 ```typescript
 // cart.spec.ts
-async function addProductToCart(homePage, productDetailPage, index, badge) {
+async function addProductToCart(
+  homePage,
+  productDetailPage,
+  navbar,
+  index,
+  badge,
+) {
   await homePage.goto();
   await homePage.clickProductCard(index);
   await productDetailPage.addToCart();
-  await expect(productDetailPage.bookmarks.cartQuantity).toHaveText(badge);
+  await expect(navbar.cartQuantity).toHaveText(badge);
 }
 ```
 
-**Good (the reusable step is a Page Object method; the test composes methods):**
+**Good (the reusable sync is a method on the component that owns the element; the test composes methods):**
 
 ```typescript
-// product-detail.page.ts — the async add + badge sync lives here
-async addToCartAndAwaitBadge(count: string): Promise<void> {
-  await this.addToCart();
-  await this.bookmarks.cartQuantity
+// navbar.component.ts — the async add's badge sync lives here
+async waitForCartQuantity(count: string): Promise<void> {
+  await this.cartQuantity
     .filter({ hasText: new RegExp(`^${count}$`) })
     .waitFor();
 }
@@ -140,8 +145,11 @@ async addToCartAndAwaitBadge(count: string): Promise<void> {
 // cart.spec.ts — Arrange composes existing methods, no local function
 await homePage.goto();
 await homePage.clickProductCard(0);
-await productDetailPage.addToCartAndAwaitBadge('1');
+await productDetailPage.addToCart();
+await navbar.waitForCartQuantity('1');
 ```
+
+(This exact arrange flow is already packaged as the `addProductToCart` action fixture — prefer that in specs; the snippet shows where each piece lives.)
 
 **Synchronizing without `expect()`:** a Page Object often needs to wait for state (an async write to land, an element to reach a value) before returning — but it must not use `expect()`. Wait with `locator.waitFor()`, narrowing to the target state with `.filter()` / `.and()` (as above) instead of an `expect(...).toHaveText(...)` poll. Assertions on that same state still belong in the spec.
 

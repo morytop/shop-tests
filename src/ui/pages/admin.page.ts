@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 
 /**
  * Shared shell of every page in the admin back office. All of them — dashboard, the six
@@ -13,11 +12,9 @@ import { NavbarComponent } from '@src/ui/components/navbar.component';
  */
 export abstract class AdminPage extends BasePage {
   readonly pageTitle: Locator;
-  readonly bookmarks: NavbarComponent;
 
   constructor(page: Page) {
     super(page);
     this.pageTitle = this.page.getByTestId('page-title');
-    this.bookmarks = new NavbarComponent(page);
   }
 }

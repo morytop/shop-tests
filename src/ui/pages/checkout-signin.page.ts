@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 /**
@@ -13,7 +12,6 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  */
 export class CheckoutSigninPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
-  readonly bookmarks: NavbarComponent;
   readonly signInTab: Locator;
   readonly continueAsGuestTab: Locator;
   readonly loginHeading: Locator;
@@ -30,7 +28,6 @@ export class CheckoutSigninPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.bookmarks = new NavbarComponent(this.page);
     // Tabs are bare `<a role="tab">` links with no data-test/id.
     this.signInTab = this.page.getByRole('tab', { name: 'Sign in' });
     this.continueAsGuestTab = this.page.getByRole('tab', {

@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 
 /**
  * Shared product-listing interface backing both the home/overview page and the
@@ -11,7 +10,6 @@ import { NavbarComponent } from '@src/ui/components/navbar.component';
  * lives here once.
  */
 export abstract class ProductListPage extends BasePage {
-  readonly bookmarks: NavbarComponent;
   readonly productCards: Locator;
   readonly productCardImages: Locator;
   readonly productCardNames: Locator;
@@ -38,7 +36,6 @@ export abstract class ProductListPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.bookmarks = new NavbarComponent(this.page);
     this.productCards = this.page.locator('a.card[data-test^="product-"]');
     this.productCardImages = this.productCards.locator('img');
     this.productCardNames = this.productCards.getByTestId('product-name');

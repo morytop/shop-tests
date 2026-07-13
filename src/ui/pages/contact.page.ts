@@ -1,6 +1,5 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '@src/ui/components/navbar.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ContactSubject } from '@src/ui/test-data/contact.data';
 
@@ -20,7 +19,6 @@ export class ContactPage extends BasePage {
   readonly attachmentInput: Locator;
   readonly submitButton: Locator;
   readonly confirmationMessage: Locator;
-  bookmarks = new NavbarComponent(this.page);
 
   constructor(page: Page) {
     super(page);

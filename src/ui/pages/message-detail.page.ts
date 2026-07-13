@@ -39,8 +39,8 @@ export class MessageDetailPage extends BasePage {
       .filter({ hasNot: this.page.locator('form') });
     this.replyHeaders = this.replyCards.locator('div.card-header');
     this.replyBodies = this.replyCards.locator('p.card-text');
-    this.replyInput = detailRoot.locator('[data-test="message"]');
-    this.replySubmitButton = detailRoot.locator('[data-test="reply-submit"]');
+    this.replyInput = detailRoot.getByTestId('message');
+    this.replySubmitButton = detailRoot.getByTestId('reply-submit');
   }
 
   /**

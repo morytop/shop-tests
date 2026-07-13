@@ -17,7 +17,7 @@ export abstract class AdminPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.pageTitle = this.page.locator('[data-test="page-title"]');
+    this.pageTitle = this.page.getByTestId('page-title');
     this.bookmarks = new NavbarComponent(page);
   }
 }

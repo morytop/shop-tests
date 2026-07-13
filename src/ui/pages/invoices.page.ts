@@ -22,7 +22,7 @@ export class InvoicesPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.heading = this.page.locator('[data-test="page-title"]');
+    this.heading = this.page.getByTestId('page-title');
     this.invoiceTable = this.page.getByRole('table');
     // Body rows only — `getByRole('row')` on the whole table would include the
     // header row.

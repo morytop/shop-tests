@@ -33,10 +33,10 @@ export class CartPage extends BasePage {
     this.bookmarks = new NavbarComponent(this.page);
     this.cartTable = this.page.getByRole('table');
     this.columnHeaders = this.cartTable.getByRole('columnheader');
-    this.productTitles = this.page.locator('[data-test="product-title"]');
-    this.quantityInputs = this.page.locator('[data-test="product-quantity"]');
-    this.productPrices = this.page.locator('[data-test="product-price"]');
-    this.linePrices = this.page.locator('[data-test="line-price"]');
+    this.productTitles = this.page.getByTestId('product-title');
+    this.quantityInputs = this.page.getByTestId('product-quantity');
+    this.productPrices = this.page.getByTestId('product-price');
+    this.linePrices = this.page.getByTestId('line-price');
     // The per-row delete control is a bare `<a class="btn btn-danger">` with an
     // aria-hidden icon — no data-test, role, or accessible name to target, so a
     // CSS chain scoped to the cart table is the only option (CODING_STANDARDS
@@ -45,17 +45,17 @@ export class CartPage extends BasePage {
     // The subtotal/discount breakdown rows exist only while the 15% rental +
     // non-rental combination discount applies — an undiscounted cart renders
     // neither (count 0), and shows just the total (TEST_PLAN.md §33).
-    this.cartSubtotal = this.page.locator('[data-test="cart-subtotal"]');
-    this.cartDiscount = this.page.locator('[data-test="cart-discount"]');
+    this.cartSubtotal = this.page.getByTestId('cart-subtotal');
+    this.cartDiscount = this.page.getByTestId('cart-discount');
     this.cartDiscountLabel = this.page.getByText('Discount (15%)');
-    this.cartTotal = this.page.locator('[data-test="cart-total"]');
-    this.proceedButton = this.page.locator('[data-test="proceed-1"]');
+    this.cartTotal = this.page.getByTestId('cart-total');
+    this.proceedButton = this.page.getByTestId('proceed-1');
     this.emptyCartMessage = this.page.getByText(
       'The cart is empty. Nothing to display.',
     );
     // Advancing past the cart step reveals the sign-in step's login email input;
     // it exists in the DOM on the cart step but stays hidden until you proceed.
-    this.signInEmail = this.page.locator('[data-test="email"]');
+    this.signInEmail = this.page.getByTestId('email');
     // ngx-toastr message body (quantity-updated / item-deleted confirmations).
     this.updateToast = this.page.locator('.toast-message');
     // Rental line label; a bare `<small>` with no data-test, matched by text.

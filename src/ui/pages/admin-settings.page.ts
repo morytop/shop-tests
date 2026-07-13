@@ -21,12 +21,10 @@ export class AdminSettingsPage extends AdminPage {
 
   constructor(page: Page) {
     super(page);
-    this.paymentEndpointInput = this.page.locator(
-      '[data-test="payment-endpoint"]',
-    );
-    this.geolocationInput = this.page.locator('[data-test="geolocation"]');
-    this.co2ScaleToggle = this.page.locator('[data-test="co2-scale-toggle"]');
-    this.ecoBadgeToggle = this.page.locator('[data-test="eco-badge-toggle"]');
-    this.settingsSubmit = this.page.locator('[data-test="settings-submit"]');
+    this.paymentEndpointInput = this.page.getByTestId('payment-endpoint');
+    this.geolocationInput = this.page.getByTestId('geolocation');
+    this.co2ScaleToggle = this.page.getByTestId('co2-scale-toggle');
+    this.ecoBadgeToggle = this.page.getByTestId('eco-badge-toggle');
+    this.settingsSubmit = this.page.getByTestId('settings-submit');
   }
 }

@@ -28,7 +28,7 @@ export class FavoritesPage extends BasePage {
   constructor(page: Page) {
     super(page);
     const favoritesRoot = this.page.locator('app-favorites');
-    this.title = this.page.locator('[data-test="page-title"]');
+    this.title = this.page.getByTestId('page-title');
     // The empty-state message carries no `data-test` and no role of its own; the only
     // thing distinguishing it from a favorite is that it is not a card.
     this.emptyMessage = favoritesRoot.locator('div.col > div:not(.card)');
@@ -37,13 +37,11 @@ export class FavoritesPage extends BasePage {
       'div.card[data-test^="favorite-"]',
     );
     this.favoriteImages = this.favoriteCards.locator('img.card-img');
-    this.favoriteNames = this.favoriteCards.locator(
-      '[data-test="product-name"]',
+    this.favoriteNames = this.favoriteCards.getByTestId('product-name');
+    this.favoriteDescriptions = this.favoriteCards.getByTestId(
+      'product-description',
     );
-    this.favoriteDescriptions = this.favoriteCards.locator(
-      '[data-test="product-description"]',
-    );
-    this.deleteButtons = this.favoriteCards.locator('[data-test="delete"]');
+    this.deleteButtons = this.favoriteCards.getByTestId('delete');
   }
 
   /**

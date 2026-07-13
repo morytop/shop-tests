@@ -94,6 +94,7 @@ area also run that area's spec(s).
 - **Files:** every page object + both components; config.
 - **Validation:** `@smoke` after each batch; full run at the end of the phase.
 - **Risk:** low — purely a locator-syntax swap, behaviour identical. `getByTestId` resolves to the same `[data-test]` selector.
+- **✅ Implemented 2026-07-13** on `refactor/phase-1-get-by-testid` (4 commits: components+config, auth/account, shop/checkout, admin/docs — 166 locators converted). Kept as CSS: the 4 prefix selectors (`product-`, `brand-`, `favorite-`) and `profile.page.ts`'s `FIRST_NAME_SELECTOR` (feeds `document.querySelector` in `waitForFunction`). Batch 1 validated with `@smoke` (18/19 + the known §33 guest-checkout contention flake, green on solo re-run); batches 2–4 gated on `lint`/`tsc:check` only — **full-suite validation still to run** (owner running separately).
 
 ### Phase 2 — Navbar as an injected fixture _(flagship; B1/D2)_
 

@@ -12,12 +12,12 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 export class ForgotPasswordPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.FORGOT_PASSWORD;
   heading = this.page.getByRole('heading', { name: 'Forgot Password' });
-  form = this.page.locator('[data-test="forgot-password-form"]');
-  emailInput = this.page.locator('[data-test="email"]');
-  submitButton = this.page.locator('[data-test="forgot-password-submit"]');
+  form = this.page.getByTestId('forgot-password-form');
+  emailInput = this.page.getByTestId('email');
+  submitButton = this.page.getByTestId('forgot-password-submit');
 
   // Client-side validation block, revealed only after a submit attempt.
-  emailError = this.page.locator('[data-test="email-error"]');
+  emailError = this.page.getByTestId('email-error');
 
   // Server-response banners. Neither carries a data-test, so they are located by
   // role composed with the bootstrap variant class.

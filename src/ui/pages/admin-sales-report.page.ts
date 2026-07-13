@@ -12,7 +12,7 @@ export abstract class AdminSalesReportPage extends AdminPage {
 
   constructor(page: Page) {
     super(page);
-    this.yearSelect = this.page.locator('[data-test="year"]');
+    this.yearSelect = this.page.getByTestId('year');
     this.salesChart = this.page.locator('canvas');
   }
 }

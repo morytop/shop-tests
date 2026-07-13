@@ -41,15 +41,9 @@ export abstract class ProductListPage extends BasePage {
     this.bookmarks = new NavbarComponent(this.page);
     this.productCards = this.page.locator('a.card[data-test^="product-"]');
     this.productCardImages = this.productCards.locator('img');
-    this.productCardNames = this.productCards.locator(
-      '[data-test="product-name"]',
-    );
-    this.productCardPrices = this.productCards.locator(
-      '[data-test="product-price"]',
-    );
-    this.outOfStockLabelSelector = this.page.locator(
-      '[data-test="out-of-stock"]',
-    );
+    this.productCardNames = this.productCards.getByTestId('product-name');
+    this.productCardPrices = this.productCards.getByTestId('product-price');
+    this.outOfStockLabelSelector = this.page.getByTestId('out-of-stock');
     this.outOfStockLabels = this.productCards.locator(
       this.outOfStockLabelSelector,
     );
@@ -64,17 +58,15 @@ export abstract class ProductListPage extends BasePage {
     this.inStockCard = this.productCards
       .filter({ hasNot: this.outOfStockLabelSelector })
       .first();
-    this.paginationNextLink = this.page.locator(
-      '[data-test="pagination-next"]',
-    );
+    this.paginationNextLink = this.page.getByTestId('pagination-next');
     this.paginationNextItem = this.paginationNextLink.locator('..');
     this.paginationPrevItem = this.page
-      .locator('[data-test="pagination-prev"]')
+      .getByTestId('pagination-prev')
       .locator('..');
     this.activePageItem = this.page.locator('ul.pagination li.active');
-    this.searchInput = this.page.locator('[data-test="search-query"]');
-    this.searchSubmitButton = this.page.locator('[data-test="search-submit"]');
-    this.searchResetButton = this.page.locator('[data-test="search-reset"]');
+    this.searchInput = this.page.getByTestId('search-query');
+    this.searchSubmitButton = this.page.getByTestId('search-submit');
+    this.searchResetButton = this.page.getByTestId('search-reset');
     this.categoriesGroup = this.page
       .getByRole('group', { name: 'Categories', exact: true })
       .first();
@@ -88,7 +80,7 @@ export abstract class ProductListPage extends BasePage {
       this.page.locator(':checked'),
     );
     this.brandCheckboxes = this.page.locator('[data-test^="brand-"]');
-    this.sortSelect = this.page.locator('[data-test="sort"]');
+    this.sortSelect = this.page.getByTestId('sort');
     this.priceRangeMinHandle = this.page.getByRole('slider', {
       name: 'ngx-slider',
       exact: true,

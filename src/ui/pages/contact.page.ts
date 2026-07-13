@@ -25,10 +25,10 @@ export class ContactPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.heading = page.getByRole('heading', { name: 'Contact' });
-    this.subjectSelect = page.locator('[data-test="subject"]');
-    this.messageInput = page.locator('[data-test="message"]');
-    this.attachmentInput = page.locator('[data-test="attachment"]');
-    this.submitButton = page.locator('[data-test="contact-submit"]');
+    this.subjectSelect = page.getByTestId('subject');
+    this.messageInput = page.getByTestId('message');
+    this.attachmentInput = page.getByTestId('attachment');
+    this.submitButton = page.getByTestId('contact-submit');
     this.confirmationMessage = page.getByRole('alert');
   }
 

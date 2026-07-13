@@ -33,13 +33,13 @@ export class CheckoutAddressPage extends BasePage {
     this.heading = this.page.getByRole('heading', { name: 'Billing Address' });
     // Country is a `<select>` (ISO-code values, full-name option text), not the
     // free-text field the docs imply (TEST_PLAN.md §9).
-    this.countrySelect = this.page.locator('[data-test="country"]');
-    this.postalCodeInput = this.page.locator('[data-test="postal_code"]');
-    this.houseNumberInput = this.page.locator('[data-test="house_number"]');
-    this.streetInput = this.page.locator('[data-test="street"]');
-    this.cityInput = this.page.locator('[data-test="city"]');
-    this.stateInput = this.page.locator('[data-test="state"]');
-    this.proceedButton = this.page.locator('[data-test="proceed-3"]');
+    this.countrySelect = this.page.getByTestId('country');
+    this.postalCodeInput = this.page.getByTestId('postal_code');
+    this.houseNumberInput = this.page.getByTestId('house_number');
+    this.streetInput = this.page.getByTestId('street');
+    this.cityInput = this.page.getByTestId('city');
+    this.stateInput = this.page.getByTestId('state');
+    this.proceedButton = this.page.getByTestId('proceed-3');
     this.textFields = {
       postalCode: this.postalCodeInput,
       houseNumber: this.houseNumberInput,

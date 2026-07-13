@@ -40,20 +40,20 @@ export class InvoiceDetailPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.invoiceNumber = this.page.locator('[data-test="invoice-number"]');
-    this.invoiceDate = this.page.locator('[data-test="invoice-date"]');
+    this.invoiceNumber = this.page.getByTestId('invoice-number');
+    this.invoiceDate = this.page.getByTestId('invoice-date');
     // Present only on a discounted invoice. `#additional_discount_percentage` holds
     // an *amount* ("$ 22.60") despite its id — the 15% appears only in the label.
     this.subtotal = this.page.locator('#subtotal');
     this.discount = this.page.locator('#additional_discount_percentage');
     this.discountLabel = this.page.getByText('Discount (15%)');
     this.total = this.page.locator('#total');
-    this.street = this.page.locator('[data-test="street"]');
-    this.postalCode = this.page.locator('[data-test="postal_code"]');
-    this.city = this.page.locator('[data-test="city"]');
-    this.state = this.page.locator('[data-test="state"]');
-    this.country = this.page.locator('[data-test="country"]');
-    this.paymentMethod = this.page.locator('[data-test="payment-method"]');
+    this.street = this.page.getByTestId('street');
+    this.postalCode = this.page.getByTestId('postal_code');
+    this.city = this.page.getByTestId('city');
+    this.state = this.page.getByTestId('state');
+    this.country = this.page.getByTestId('country');
+    this.paymentMethod = this.page.getByTestId('payment-method');
     this.lineItemsTable = this.page.getByRole('table');
     this.lineItemRows = this.lineItemsTable.locator('tbody').getByRole('row');
     this.notFoundMessage = this.page.getByText("This invoice doesn't exist.");

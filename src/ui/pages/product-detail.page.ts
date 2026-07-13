@@ -35,30 +35,22 @@ export class ProductDetailPage extends BasePage {
     this.bookmarks = new NavbarComponent(this.page);
     // The main product image is the only `.figure-img`; related cards use `.card-img-top`.
     this.productImage = this.page.locator('img.figure-img');
-    this.productName = this.page.locator('[data-test="product-name"]');
+    this.productName = this.page.getByTestId('product-name');
     // Detail price is a bare number (e.g. "14.15"), unlike the listing card's "$X.XX".
-    this.productPrice = this.page.locator('[data-test="unit-price"]');
-    this.productDescription = this.page.locator(
-      '[data-test="product-description"]',
-    );
+    this.productPrice = this.page.getByTestId('unit-price');
+    this.productDescription = this.page.getByTestId('product-description');
     // Category/brand render as pill badges distinguished only by aria-label.
     this.categoryBadge = this.page.getByLabel('category');
     this.brandBadge = this.page.getByLabel('brand');
-    this.quantityInput = this.page.locator('[data-test="quantity"]');
-    this.increaseQuantityButton = this.page.locator(
-      '[data-test="increase-quantity"]',
-    );
-    this.decreaseQuantityButton = this.page.locator(
-      '[data-test="decrease-quantity"]',
-    );
-    this.addToCartButton = this.page.locator('[data-test="add-to-cart"]');
+    this.quantityInput = this.page.getByTestId('quantity');
+    this.increaseQuantityButton = this.page.getByTestId('increase-quantity');
+    this.decreaseQuantityButton = this.page.getByTestId('decrease-quantity');
+    this.addToCartButton = this.page.getByTestId('add-to-cart');
     // The attribute is American, the visible label British ("Add to favourites").
-    this.addToFavoritesButton = this.page.locator(
-      '[data-test="add-to-favorites"]',
-    );
+    this.addToFavoritesButton = this.page.getByTestId('add-to-favorites');
     // Rental products replace the quantity stepper with a 1–10h duration slider.
     this.durationSlider = this.page.getByRole('slider', { name: 'ngx-slider' });
-    this.outOfStockLabel = this.page.locator('[data-test="out-of-stock"]');
+    this.outOfStockLabel = this.page.getByTestId('out-of-stock');
     this.relatedProductsHeading = this.page.getByRole('heading', {
       name: 'Related products',
     });

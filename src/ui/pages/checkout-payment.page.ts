@@ -60,15 +60,13 @@ export class CheckoutPaymentPage extends BasePage {
     super(page);
     this.bookmarks = new NavbarComponent(this.page);
     this.heading = this.page.getByRole('heading', { name: 'Payment' });
-    this.paymentMethodSelect = this.page.locator(
-      '[data-test="payment-method"]',
-    );
+    this.paymentMethodSelect = this.page.getByTestId('payment-method');
     this.paymentMethodOptions = this.paymentMethodSelect.locator('option');
-    this.finishButton = this.page.locator('[data-test="finish"]');
+    this.finishButton = this.page.getByTestId('finish');
 
-    this.bankNameInput = this.page.locator('[data-test="bank_name"]');
-    this.accountNameInput = this.page.locator('[data-test="account_name"]');
-    this.accountNumberInput = this.page.locator('[data-test="account_number"]');
+    this.bankNameInput = this.page.getByTestId('bank_name');
+    this.accountNameInput = this.page.getByTestId('account_name');
+    this.accountNumberInput = this.page.getByTestId('account_number');
     this.bankNameError = this.page.getByText(
       'Bank name can only contain letters and spaces.',
     );
@@ -79,16 +77,10 @@ export class CheckoutPaymentPage extends BasePage {
       'Account number must be numeric.',
     );
 
-    this.creditCardNumberInput = this.page.locator(
-      '[data-test="credit_card_number"]',
-    );
-    this.expirationDateInput = this.page.locator(
-      '[data-test="expiration_date"]',
-    );
-    this.cvvInput = this.page.locator('[data-test="cvv"]');
-    this.cardHolderNameInput = this.page.locator(
-      '[data-test="card_holder_name"]',
-    );
+    this.creditCardNumberInput = this.page.getByTestId('credit_card_number');
+    this.expirationDateInput = this.page.getByTestId('expiration_date');
+    this.cvvInput = this.page.getByTestId('cvv');
+    this.cardHolderNameInput = this.page.getByTestId('card_holder_name');
     this.creditCardNumberError = this.page.getByText(
       'Invalid card number format.',
     );
@@ -105,12 +97,8 @@ export class CheckoutPaymentPage extends BasePage {
     // asserted via the input's `ng-invalid` class + the disabled Confirm button,
     // not visible text (TEST_PLAN.md §17).
 
-    this.giftCardNumberInput = this.page.locator(
-      '[data-test="gift_card_number"]',
-    );
-    this.validationCodeInput = this.page.locator(
-      '[data-test="validation_code"]',
-    );
+    this.giftCardNumberInput = this.page.getByTestId('gift_card_number');
+    this.validationCodeInput = this.page.getByTestId('validation_code');
     // Production has diverged from the pinned v5.0 source (TEST_PLAN.md §17): the
     // gift card number must be exactly 16 letters/digits and the validation code
     // exactly 4 (the code input also carries maxlength=4), each with its own newer
@@ -122,14 +110,14 @@ export class CheckoutPaymentPage extends BasePage {
       'Please enter a valid validation code: exactly 4 letters and/or digits.',
     );
 
-    this.monthlyInstallmentsSelect = this.page.locator(
-      '[data-test="monthly_installments"]',
+    this.monthlyInstallmentsSelect = this.page.getByTestId(
+      'monthly_installments',
     );
     this.monthlyInstallmentsOptions =
       this.monthlyInstallmentsSelect.locator('option');
 
-    this.paymentSuccessMessage = this.page.locator(
-      '[data-test="payment-success-message"]',
+    this.paymentSuccessMessage = this.page.getByTestId(
+      'payment-success-message',
     );
     // The confirmation banner has no data-test, only an id.
     this.orderConfirmation = this.page.locator('#order-confirmation');

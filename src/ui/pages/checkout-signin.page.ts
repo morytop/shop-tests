@@ -40,26 +40,20 @@ export class CheckoutSigninPage extends BasePage {
     this.loginHeading = this.page.getByRole('heading', { name: 'Login' });
     // Form fields reuse the same data-test ids as the standalone /auth/login page;
     // the submit button is labelled "Login".
-    this.emailInput = this.page.locator('[data-test="email"]');
-    this.passwordInput = this.page.locator('[data-test="password"]');
-    this.loginButton = this.page.locator('[data-test="login-submit"]');
+    this.emailInput = this.page.getByTestId('email');
+    this.passwordInput = this.page.getByTestId('password');
+    this.loginButton = this.page.getByTestId('login-submit');
     // The "Continue as Guest" tab reveals an intermediate details form (email +
     // name) that must be submitted before the wizard advances to Billing Address.
-    this.guestEmailInput = this.page.locator('[data-test="guest-email"]');
-    this.guestFirstNameInput = this.page.locator(
-      '[data-test="guest-first-name"]',
-    );
-    this.guestLastNameInput = this.page.locator(
-      '[data-test="guest-last-name"]',
-    );
-    this.guestSubmitButton = this.page.locator('[data-test="guest-submit"]');
+    this.guestEmailInput = this.page.getByTestId('guest-email');
+    this.guestFirstNameInput = this.page.getByTestId('guest-first-name');
+    this.guestLastNameInput = this.page.getByTestId('guest-last-name');
+    this.guestSubmitButton = this.page.getByTestId('guest-submit');
     // After guest details are submitted, a distinct "Proceed to checkout" button
     // (proceed-2-guest) advances to Billing Address; the logged-in path uses
     // proceed-2 instead.
-    this.proceedAsGuestButton = this.page.locator(
-      '[data-test="proceed-2-guest"]',
-    );
-    this.proceedAsUserButton = this.page.locator('[data-test="proceed-2"]');
+    this.proceedAsGuestButton = this.page.getByTestId('proceed-2-guest');
+    this.proceedAsUserButton = this.page.getByTestId('proceed-2');
     // Shown on the sign-in step only when already authenticated (TEST_PLAN.md §9):
     // "Hello {First} {Last}, you are already logged in. You can proceed to checkout."
     this.alreadyLoggedInMessage = this.page.getByText(

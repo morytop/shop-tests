@@ -1,5 +1,7 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * Shared product-listing interface backing both the home/overview page and the
@@ -122,12 +124,7 @@ export abstract class ProductListPage extends BasePage {
   // instead of racing the previous result set (which showed up as products
   // from an unrelated filter leaking into a freshly-collected page).
   private async triggerAndAwaitProducts(action: Promise<void>): Promise<void> {
-    await Promise.all([
-      this.page.waitForResponse((response) =>
-        new URL(response.url()).pathname.endsWith('/products'),
-      ),
-      action,
-    ]);
+    await Promise.all([waitForApi(this.page, API_PATHS.PRODUCTS), action]);
   }
 
   // Advance exactly one page, awaiting both the re-fetch (QUERY /products) and

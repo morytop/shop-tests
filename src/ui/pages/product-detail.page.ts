@@ -1,6 +1,8 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * A single product's detail page (`/product/<id>`). The id is dynamic and the
@@ -93,11 +95,7 @@ export class ProductDetailPage extends BasePage {
    */
   async addToFavoritesAndAwaitResponse(): Promise<number> {
     const [response] = await Promise.all([
-      this.page.waitForResponse(
-        (response) =>
-          new URL(response.url()).pathname.endsWith('/favorites') &&
-          response.request().method() === 'POST',
-      ),
+      waitForApi(this.page, API_PATHS.FAVORITES, { method: 'POST' }),
       this.addToFavoritesButton.click(),
     ]);
 

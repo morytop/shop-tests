@@ -1,6 +1,8 @@
 import { BasePage } from './base.page';
 import { Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 export class LoginPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.LOGIN;
@@ -36,9 +38,7 @@ export class LoginPage extends BasePage {
    * the previous attempt, so its text is only repainted once the response lands.
    */
   async loginAndAwaitResponse(email: string, password: string): Promise<void> {
-    const loginResponse = this.page.waitForResponse((response) =>
-      response.url().includes('/users/login'),
-    );
+    const loginResponse = waitForApi(this.page, API_PATHS.LOGIN);
     await this.login(email, password);
     await loginResponse;
   }

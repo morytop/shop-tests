@@ -1,6 +1,8 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * Customer messages list (`/account/messages`), reachable from the `/account` dashboard
@@ -33,11 +35,7 @@ export class MessagesPage extends BasePage {
    */
   async gotoAndAwaitLoaded(): Promise<void> {
     await Promise.all([
-      this.page.waitForResponse(
-        (response) =>
-          new URL(response.url()).pathname.endsWith('/messages') &&
-          response.request().method() === 'GET',
-      ),
+      waitForApi(this.page, API_PATHS.MESSAGES, { method: 'GET' }),
       this.goto(),
     ]);
   }

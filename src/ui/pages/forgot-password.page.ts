@@ -1,6 +1,8 @@
 import { BasePage } from './base.page';
 import { Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * Forgot-password form (`/auth/forgot-password`).
@@ -46,8 +48,9 @@ export class ForgotPasswordPage extends BasePage {
    * they render, so an assertion that races a slow response can miss them entirely.
    */
   async submitAndAwaitResponse(email: string): Promise<void> {
-    const forgotPasswordResponse = this.page.waitForResponse((response) =>
-      response.url().includes('/users/forgot-password'),
+    const forgotPasswordResponse = waitForApi(
+      this.page,
+      API_PATHS.FORGOT_PASSWORD,
     );
     await this.submit(email);
     await forgotPasswordResponse;

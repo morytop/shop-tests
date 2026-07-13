@@ -1,7 +1,9 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { Address, AddressTextField } from '@src/ui/models/address.model';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * The "Billing Address" step of the checkout wizard (`/checkout`), reached by
@@ -57,9 +59,7 @@ export class CheckoutAddressPage extends BasePage {
     // street/city/state from an external geocoder (TEST_PLAN.md §16). Await it so a
     // stale in-flight lookup can't resolve later and overwrite a field the boundary
     // tests deliberately set over-long (the response echoes the valid values back).
-    const lookup = this.page.waitForResponse((response) =>
-      response.url().includes('/postcode-lookup'),
-    );
+    const lookup = waitForApi(this.page, API_PATHS.POSTCODE_LOOKUP);
     await this.houseNumberInput.fill(address.houseNumber);
     await lookup;
     // Overwrite the geocoded street/city/state with our deterministic values.
@@ -81,9 +81,7 @@ export class CheckoutAddressPage extends BasePage {
     postalCode: string,
     houseNumber: string,
   ): Promise<void> {
-    const lookup = this.page.waitForResponse((response) =>
-      response.url().includes('/postcode-lookup'),
-    );
+    const lookup = waitForApi(this.page, API_PATHS.POSTCODE_LOOKUP);
     await this.selectCountry(country);
     await this.postalCodeInput.fill(postalCode);
     await this.houseNumberInput.fill('');

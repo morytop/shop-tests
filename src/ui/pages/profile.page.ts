@@ -3,7 +3,11 @@ import { Locator, Page } from '@playwright/test';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
 
-/** Shared by the `firstNameInput` locator and the `waitForProfileLoaded()` gate. */
+/**
+ * Shared by the `firstNameInput` locator and the `waitForProfileLoaded()` gate.
+ * Stays raw CSS (not `getByTestId`): the gate feeds it to `document.querySelector`
+ * inside `waitForFunction`, which only takes a selector string.
+ */
 const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
 
 /**

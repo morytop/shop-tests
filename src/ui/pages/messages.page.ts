@@ -21,7 +21,7 @@ export class MessagesPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.title = this.page.locator('[data-test="page-title"]');
+    this.title = this.page.getByTestId('page-title');
     this.messageTable = this.page.getByRole('table');
     // Body rows only — `getByRole('row')` on the whole table includes the header row.
     this.messageRows = this.messageTable.locator('tbody').getByRole('row');

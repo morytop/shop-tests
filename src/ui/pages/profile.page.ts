@@ -1,5 +1,7 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { PasswordStrengthComponent } from '@src/ui/components/password-strength.component';
+import { TotpFormComponent } from '@src/ui/components/totp-form.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
 
@@ -31,7 +33,7 @@ const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
  */
 export class ProfilePage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.PROFILE;
-  readonly heading: Locator;
+  readonly pageTitle: Locator;
   readonly firstNameInput: Locator;
   readonly lastNameInput: Locator;
   readonly emailInput: Locator;
@@ -54,27 +56,34 @@ export class ProfilePage extends BasePage {
   readonly passwordForm: Locator;
   readonly passwordSuccess: Locator;
   readonly passwordError: Locator;
-  readonly strengthFill: Locator;
-  readonly activeStrengthLabel: Locator;
-
-  totpHeading = this.page.getByRole('heading', {
-    name: 'Set up Two-Factor Authentication',
-  });
-  totpQrCode = this.page.locator('qrcode canvas');
-  totpSecret = this.page.getByTestId('totp-secret');
-  // The <p> is rendered before `/totp/setup` resolves, so it is briefly empty —
-  // this narrows to the populated state for use as a synchronization gate.
-  populatedTotpSecret = this.totpSecret.filter({ hasText: /^[A-Z2-7]{16}$/ });
-  totpCodeInput = this.page.getByTestId('totp-code');
-  verifyTotpButton = this.page.getByTestId('verify-totp');
-
-  // Both banners are prefixed in the template (`Error:` / `Success:`).
-  totpError = this.page.getByTestId('totp-error');
-  totpSuccess = this.page.getByTestId('totp-success');
+  readonly passwordStrength: PasswordStrengthComponent;
+  readonly totpHeading: Locator;
+  readonly totpQrCode: Locator;
+  readonly totpSecret: Locator;
+  /**
+   * The <p> is rendered before `/totp/setup` resolves, so it is briefly empty —
+   * this narrows to the populated state for use as a synchronization gate.
+   */
+  readonly populatedTotpSecret: Locator;
+  readonly totpForm: TotpFormComponent;
+  /** Both banners are prefixed in the template (`Error:` / `Success:`). */
+  readonly totpError: Locator;
+  readonly totpSuccess: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.heading = this.page.getByTestId('page-title');
+    this.totpHeading = this.page.getByRole('heading', {
+      name: 'Set up Two-Factor Authentication',
+    });
+    this.totpQrCode = this.page.locator('qrcode canvas');
+    this.totpSecret = this.page.getByTestId('totp-secret');
+    this.populatedTotpSecret = this.totpSecret.filter({
+      hasText: /^[A-Z2-7]{16}$/,
+    });
+    this.totpForm = new TotpFormComponent(page);
+    this.totpError = this.page.getByTestId('totp-error');
+    this.totpSuccess = this.page.getByTestId('totp-success');
+    this.pageTitle = this.page.getByTestId('page-title');
     this.firstNameInput = this.page.locator(FIRST_NAME_SELECTOR);
     this.lastNameInput = this.page.getByTestId('last-name');
     this.emailInput = this.page.getByTestId('email');
@@ -113,12 +122,7 @@ export class ProfilePage extends BasePage {
       .filter({ has: this.changePasswordButton });
     this.passwordSuccess = this.passwordForm.locator('.alert-success');
     this.passwordError = this.passwordForm.locator('.alert-danger');
-    // The register form renders the same meter markup, but its copy is broken in
-    // production (TEST_PLAN.md §19); this one tracks the typed value (§25).
-    this.strengthFill = this.passwordForm.locator('.strength-bar .fill');
-    this.activeStrengthLabel = this.passwordForm.locator(
-      '.strength-labels span.active',
-    );
+    this.passwordStrength = new PasswordStrengthComponent(this.passwordForm);
   }
 
   /**
@@ -182,10 +186,5 @@ export class ProfilePage extends BasePage {
     await this.populatedTotpSecret.waitFor();
 
     return (await this.totpSecret.innerText()).trim();
-  }
-
-  async submitTotpCode(code: string): Promise<void> {
-    await this.totpCodeInput.fill(code);
-    await this.verifyTotpButton.click();
   }
 }

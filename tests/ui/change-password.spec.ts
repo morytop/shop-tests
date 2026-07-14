@@ -77,11 +77,13 @@ test.describe('Verify change password', () => {
       for (const level of PASSWORD_STRENGTH_LEVELS) {
         await profilePage.enterNewPassword(level.password);
 
-        await expect(profilePage.strengthFill).toHaveAttribute(
+        await expect(profilePage.passwordStrength.fillBar).toHaveAttribute(
           'style',
           new RegExp(`width:\\s*${level.width};`),
         );
-        await expect(profilePage.activeStrengthLabel).toHaveText(level.label);
+        await expect(profilePage.passwordStrength.activeLabel).toHaveText(
+          level.label,
+        );
       }
     },
   );

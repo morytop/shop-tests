@@ -133,6 +133,18 @@ area also run that area's spec(s).
 - **Files:** new `src/ui/components/*`; `login`, `profile`, `register`, maybe `checkout-address`.
 - **Validation:** `login`, `totp-setup`, `change-password`, `profile`, `register` specs.
 - **Risk:** med — touches auth-critical pages; keep each component a separate commit and run its specs.
+- **✅ Implemented 2026-07-14** on `refactor/phase-4-form-components` (3 commits: `TotpFormComponent`
+  → `PasswordStrengthComponent` → the Phase 5 style fold). Both components are page-scoped and
+  instantiated by their owning page objects (not fixtures — they aren't global chrome).
+  `PasswordStrengthComponent` takes a `Page | Locator` root, so the profile page scopes it to its
+  change-password form while the register page matches page-wide. **Step 3 resolved: address cluster
+  NOT extracted** — the only identical pieces across `checkout-address`/`profile`/`register` are four
+  one-line testid locators; everything around them diverges (country `<select>` vs free text, the
+  postcode-lookup awaits, differing field sets), so a shared component fails the "stays clean" bar.
+  Phase 5 folded in for the three open files: `login`/`register`/`profile` converted to
+  constructor-assigned locators, `ProfilePage.heading` → `pageTitle` (B4). Validated with the five
+  affected specs (`login`, `totp-setup`, `change-password`, `profile`, `register`): **34/34 passed**
+  in 2.8m, plus `lint`/`tsc:check` per commit.
 
 ### Phase 5 — Normalise POM style & vocabulary _(B3/B4)_
 
@@ -140,6 +152,9 @@ area also run that area's spec(s).
 - **Steps:** convert the ~7 class-field POMs to constructor style, deleting the now-redundant empty constructors the class-field style leaves behind (e.g. `login.page.ts:21-23` is just `super(page)`); rename `title`/`heading`→`pageTitle` where it's the page-title testid; update the handful of spec references.
 - **Shrink it by folding:** Phase 2 rewrites all 11 navbar-holding page objects and Phase 4 rewrites `login`/`profile`/`register` — do the style conversion and renames opportunistically in those phases when a file is already open. Standalone Phase 5 then covers only the leftovers nothing else touched.
 - **Files:** `login`, `register`, `contact`, `privacy`, `profile`, `favorites`, `invoices`, `messages`, `cart` + their specs (minus whatever Phases 2/4 already reconciled).
+- **Remaining after the Phase 4 fold:** `forgot-password.page.ts` is the last class-field-style POM;
+  the B4 `pageTitle` renames in files Phase 4 didn't touch (`account`, `favorites`, `cart`, `admin`,
+  `invoices`, `messages`) are still open.
 - **Validation:** `@smoke` + each renamed area's spec.
 - **Risk:** low but churny — pure rename/restructure. Do last so it reconciles the fewest remaining duplicates. Optional if time-boxed.
 

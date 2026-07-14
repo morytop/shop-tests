@@ -33,7 +33,7 @@ const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
  */
 export class ProfilePage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.PROFILE;
-  readonly heading: Locator;
+  readonly pageTitle: Locator;
   readonly firstNameInput: Locator;
   readonly lastNameInput: Locator;
   readonly emailInput: Locator;
@@ -57,25 +57,33 @@ export class ProfilePage extends BasePage {
   readonly passwordSuccess: Locator;
   readonly passwordError: Locator;
   readonly passwordStrength: PasswordStrengthComponent;
-
-  totpHeading = this.page.getByRole('heading', {
-    name: 'Set up Two-Factor Authentication',
-  });
-  totpQrCode = this.page.locator('qrcode canvas');
-  totpSecret = this.page.getByTestId('totp-secret');
-  // The <p> is rendered before `/totp/setup` resolves, so it is briefly empty —
-  // this narrows to the populated state for use as a synchronization gate.
-  populatedTotpSecret = this.totpSecret.filter({ hasText: /^[A-Z2-7]{16}$/ });
+  readonly totpHeading: Locator;
+  readonly totpQrCode: Locator;
+  readonly totpSecret: Locator;
+  /**
+   * The <p> is rendered before `/totp/setup` resolves, so it is briefly empty —
+   * this narrows to the populated state for use as a synchronization gate.
+   */
+  readonly populatedTotpSecret: Locator;
   readonly totpForm: TotpFormComponent;
-
-  // Both banners are prefixed in the template (`Error:` / `Success:`).
-  totpError = this.page.getByTestId('totp-error');
-  totpSuccess = this.page.getByTestId('totp-success');
+  /** Both banners are prefixed in the template (`Error:` / `Success:`). */
+  readonly totpError: Locator;
+  readonly totpSuccess: Locator;
 
   constructor(page: Page) {
     super(page);
+    this.totpHeading = this.page.getByRole('heading', {
+      name: 'Set up Two-Factor Authentication',
+    });
+    this.totpQrCode = this.page.locator('qrcode canvas');
+    this.totpSecret = this.page.getByTestId('totp-secret');
+    this.populatedTotpSecret = this.totpSecret.filter({
+      hasText: /^[A-Z2-7]{16}$/,
+    });
     this.totpForm = new TotpFormComponent(page);
-    this.heading = this.page.getByTestId('page-title');
+    this.totpError = this.page.getByTestId('totp-error');
+    this.totpSuccess = this.page.getByTestId('totp-success');
+    this.pageTitle = this.page.getByTestId('page-title');
     this.firstNameInput = this.page.locator(FIRST_NAME_SELECTOR);
     this.lastNameInput = this.page.getByTestId('last-name');
     this.emailInput = this.page.getByTestId('email');

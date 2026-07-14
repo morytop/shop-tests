@@ -1,5 +1,5 @@
 import { BasePage } from './base.page';
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
 import { TotpFormComponent } from '@src/ui/components/totp-form.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
@@ -7,19 +7,26 @@ import { waitForApi } from '@src/ui/utils/network.util';
 
 export class LoginPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.LOGIN;
-  heading = this.page.getByRole('heading', { name: 'Login' });
-  emailInput = this.page.getByTestId('email');
-  passwordInput = this.page.getByTestId('password');
-  loginButton = this.page.getByTestId('login-submit');
-  loginError = this.page.getByTestId('login-error');
-  forgotPasswordLink = this.page.getByTestId('forgot-password-link');
-
-  // Second-factor prompt: replaces the credentials form in place on /auth/login once
-  // the account is TOTP-enabled. `loginError` is shared with the credential errors.
+  readonly heading: Locator;
+  readonly emailInput: Locator;
+  readonly passwordInput: Locator;
+  readonly loginButton: Locator;
+  readonly loginError: Locator;
+  /**
+   * Second-factor prompt: replaces the credentials form in place on /auth/login once
+   * the account is TOTP-enabled. `loginError` is shared with the credential errors.
+   */
   readonly totpForm: TotpFormComponent;
+  readonly forgotPasswordLink: Locator;
 
   constructor(page: Page) {
     super(page);
+    this.heading = this.page.getByRole('heading', { name: 'Login' });
+    this.emailInput = this.page.getByTestId('email');
+    this.passwordInput = this.page.getByTestId('password');
+    this.loginButton = this.page.getByTestId('login-submit');
+    this.loginError = this.page.getByTestId('login-error');
+    this.forgotPasswordLink = this.page.getByTestId('forgot-password-link');
     this.totpForm = new TotpFormComponent(page);
   }
 

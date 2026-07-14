@@ -32,7 +32,7 @@ test.describe('Verify customer profile', () => {
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
-      await expect(profilePage.heading).toHaveText('Profile');
+      await expect(profilePage.pageTitle).toHaveText('Profile');
       await expect(profilePage.firstNameInput).toHaveValue(user.first_name);
       await expect(profilePage.lastNameInput).toHaveValue(user.last_name);
       await expect(profilePage.emailInput).toHaveValue(user.email);

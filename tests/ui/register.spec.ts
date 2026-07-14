@@ -173,11 +173,11 @@ test.describe('Verify register @register', () => {
 
       await registerPage.enterPassword('Aaaaaaa1!');
 
-      await expect(registerPage.strengthFill).toHaveAttribute(
+      await expect(registerPage.passwordStrength.fillBar).toHaveAttribute(
         'style',
         /width:\s*0%/,
       );
-      await expect(registerPage.activeStrengthLabel).toHaveCount(0);
+      await expect(registerPage.passwordStrength.activeLabel).toHaveCount(0);
     },
   );
 });

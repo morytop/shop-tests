@@ -1,5 +1,6 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { PasswordStrengthComponent } from '@src/ui/components/password-strength.component';
 import { TotpFormComponent } from '@src/ui/components/totp-form.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
@@ -55,8 +56,7 @@ export class ProfilePage extends BasePage {
   readonly passwordForm: Locator;
   readonly passwordSuccess: Locator;
   readonly passwordError: Locator;
-  readonly strengthFill: Locator;
-  readonly activeStrengthLabel: Locator;
+  readonly passwordStrength: PasswordStrengthComponent;
 
   totpHeading = this.page.getByRole('heading', {
     name: 'Set up Two-Factor Authentication',
@@ -114,12 +114,7 @@ export class ProfilePage extends BasePage {
       .filter({ has: this.changePasswordButton });
     this.passwordSuccess = this.passwordForm.locator('.alert-success');
     this.passwordError = this.passwordForm.locator('.alert-danger');
-    // The register form renders the same meter markup, but its copy is broken in
-    // production (TEST_PLAN.md §19); this one tracks the typed value (§25).
-    this.strengthFill = this.passwordForm.locator('.strength-bar .fill');
-    this.activeStrengthLabel = this.passwordForm.locator(
-      '.strength-labels span.active',
-    );
+    this.passwordStrength = new PasswordStrengthComponent(this.passwordForm);
   }
 
   /**

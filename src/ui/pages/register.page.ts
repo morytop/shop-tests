@@ -1,5 +1,6 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { PasswordStrengthComponent } from '@src/ui/components/password-strength.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { RegisterUser } from '@src/ui/models/user.model';
 
@@ -39,12 +40,11 @@ export class RegisterPage extends BasePage {
     hasText: 'special symbol',
   });
 
-  // Password strength meter — the filled bar and the currently-active label.
-  strengthFill = this.page.locator('.strength-bar .fill');
-  activeStrengthLabel = this.page.locator('.strength-labels span.active');
+  readonly passwordStrength: PasswordStrengthComponent;
 
   constructor(page: Page) {
     super(page);
+    this.passwordStrength = new PasswordStrengthComponent(page);
   }
 
   /** Inline error block for a field, keyed by its `data-test` id (e.g. `email`). */

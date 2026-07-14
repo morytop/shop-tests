@@ -14,7 +14,7 @@ test.describe('Verify login @login', () => {
     await loginPage.goto();
     await loginPage.login(email, password);
 
-    await expect(accountPage.title).toHaveText('My account');
+    await expect(accountPage.pageTitle).toHaveText('My account');
   });
 
   test('reject login with incorrect credentials', async ({ loginPage }) => {
@@ -98,7 +98,7 @@ test.describe('Verify login @login', () => {
         // Codes rotate every 30s, so derive it immediately before submitting.
         await loginPage.totpForm.submitCode(generateTotpCode(user.secret));
 
-        await expect(accountPage.title).toHaveText('My account');
+        await expect(accountPage.pageTitle).toHaveText('My account');
       },
     );
 

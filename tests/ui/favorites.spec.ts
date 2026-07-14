@@ -28,10 +28,10 @@ test.describe('Verify favorites', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await favoritesPage.gotoAndAwaitLoaded();
 
-      await expect(favoritesPage.title).toHaveText('Favorites');
+      await expect(favoritesPage.pageTitle).toHaveText('Favorites');
       await expect(favoritesPage.emptyMessage).toHaveText(
         'There are no favorites yet. In order to add favorites, please go to the product listing and mark some products as your favorite.',
       );
@@ -59,7 +59,7 @@ test.describe('Verify favorites', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
       const productName = await productDetailPage.productName.innerText();
@@ -102,7 +102,7 @@ test.describe('Verify favorites', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
       await productDetailPage.addToFavoritesAndAwaitResponse();

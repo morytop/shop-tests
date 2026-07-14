@@ -4,9 +4,10 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 export class AccountPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.ACCOUNT;
-  readonly title: Locator;
+  readonly pageTitle: Locator;
+
   constructor(page: Page) {
     super(page);
-    this.title = this.page.getByTestId('page-title');
+    this.pageTitle = this.page.getByTestId('page-title');
   }
 }

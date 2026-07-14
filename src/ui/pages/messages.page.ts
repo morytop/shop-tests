@@ -17,13 +17,13 @@ import { waitForApi } from '@src/ui/utils/network.util';
  */
 export class MessagesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.MESSAGES;
-  readonly title: Locator;
+  readonly pageTitle: Locator;
   readonly messageTable: Locator;
   readonly messageRows: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.title = this.page.getByTestId('page-title');
+    this.pageTitle = this.page.getByTestId('page-title');
     this.messageTable = this.page.getByRole('table');
     // Body rows only — `getByRole('row')` on the whole table includes the header row.
     this.messageRows = this.messageTable.locator('tbody').getByRole('row');

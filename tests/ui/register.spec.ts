@@ -46,7 +46,7 @@ test.describe('Verify register @register', () => {
     await expect(loginPage.heading).toHaveText('Login');
 
     await loginPage.login(user.email, user.password);
-    await expect(accountPage.title).toHaveText('My account');
+    await expect(accountPage.pageTitle).toHaveText('My account');
   });
 
   // AC1 — every field is required; submitting the empty form reveals each field's

@@ -28,7 +28,7 @@ test.describe('Verify customer profile', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -59,7 +59,7 @@ test.describe('Verify customer profile', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -107,7 +107,7 @@ test.describe('Verify customer profile', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -140,7 +140,7 @@ test.describe('Verify customer profile', () => {
 
         await loginPage.goto();
         await loginPage.login(user.email, user.password);
-        await accountPage.title.waitFor();
+        await accountPage.pageTitle.waitFor();
         await profilePage.goto();
         await profilePage.waitForProfileLoaded();
 

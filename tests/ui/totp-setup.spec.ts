@@ -30,7 +30,7 @@ test.describe('Verify TOTP setup @totp', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
 
       await expect(profilePage.totpHeading).toBeVisible();
@@ -52,7 +52,7 @@ test.describe('Verify TOTP setup @totp', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       const secret = await profilePage.readTotpSecret();
 
@@ -77,7 +77,7 @@ test.describe('Verify TOTP setup @totp', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
 
       await profilePage.totpForm.submitCode('000000');
@@ -109,7 +109,7 @@ test.describe('Verify TOTP setup @totp', () => {
     async ({ accountPage, loginPage, profilePage }) => {
       await loginPage.goto();
       await loginPage.login(testUser1.email, testUser1.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       await profilePage.goto();
 

@@ -1,5 +1,6 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { TotpFormComponent } from '@src/ui/components/totp-form.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
 
@@ -65,8 +66,7 @@ export class ProfilePage extends BasePage {
   // The <p> is rendered before `/totp/setup` resolves, so it is briefly empty —
   // this narrows to the populated state for use as a synchronization gate.
   populatedTotpSecret = this.totpSecret.filter({ hasText: /^[A-Z2-7]{16}$/ });
-  totpCodeInput = this.page.getByTestId('totp-code');
-  verifyTotpButton = this.page.getByTestId('verify-totp');
+  readonly totpForm: TotpFormComponent;
 
   // Both banners are prefixed in the template (`Error:` / `Success:`).
   totpError = this.page.getByTestId('totp-error');
@@ -74,6 +74,7 @@ export class ProfilePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
+    this.totpForm = new TotpFormComponent(page);
     this.heading = this.page.getByTestId('page-title');
     this.firstNameInput = this.page.locator(FIRST_NAME_SELECTOR);
     this.lastNameInput = this.page.getByTestId('last-name');
@@ -182,10 +183,5 @@ export class ProfilePage extends BasePage {
     await this.populatedTotpSecret.waitFor();
 
     return (await this.totpSecret.innerText()).trim();
-  }
-
-  async submitTotpCode(code: string): Promise<void> {
-    await this.totpCodeInput.fill(code);
-    await this.verifyTotpButton.click();
   }
 }

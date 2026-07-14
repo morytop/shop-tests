@@ -37,8 +37,8 @@ test.describe('Verify TOTP setup @totp', () => {
       await expect(profilePage.totpQrCode).toBeVisible();
       // google2fa mints 16 base32 characters; assert the shape, not a fixed value.
       await expect(profilePage.totpSecret).toHaveText(/^[A-Z2-7]{16}$/);
-      await expect(profilePage.totpCodeInput).toBeVisible();
-      await expect(profilePage.verifyTotpButton).toBeVisible();
+      await expect(profilePage.totpForm.codeInput).toBeVisible();
+      await expect(profilePage.totpForm.verifyButton).toBeVisible();
     },
   );
 
@@ -56,7 +56,7 @@ test.describe('Verify TOTP setup @totp', () => {
       await profilePage.goto();
       const secret = await profilePage.readTotpSecret();
 
-      await profilePage.submitTotpCode(generateTotpCode(secret));
+      await profilePage.totpForm.submitCode(generateTotpCode(secret));
 
       await expect(profilePage.totpSuccess).toHaveText(
         'Success: TOTP verified and enabled successfully.',
@@ -80,20 +80,20 @@ test.describe('Verify TOTP setup @totp', () => {
       await accountPage.title.waitFor();
       await profilePage.goto();
 
-      await profilePage.submitTotpCode('000000');
+      await profilePage.totpForm.submitCode('000000');
 
       await expect(profilePage.totpError).toHaveText(
         'Error: Invalid TOTP code. Please try again.',
       );
       await expect(profilePage.totpSuccess).toHaveCount(0);
       // The setup form is torn down by the error, not by TOTP being enabled.
-      await expect(profilePage.verifyTotpButton).toHaveCount(0);
+      await expect(profilePage.totpForm.verifyButton).toHaveCount(0);
 
       await profilePage.goto();
 
       // Still offered setup rather than "already enabled" ⇒ TOTP was not enabled.
       await expect(profilePage.totpSecret).toBeVisible();
-      await expect(profilePage.verifyTotpButton).toBeVisible();
+      await expect(profilePage.totpForm.verifyButton).toBeVisible();
     },
   );
 
@@ -118,7 +118,7 @@ test.describe('Verify TOTP setup @totp', () => {
       );
       await expect(profilePage.totpSecret).toHaveCount(0);
       await expect(profilePage.totpQrCode).toHaveCount(0);
-      await expect(profilePage.verifyTotpButton).toHaveCount(0);
+      await expect(profilePage.totpForm.verifyButton).toHaveCount(0);
     },
   );
 });

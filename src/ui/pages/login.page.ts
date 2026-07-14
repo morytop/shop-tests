@@ -1,6 +1,7 @@
 import { BasePage } from './base.page';
 import { Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
+import { TotpFormComponent } from '@src/ui/components/totp-form.component';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { waitForApi } from '@src/ui/utils/network.util';
 
@@ -15,11 +16,11 @@ export class LoginPage extends BasePage {
 
   // Second-factor prompt: replaces the credentials form in place on /auth/login once
   // the account is TOTP-enabled. `loginError` is shared with the credential errors.
-  totpCodeInput = this.page.getByTestId('totp-code');
-  verifyTotpButton = this.page.getByTestId('verify-totp');
+  readonly totpForm: TotpFormComponent;
 
   constructor(page: Page) {
     super(page);
+    this.totpForm = new TotpFormComponent(page);
   }
 
   async openForgotPassword(): Promise<void> {
@@ -41,11 +42,6 @@ export class LoginPage extends BasePage {
     const loginResponse = waitForApi(this.page, API_PATHS.LOGIN);
     await this.login(email, password);
     await loginResponse;
-  }
-
-  async submitTotpCode(code: string): Promise<void> {
-    await this.totpCodeInput.fill(code);
-    await this.verifyTotpButton.click();
   }
 
   async failLoginAttempts(

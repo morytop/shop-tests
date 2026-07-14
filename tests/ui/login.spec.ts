@@ -77,8 +77,8 @@ test.describe('Verify login @login', () => {
         await loginPage.goto();
         await loginPage.login(user.email, user.password);
 
-        await expect(loginPage.totpCodeInput).toBeVisible();
-        await expect(loginPage.verifyTotpButton).toBeVisible();
+        await expect(loginPage.totpForm.codeInput).toBeVisible();
+        await expect(loginPage.totpForm.verifyButton).toBeVisible();
         // The credentials form is swapped out in place — same route, no redirect.
         await expect(loginPage.loginButton).toHaveCount(0);
         await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
@@ -93,10 +93,10 @@ test.describe('Verify login @login', () => {
 
         await loginPage.goto();
         await loginPage.login(user.email, user.password);
-        await loginPage.totpCodeInput.waitFor();
+        await loginPage.totpForm.codeInput.waitFor();
 
         // Codes rotate every 30s, so derive it immediately before submitting.
-        await loginPage.submitTotpCode(generateTotpCode(user.secret));
+        await loginPage.totpForm.submitCode(generateTotpCode(user.secret));
 
         await expect(accountPage.title).toHaveText('My account');
       },
@@ -110,14 +110,14 @@ test.describe('Verify login @login', () => {
 
         await loginPage.goto();
         await loginPage.login(user.email, user.password);
-        await loginPage.totpCodeInput.waitFor();
+        await loginPage.totpForm.codeInput.waitFor();
 
-        await loginPage.submitTotpCode('000000');
+        await loginPage.totpForm.submitCode('000000');
 
         await expect(loginPage.loginError).toHaveText('Invalid TOTP');
         await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
         // Unlike the profile page's setup form (§22), the prompt survives the error.
-        await expect(loginPage.totpCodeInput).toBeVisible();
+        await expect(loginPage.totpForm.codeInput).toBeVisible();
       },
     );
   });

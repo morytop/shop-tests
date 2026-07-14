@@ -31,7 +31,7 @@ test.describe('Verify change password', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -70,7 +70,7 @@ test.describe('Verify change password', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -98,7 +98,7 @@ test.describe('Verify change password', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -125,7 +125,7 @@ test.describe('Verify change password', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -151,7 +151,7 @@ test.describe('Verify change password', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -180,7 +180,7 @@ test.describe('Verify change password', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -197,7 +197,7 @@ test.describe('Verify change password', () => {
       // The change took effect: the freshly-set password authenticates.
       await loginPage.login(user.email, newPassword);
 
-      await expect(accountPage.title).toBeVisible();
+      await expect(accountPage.pageTitle).toBeVisible();
     },
   );
 });

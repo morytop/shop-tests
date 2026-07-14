@@ -19,7 +19,7 @@ import { waitForApi } from '@src/ui/utils/network.util';
  */
 export class FavoritesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.FAVORITES;
-  readonly title: Locator;
+  readonly pageTitle: Locator;
   readonly emptyMessage: Locator;
   readonly favoriteCards: Locator;
   readonly favoriteImages: Locator;
@@ -30,7 +30,7 @@ export class FavoritesPage extends BasePage {
   constructor(page: Page) {
     super(page);
     const favoritesRoot = this.page.locator('app-favorites');
-    this.title = this.page.getByTestId('page-title');
+    this.pageTitle = this.page.getByTestId('page-title');
     // The empty-state message carries no `data-test` and no role of its own; the only
     // thing distinguishing it from a favorite is that it is not a card.
     this.emptyMessage = favoritesRoot.locator('div.col > div:not(.card)');

@@ -127,7 +127,7 @@ test.describe('Verify admin dashboard', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       await adminDashboardPage.goto();
 

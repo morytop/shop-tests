@@ -43,7 +43,7 @@ test.describe('Verify messages', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       await contactPage.goto();
       await contactPage.sendMessage(subject, message);
@@ -53,7 +53,7 @@ test.describe('Verify messages', () => {
 
       await messagesPage.gotoAndAwaitLoaded();
 
-      await expect(messagesPage.title).toHaveText('Messages');
+      await expect(messagesPage.pageTitle).toHaveText('Messages');
       await expect(messagesPage.messageRows).toHaveCount(1);
 
       const row = messagesPage.messageRows.first();
@@ -93,7 +93,7 @@ test.describe('Verify messages', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       await contactPage.goto();
       await contactPage.sendMessage(subject, message);
@@ -147,7 +147,7 @@ test.describe('Verify messages', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       await contactPage.goto();
       await contactPage.sendMessage(subject, message);

@@ -99,7 +99,7 @@ test.describe('Verify discounts', () => {
       const user = await registerUserWithApi(usersRequest);
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       await addProductToCart(0, '1');
       await addRentalToCart(0, '2');

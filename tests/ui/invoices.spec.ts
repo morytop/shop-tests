@@ -34,7 +34,7 @@ test.describe('Verify invoices', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       const order = await placeCodOrderAsLoggedInUser();
 
@@ -72,7 +72,7 @@ test.describe('Verify invoices', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       const order = await placeCodOrderAsLoggedInUser();
       // "$14.15" (list/cart) → "14.15", to rebuild each page's own format.
@@ -120,7 +120,7 @@ test.describe('Verify invoices', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
 
       await invoiceDetailPage.gotoInvoice('01kx0000000000000000000000');
 

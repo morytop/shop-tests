@@ -157,6 +157,19 @@ area also run that area's spec(s).
   `invoices`, `messages`) are still open.
 - **Validation:** `@smoke` + each renamed area's spec.
 - **Risk:** low but churny — pure rename/restructure. Do last so it reconciles the fewest remaining duplicates. Optional if time-boxed.
+- **✅ Implemented 2026-07-14** on `refactor/phase-5-pom-style` (2 commits: `forgot-password` →
+  constructor style → the `pageTitle` rename). Scope was exactly the two leftovers the Phase 4 fold
+  predicted; `cart` and `admin` turned out to need nothing (`cart` has no page-title locator at all,
+  `admin` was already `pageTitle`). Renamed `title`→`pageTitle` in `account`/`favorites`/`messages`
+  and `heading`→`pageTitle` in `invoices` (the last was the only `[data-test="page-title"]` still
+  masquerading as a role heading), plus 12 spec files. The surviving `heading` locators
+  (`login`, `register`, `contact`, `privacy`, `forgot-password`, `checkout-{address,payment}`, the 4
+  category pages) are all genuine `getByRole('heading')` and correctly keep the name, as does
+  `ChatWidgetComponent.title` (`.chat-title`, not a page title). `CODING_STANDARDS.md` needed no
+  change — it never referenced the old names. Validated: `lint`/`tsc:check`/`format:check` clean,
+  `@smoke` **19/19**, and the 9 specs behind every touched page object **48/50** — the 2 failures
+  (`invoices` detail street, `favorites` removal) are the known §33 shared-backend contention flake
+  (they assert on untouched locators and **pass serially: 6/6**), not a regression.
 
 ### Phase 6 — Config & stability tuning _(A2/A3/C2/C4)_
 

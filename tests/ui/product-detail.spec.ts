@@ -147,7 +147,7 @@ test.describe('Verify product detail', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
 
@@ -178,7 +178,7 @@ test.describe('Verify product detail', () => {
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
-      await accountPage.title.waitFor();
+      await accountPage.pageTitle.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
       const firstStatus =

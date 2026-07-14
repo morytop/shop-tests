@@ -18,13 +18,13 @@ import { waitForApi } from '@src/ui/utils/network.util';
  */
 export class InvoicesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.INVOICES;
-  readonly heading: Locator;
+  readonly pageTitle: Locator;
   readonly invoiceTable: Locator;
   readonly invoiceRows: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.heading = this.page.getByTestId('page-title');
+    this.pageTitle = this.page.getByTestId('page-title');
     this.invoiceTable = this.page.getByRole('table');
     // Body rows only — `getByRole('row')` on the whole table would include the
     // header row.

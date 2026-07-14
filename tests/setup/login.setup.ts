@@ -14,7 +14,7 @@ setup(
 
     await loginPage.goto();
     await loginPage.login(user.email, user.password);
-    await accountPage.title.waitFor();
+    await accountPage.pageTitle.waitFor();
 
     await page.context().storageState({ path: STORAGE_STATE });
   },

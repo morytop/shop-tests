@@ -1,6 +1,8 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * Customer favorites page (`/account/favorites`). Reachable only from the navbar user
@@ -51,11 +53,7 @@ export class FavoritesPage extends BasePage {
    */
   async gotoAndAwaitLoaded(): Promise<void> {
     await Promise.all([
-      this.page.waitForResponse(
-        (response) =>
-          new URL(response.url()).pathname.endsWith('/favorites') &&
-          response.request().method() === 'GET',
-      ),
+      waitForApi(this.page, API_PATHS.FAVORITES, { method: 'GET' }),
       this.goto(),
     ]);
   }

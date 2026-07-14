@@ -1,6 +1,8 @@
 import { AdminPage } from './admin.page';
 import { Locator, Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * Admin landing page (`/admin/dashboard`) — where a successful admin login redirects to.
@@ -44,11 +46,7 @@ export class AdminDashboardPage extends AdminPage {
 
   async gotoAndAwaitLoaded(): Promise<void> {
     await Promise.all([
-      this.page.waitForResponse(
-        (response) =>
-          new URL(response.url()).pathname.endsWith('/invoices') &&
-          response.request().method() === 'GET',
-      ),
+      waitForApi(this.page, API_PATHS.INVOICES, { method: 'GET' }),
       this.goto(),
     ]);
   }

@@ -1,4 +1,6 @@
 import { Locator, Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * The chat assistant (`<app-chat-widget>`), rendered outside the router outlet and so
@@ -99,9 +101,7 @@ export class ChatWidgetComponent {
   async searchForProduct(query: string): Promise<void> {
     await this.messageInput.fill(query);
     await Promise.all([
-      this.page.waitForResponse((response) =>
-        new URL(response.url()).pathname.endsWith('/products/search'),
-      ),
+      waitForApi(this.page, API_PATHS.PRODUCT_SEARCH),
       this.sendButton.click(),
     ]);
     await this.searchReply.waitFor();

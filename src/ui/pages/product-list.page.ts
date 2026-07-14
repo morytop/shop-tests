@@ -1,5 +1,7 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { API_PATHS } from '@src/api/utils/api.util';
+import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * Shared product-listing interface backing both the home/overview page and the
@@ -10,6 +12,10 @@ import { Locator, Page } from '@playwright/test';
  * lives here once.
  */
 export abstract class ProductListPage extends BasePage {
+  // Safety bound for the page walkers: far above the real catalog size, it only
+  // exists so a broken next-button can't loop a walk forever.
+  private static readonly MAX_PAGINATION_PAGES = 50;
+
   readonly productCards: Locator;
   readonly productCardImages: Locator;
   readonly productCardNames: Locator;
@@ -122,12 +128,7 @@ export abstract class ProductListPage extends BasePage {
   // instead of racing the previous result set (which showed up as products
   // from an unrelated filter leaking into a freshly-collected page).
   private async triggerAndAwaitProducts(action: Promise<void>): Promise<void> {
-    await Promise.all([
-      this.page.waitForResponse((response) =>
-        new URL(response.url()).pathname.endsWith('/products'),
-      ),
-      action,
-    ]);
+    await Promise.all([waitForApi(this.page, API_PATHS.PRODUCTS), action]);
   }
 
   // Advance exactly one page, awaiting both the re-fetch (QUERY /products) and
@@ -162,14 +163,37 @@ export abstract class ProductListPage extends BasePage {
     await this.triggerAndAwaitProducts(this.brandCheckboxes.nth(index).check());
   }
 
-  async getAllProductNamesAcrossPages(): Promise<string[]> {
-    const allNames: string[] = [];
-    const maxPages = 50;
-    for (let i = 0; i < maxPages; i++) {
-      allNames.push(...(await this.getProductNames()));
-      if (await this.isOnLastPage()) return allNames;
+  /**
+   * Walk the grid page by page, running `visit` on each until it returns true;
+   * false means the last page was reached without a hit. `waitForFirstCard`
+   * gates a walk over a freshly-loaded listing (see waitForGrid); walks kicked
+   * off after a filter change must pass false — that re-fetch was already
+   * awaited and its result set can legitimately be empty.
+   */
+  private async walkPages(
+    visit: () => Promise<boolean>,
+    options: { waitForFirstCard: boolean },
+  ): Promise<boolean> {
+    if (options.waitForFirstCard) await this.waitForGrid();
+    for (let i = 0; i < ProductListPage.MAX_PAGINATION_PAGES; i++) {
+      if (await visit()) return true;
+      if (await this.isOnLastPage()) return false;
       await this.goToNextPage();
     }
+    return false;
+  }
+
+  // Collects from every page; callers run it after a filter/search change, so
+  // no first-card wait (the result set can legitimately be empty).
+  async getAllProductNamesAcrossPages(): Promise<string[]> {
+    const allNames: string[] = [];
+    await this.walkPages(
+      async () => {
+        allNames.push(...(await this.getProductNames()));
+        return false;
+      },
+      { waitForFirstCard: false },
+    );
     return allNames;
   }
 
@@ -209,12 +233,7 @@ export abstract class ProductListPage extends BasePage {
   }
 
   async goToLastPage(): Promise<void> {
-    await this.waitForGrid();
-    const maxPages = 50;
-    for (let i = 0; i < maxPages; i++) {
-      if (await this.isOnLastPage()) return;
-      await this.goToNextPage();
-    }
+    await this.walkPages(async () => false, { waitForFirstCard: true });
   }
 
   async clickProductCard(index: number): Promise<void> {
@@ -222,27 +241,15 @@ export abstract class ProductListPage extends BasePage {
   }
 
   async findOutOfStockCardAcrossPages(): Promise<boolean> {
-    await this.waitForGrid();
-    const maxPages = 50;
-    for (let i = 0; i < maxPages; i++) {
-      if ((await this.outOfStockCard.count()) > 0) return true;
-
-      if (await this.isOnLastPage()) return false;
-      await this.goToNextPage();
-    }
-    return false;
+    return this.walkPages(async () => (await this.outOfStockCard.count()) > 0, {
+      waitForFirstCard: true,
+    });
   }
 
   // Leaves the grid on the page holding the match, so callers click `inStockCard` next.
   async findInStockCardAcrossPages(): Promise<boolean> {
-    await this.waitForGrid();
-    const maxPages = 50;
-    for (let i = 0; i < maxPages; i++) {
-      if ((await this.inStockCard.count()) > 0) return true;
-
-      if (await this.isOnLastPage()) return false;
-      await this.goToNextPage();
-    }
-    return false;
+    return this.walkPages(async () => (await this.inStockCard.count()) > 0, {
+      waitForFirstCard: true,
+    });
   }
 }

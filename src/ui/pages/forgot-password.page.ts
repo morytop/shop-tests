@@ -1,5 +1,5 @@
 import { BasePage } from './base.page';
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { waitForApi } from '@src/ui/utils/network.util';
@@ -13,25 +13,32 @@ import { waitForApi } from '@src/ui/utils/network.util';
  */
 export class ForgotPasswordPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.FORGOT_PASSWORD;
-  heading = this.page.getByRole('heading', { name: 'Forgot Password' });
-  form = this.page.getByTestId('forgot-password-form');
-  emailInput = this.page.getByTestId('email');
-  submitButton = this.page.getByTestId('forgot-password-submit');
-
-  // Client-side validation block, revealed only after a submit attempt.
-  emailError = this.page.getByTestId('email-error');
-
-  // Server-response banners. Neither carries a data-test, so they are located by
-  // role composed with the bootstrap variant class.
-  successAlert = this.page
-    .getByRole('alert')
-    .and(this.page.locator('.alert-success'));
-  errorAlert = this.page
-    .getByRole('alert')
-    .and(this.page.locator('.alert-danger'));
+  readonly heading: Locator;
+  readonly form: Locator;
+  readonly emailInput: Locator;
+  readonly submitButton: Locator;
+  /** Client-side validation block, revealed only after a submit attempt. */
+  readonly emailError: Locator;
+  /**
+   * Server-response banners. Neither carries a data-test, so they are located by
+   * role composed with the bootstrap variant class.
+   */
+  readonly successAlert: Locator;
+  readonly errorAlert: Locator;
 
   constructor(page: Page) {
     super(page);
+    this.heading = this.page.getByRole('heading', { name: 'Forgot Password' });
+    this.form = this.page.getByTestId('forgot-password-form');
+    this.emailInput = this.page.getByTestId('email');
+    this.submitButton = this.page.getByTestId('forgot-password-submit');
+    this.emailError = this.page.getByTestId('email-error');
+    this.successAlert = this.page
+      .getByRole('alert')
+      .and(this.page.locator('.alert-success'));
+    this.errorAlert = this.page
+      .getByRole('alert')
+      .and(this.page.locator('.alert-danger'));
   }
 
   /**

@@ -106,11 +106,21 @@ export abstract class ProductListPage extends BasePage {
   // filtered) result set fits on a single page, so absence means "last page".
   async isOnLastPage(): Promise<boolean> {
     if ((await this.paginationNextItem.count()) === 0) return true;
-    return (
-      (await this.paginationNextItem.getAttribute('class'))?.includes(
-        'disabled',
-      ) ?? true
-    );
+    // A late grid re-render can remove the pagination between the count() above
+    // and this read; the bounded timeout keeps that race from hanging the walk
+    // for the whole test timeout, and "gone" resolves to "last page" per the
+    // absence rule above.
+    try {
+      return (
+        (
+          await this.paginationNextItem.getAttribute('class', {
+            timeout: 5_000,
+          })
+        )?.includes('disabled') ?? true
+      );
+    } catch {
+      return true;
+    }
   }
 
   // The grid is rendered by a post-navigation XHR, so a walk started right after
@@ -127,7 +137,9 @@ export abstract class ProductListPage extends BasePage {
   // /products; awaiting that response keeps reads in step with the server
   // instead of racing the previous result set (which showed up as products
   // from an unrelated filter leaking into a freshly-collected page).
-  private async triggerAndAwaitProducts(action: Promise<void>): Promise<void> {
+  private async triggerAndAwaitProducts(
+    action: Promise<unknown>,
+  ): Promise<void> {
     await Promise.all([waitForApi(this.page, API_PATHS.PRODUCTS), action]);
   }
 
@@ -202,8 +214,11 @@ export abstract class ProductListPage extends BasePage {
     await this.searchSubmitButton.click();
   }
 
+  // Sorting re-fetches the grid like a filter change does; awaiting the response
+  // keeps a follow-up read from seeing the pre-sort grid (and keeps the sort's
+  // in-flight response from satisfying the next action's /products wait).
   async sortBy(value: string): Promise<void> {
-    await this.sortSelect.selectOption(value);
+    await this.triggerAndAwaitProducts(this.sortSelect.selectOption(value));
   }
 
   async decreasePriceRangeMax(times: number): Promise<void> {

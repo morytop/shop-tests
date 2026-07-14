@@ -182,6 +182,20 @@ area also run that area's spec(s).
 - **Files:** `playwright.config.ts` (+ tag additions and the CI pipeline if doing C2).
 - **Validation:** full suite once, twice if chasing the C2 contention.
 - **Risk:** low; retries can _hide_ a real flake, so pair with a note to investigate any spec that only passes on retry.
+- **✅ Implemented 2026-07-14 (adapted)** while stabilising a 16-failure parallel run. Deviations
+  from the steps above, chosen after root-causing every failure instead of tuning blind:
+  1. `actionTimeout` stays `0` — the two infinite-hang paths were fixed at the source instead
+     (`isOnLastPage()` bounded read treating a vanished pagination as "last page";
+     `ProductDetailPage.addToCart()` now awaits the `POST /carts/{id}` write and re-clicks on 5xx).
+  2. `retries: 1` unconditionally (not CI-gated): the residual flake class is mid-flow 5xx on
+     requests the app itself drives (UI login, product-detail fetch), unreachable by in-code
+     retries. The config comment carries the investigate-before-blaming-the-backend note.
+  3. Reporter left as `html` (list output comes from `--reporter=list` ad hoc).
+  4. No `@order` split — `timeout: 90_000` / `expect.timeout: 15_000` absorbed the §33 contention.
+     Revisit the split only if order-placing specs start failing on retry again.
+  - Companion non-config fixes in the same pass: 5xx retry in `registerUserWithApi()`, the
+    logged-session fixture (JWT TTL is 5 min — see PRODUCT_EXPLORATION.md Auth), `sortBy()` now
+    awaits its `/products` re-fetch, and the invoice-detail street assertion relaxed per §29.
 
 ### Phase 7 — Fixture-registration boilerplate _(B6, optional)_
 

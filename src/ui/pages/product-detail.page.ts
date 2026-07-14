@@ -80,8 +80,25 @@ export class ProductDetailPage extends BasePage {
     await this.quantityInput.fill(value);
   }
 
+  /**
+   * Add the product to the cart and wait for the async write to land. The write
+   * is `POST /carts/{cartId}` (the very first add also fires `POST /carts` to
+   * create the cart, which must not satisfy this wait — hence the path match on
+   * the id segment). The shared prod backend intermittently 500s under parallel
+   * load (§33): a lost write never updates the cart badge, so the caller's
+   * `waitForCartQuantity` would hang for the whole test timeout — re-click on a
+   * failed response instead, and leave the final failure to the caller's wait.
+   */
   async addToCart(): Promise<void> {
-    await this.addToCartButton.click();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const addedToCart = this.page.waitForResponse(
+        (response) =>
+          response.request().method() === 'POST' &&
+          /^\/carts\/[^/]+$/.test(new URL(response.url()).pathname),
+      );
+      await this.addToCartButton.click();
+      if ((await addedToCart).ok()) return;
+    }
   }
 
   /**

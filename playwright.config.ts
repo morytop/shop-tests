@@ -1,18 +1,21 @@
 import { BASE_URL } from '@config/env.config';
+import { STORAGE_STATE } from '@config/storage.config';
 import { defineConfig, devices } from '@playwright/test';
-import * as path from 'path';
-
-// Saved logged-in session (gitignored). The `setup` project writes it; the
-// `chromium-logged` project loads it so @logged specs start authenticated.
-export const STORAGE_STATE = path.join(__dirname, 'tmp', 'session.json');
 
 export default defineConfig({
   testDir: './tests',
   globalSetup: 'config/global.setup.ts',
-  timeout: 60_000,
-  expect: { timeout: 10_000 },
+  // Sized for the shared prod backend under parallel load (§33): order-placing
+  // specs chain many round-trips whose cumulative latency legitimately exceeds
+  // 60s when several workers place orders at once.
+  timeout: 90_000,
+  expect: { timeout: 15_000 },
   fullyParallel: true,
-  retries: 0,
+  // Safety net for the one flake class code can't fix: the shared prod backend
+  // intermittently 500s mid-flow (§33) on requests the app itself drives (UI
+  // login, product-detail fetch), where no wait or in-code retry can recover.
+  // Investigate any spec that passes only on retry before blaming the backend.
+  retries: 1,
   workers: undefined,
   reporter: 'html',
   use: {

@@ -67,8 +67,23 @@ export class CartPage extends BasePage {
     await this.quantityInputs.nth(index).blur();
   }
 
+  /**
+   * Remove a cart line and wait for the async `DELETE /carts/{id}/product/{id}`
+   * write to land. Like add-to-cart, the shared prod backend intermittently 500s
+   * under parallel load (§33) — a lost delete leaves the row (and hides the
+   * empty-cart message) forever, so re-click on a failed response and leave the
+   * final failure to the caller's assertion.
+   */
   async removeItem(index: number): Promise<void> {
-    await this.deleteButtons.nth(index).click();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const removed = this.page.waitForResponse(
+        (response) =>
+          response.request().method() === 'DELETE' &&
+          new URL(response.url()).pathname.startsWith('/carts/'),
+      );
+      await this.deleteButtons.nth(index).click();
+      if ((await removed).ok()) return;
+    }
   }
 
   async proceedToCheckout(): Promise<void> {

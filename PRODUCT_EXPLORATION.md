@@ -188,6 +188,12 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
 
 ### Auth / account
 
+- **JWTs expire 5 minutes after minting (`iat`→`exp` = 300s, decoded from a live token).** A saved
+  `storageState` session therefore goes silently stale mid-run: any `@logged` spec scheduled more than
+  5 minutes after `login.setup.ts` starts logged out (the checkout sign-in step shows the guest Login
+  form instead of "you are already logged in"). The suite's fix is the logged-session fixture
+  (`src/ui/fixtures/logged-session.fixture.ts`), which re-logs-in via the API per `@logged` test and
+  injects a fresh token as in-memory storageState.
 - **Duplicate-email copy is "A customer with this email address already exists.", not "Email is already
   in use." (§19).** The app surfaces the API field error verbatim.
 - **Registration password requirements list is always visible, not focus-gated (§19);** only the

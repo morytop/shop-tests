@@ -18,3 +18,10 @@ export interface UserRegisterPayload {
   email: string;
   password: string;
 }
+
+/** POST /users/change-password request body. */
+export interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+  new_password_confirmation: string;
+}

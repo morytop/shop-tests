@@ -162,7 +162,25 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
   an endpoint that _accepts_ an anonymous write. Mitigation: payloads are minimal/invalid-first,
   and the 2xx-is-a-failure rule above.
 
-### Phase C — users & auth (`tests/api/users/`)
+### Phase C — users & auth (`tests/api/users/`) — ✅ implemented
+
+> **Implemented 2026-07-16.** The steps below are the plan as drafted; production disagreed with it
+> in three places, and the specs follow production:
+>
+> 1. **`DELETE /users/{ownId}` is 403** — a customer cannot delete their own account (deletion is
+>    admin-only). Step 5's delete round-trip is impossible, and its "doubles as partial cleanup"
+>    premise is false: **every user this phase registers is permanent.**
+> 2. **Step 1's required-field list was wrong.** Only `first_name`/`last_name`/`email`/`password` are
+>    required; `dob`, `phone` and the whole `address` object are optional (201). And `email` is never
+>    format-validated — a malformed address registers, which is a real defect (§3.9), not a 422 row.
+> 3. **Step 6's premise was wrong.** A TOTP-enrolled user cannot reach the wrong-code check at all:
+>    post-enrolment login yields a _provisional_ token that `/totp/verify` refuses with 401
+>    "Unauthorized token usage". The 400 "Invalid TOTP" path is reachable only with a _pre_-enrolment
+>    token, so the spec tests both tokens rather than one code.
+>
+> Also observed: duplicate register → **409** (not 422); invalid _new_ passwords on change-password →
+> **404**; `refresh`/`logout` genuinely revoke their token; passwords are checked against a breach
+> corpus, so no literal password is safe. All recorded in `PRODUCT_EXPLORATION.md` §API-C.
 
 - **Goal:** the register DDT (the L11 showcase pattern) plus the authenticated-user lifecycle.
 - **Steps:**

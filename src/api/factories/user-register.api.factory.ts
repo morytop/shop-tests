@@ -32,10 +32,13 @@ export function prepareRandomUserPayload(): UserRegisterPayload {
 // to the "no expect outside specs" rule, so setup/callers fail fast on a bad register.
 //
 // The shared prod backend rejects a register non-deterministically under parallel
-// load (§33): intermittent 500s, and occasional 422s when the faker email collides
+// load (§33): intermittent 500s, and occasional 409s when the faker email collides
 // with one of the many accounts other runs have accumulated on the shared DB. Both
 // heal with a fresh payload, so any non-201 is retried a couple of times before
 // failing (a systematically broken payload still fails, just after 3 attempts).
+//
+// Note there is no cleanup counterpart: a customer cannot delete their own account
+// (403 — deletion is admin-only, §API-C), so every user this registers is permanent.
 export async function registerUserWithApi(
   usersRequest: UsersRequest,
 ): Promise<UserRegisterPayload> {

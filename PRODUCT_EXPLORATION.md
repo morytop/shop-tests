@@ -100,6 +100,31 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
   submissions left the account able to log in normally afterward.
 - **The `email` field on the profile form is `readonly`, not `disabled` (§24)** — it stays
   focusable/enabled and its value still posts. Minor, but a distinction worth knowing.
+- **🚨 Catalog writes do not check auth first (§API-B).** On `/products`, `/brands`, `/categories`
+  the auth layer is not the outermost gate, and the ordering differs per verb:
+
+  | Verb                           | Anonymous, unknown id              | Anonymous, empty body     | Customer token |
+  | ------------------------------ | ---------------------------------- | ------------------------- | -------------- |
+  | `DELETE /{resource}/{id}`      | **401** Unauthorized               | —                         | **403**        |
+  | `PUT`/`PATCH /{resource}/{id}` | **404** (existence resolved first) | —                         | —              |
+  | `POST /{resource}`             | —                                  | **422** (validated first) | **422**        |
+
+  Only `DELETE` behaves correctly (401 anonymous → 403 non-admin). `PUT`/`PATCH` resolve the row
+  before authenticating, and `POST` runs the validator before authenticating — so both leak
+  existence/validation detail to anonymous callers, and both reach further into the handler than an
+  unauthenticated request should.
+
+  **The open question this leaves is deliberately unanswered:** because an empty `POST` never gets
+  past the validator, we do not know whether a _complete, valid_ anonymous `POST` is rejected — or
+  creates a real catalog row. Testing it would risk writing an undeletable row to shared production
+  (there is no admin-write path in scope to clean up with), so the negative specs stop here and
+  target `UNKNOWN_ID` only. **If anyone verifies this, do it against a local
+  `practice-software-testing` instance, never production.** This is the highest-value open item in
+  this document — a genuine anonymous-write hole on the catalog would be a serious defect.
+
+- **The spec sub-resource authenticates first, unlike its parent (§API-B).** `POST`/`DELETE`
+  `/products/{id}/specs` return **401** anonymously even for an unknown product id — the correct
+  behavior, and inconsistent with `POST /products` right next to it.
 
 ---
 
@@ -289,6 +314,32 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
 - **Production ships 8 sections, not the 6 the AC lists (§35):** Information We Collect, Use of Google
   Sign-In, Data Removal, Third-Party Services, Data Security, **Information Sharing**, **Changes to the
   Privacy Policy**, Contact Us. Its only in-app entry point is the global footer link.
+
+---
+
+### REST API (`api.practicesoftwaretesting.com`)
+
+- **`GET /categories/{id}` is not routed at all (§API-B)** — it answers **405** "Method is not
+  allowed for the requested route" for _every_ id: real, unknown, or slug. Yet `PUT`/`PATCH`/`DELETE`
+  on that same path _are_ registered, so the route exists for writes and not for the read. The
+  single-category read is **`GET /categories/tree/{id}`**, which returns the branch object
+  (`{id, name, slug, parent_id, sub_categories[]}`). `/brands/{id}` and `/products/{id}` behave
+  normally (200 / 404), so this is a categories-only gap. Pinned by a 405 assertion in
+  `categories.read.api.spec.ts`.
+- **`?by_category=` matches leaf categories only (§API-B).** Filtering by a **top-level** category id
+  (e.g. "Hand Tools") returns **0 products** — products are attached to sub-categories ("Hammer",
+  "Hand Saw"), never to the parent. Any by-category filter test must take its id from
+  `sub_categories`, not from the tree roots. The param accepts a comma-separated list
+  (`by_category=a,b` → the union).
+- **`GET /categories` is not the tree (§API-B)** — it is a flat list mixing parents and leaves
+  (19 rows, 3 with `parent_id: null` at time of writing), distinguishable only by `parent_id`. Only
+  `/categories/tree` nests.
+- **`GET /products` is enveloped, but the sub-resources are not (§API-B).** `/products` returns
+  `{current_page, data[], from, last_page, per_page, to, total}`, while `/brands`, `/categories`,
+  `/images`, `/products/{id}/related` and `/products/{id}/specs` return **bare arrays**. `/products/search`
+  is enveloped like `/products`.
+- **`/products/{id}/related` returns 4 products from the same category, excluding the product
+  itself (§API-B)** — consistent enough to assert on both properties.
 
 ---
 

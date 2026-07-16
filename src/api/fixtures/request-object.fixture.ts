@@ -7,6 +7,7 @@ import { BrandsRequest } from '@src/api/requests/brands.request';
 import { CartsRequest } from '@src/api/requests/carts.request';
 import { CategoriesRequest } from '@src/api/requests/categories.request';
 import { FavoritesRequest } from '@src/api/requests/favorites.request';
+import { ImagesRequest } from '@src/api/requests/images.request';
 import { InvoicesRequest } from '@src/api/requests/invoices.request';
 import { LoginRequest } from '@src/api/requests/login.request';
 import { MessagesRequest } from '@src/api/requests/messages.request';
@@ -25,6 +26,7 @@ export interface Requests {
   categoriesRequest: CategoriesRequest;
   cartsRequest: CartsRequest;
   favoritesRequest: FavoritesRequest;
+  imagesRequest: ImagesRequest;
   invoicesRequest: InvoicesRequest;
   messagesRequest: MessagesRequest;
   paymentRequest: PaymentRequest;
@@ -43,6 +45,11 @@ export interface LoggedRequests {
   usersRequestLogged: UsersRequest;
   favoritesRequestLogged: FavoritesRequest;
   invoicesRequestLogged: InvoicesRequest;
+  // Catalog writes are never performed with a customer token — these exist so the
+  // negative specs can prove a non-admin token is *rejected* (403).
+  productsRequestLogged: ProductsRequest;
+  brandsRequestLogged: BrandsRequest;
+  categoriesRequestLogged: CategoriesRequest;
 }
 
 /**
@@ -82,6 +89,9 @@ export const requestObjectTest = baseTest.extend<
   favoritesRequest: async ({ request }, use) => {
     await use(new FavoritesRequest(request));
   },
+  imagesRequest: async ({ request }, use) => {
+    await use(new ImagesRequest(request));
+  },
   invoicesRequest: async ({ request }, use) => {
     await use(new InvoicesRequest(request));
   },
@@ -114,6 +124,15 @@ export const requestObjectTest = baseTest.extend<
   },
   invoicesRequestLogged: async ({ request, loggedHeaders }, use) => {
     await use(new InvoicesRequest(request, loggedHeaders));
+  },
+  productsRequestLogged: async ({ request, loggedHeaders }, use) => {
+    await use(new ProductsRequest(request, loggedHeaders));
+  },
+  brandsRequestLogged: async ({ request, loggedHeaders }, use) => {
+    await use(new BrandsRequest(request, loggedHeaders));
+  },
+  categoriesRequestLogged: async ({ request, loggedHeaders }, use) => {
+    await use(new CategoriesRequest(request, loggedHeaders));
   },
 
   adminHeaders: async ({ request }, use) => {

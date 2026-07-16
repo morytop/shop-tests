@@ -280,8 +280,19 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
 
 ## Open questions (resolve during implementation, not blockers)
 
-1. Does an anonymous `POST /brands`/`/categories` really 401 (spec says nothing)? Phase B pins
-   the observed behaviour either way.
+1. ~~Does an anonymous `POST /brands`/`/categories` really 401 (spec says nothing)?~~
+   **Partly answered in Phase B, and deliberately left open.** No: an empty anonymous `POST` returns
+   **422** — the validator runs before the auth layer. `PUT`/`PATCH` likewise 404 on an unknown id
+   (existence before auth); only `DELETE` gates correctly (401 anonymous, 403 customer token).
+   Whether a _valid_ anonymous `POST` is rejected or **creates a real catalog row** is untested by
+   design: with no in-scope admin-write path to delete it, finding out risks permanently polluting
+   the shared catalog. Verify on a local instance if it matters. See `PRODUCT_EXPLORATION.md` §4.
+
+   This also revised the Phase B plan as written: the negative specs target a fabricated
+   `UNKNOWN_ID`, never a live row, because the pre-auth existence check means the plan's original
+   "customer-token `DELETE` on a real id" probe could have mutated production before the
+   "2xx-is-a-failure" assertion could report it.
+
 2. `attach-file`: the UI enforces a 0-byte file — does the API enforce the same? One probe in
    Phase E decides the assertion.
 3. Cart-id browser-storage contract (Phase G item 4) — inspect before building.

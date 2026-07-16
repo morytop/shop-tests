@@ -32,18 +32,24 @@ export default defineConfig({
       name: 'setup',
       testMatch: /.*\.setup\.ts/,
     },
+    // API specs run browserless (nothing requests a page fixture) and as their
+    // own unit: `npx playwright test --project=api`.
+    {
+      name: 'api',
+      testMatch: 'tests/api/**/*.spec.ts',
+    },
     {
       name: 'chromium-logged',
       use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
       dependencies: ['setup'],
       grep: /@logged/,
-      testIgnore: /.*\.setup\.ts/,
+      testIgnore: ['**/*.setup.ts', 'tests/api/**'],
     },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       grepInvert: /@logged/,
-      testIgnore: /.*\.setup\.ts/,
+      testIgnore: ['**/*.setup.ts', 'tests/api/**'],
     },
   ],
 });

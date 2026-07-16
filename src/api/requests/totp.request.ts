@@ -15,12 +15,12 @@ export class TotpRequest extends BaseRequest {
     protected request: APIRequestContext,
     protected headers?: Headers,
   ) {
-    super(request, apiUrls.totpSetupUrl, headers);
+    super(request, apiUrls.TOTP_SETUP, headers);
   }
 
   /** Mints and persists a NEW secret for the caller on every invocation. */
   async setup(): Promise<APIResponse> {
-    return await this.request.post(apiUrls.totpSetupUrl, {
+    return await this.request.post(apiUrls.TOTP_SETUP, {
       headers: this.headers,
       data: {},
     });
@@ -28,7 +28,7 @@ export class TotpRequest extends BaseRequest {
 
   /** Confirms a code and flips `totp_enabled` on the account. */
   async verify(totp: string): Promise<APIResponse> {
-    return await this.request.post(apiUrls.totpVerifyUrl, {
+    return await this.request.post(apiUrls.TOTP_VERIFY, {
       headers: this.headers,
       data: { totp },
     });

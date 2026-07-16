@@ -307,6 +307,36 @@ not a gap) · ⛔ unautomatable (see `PRODUCT_EXPLORATION.md` §7).
 
 **Status:** ⏭ not yet implemented. (Known a11y defects already surfaced: missing `<h1>` on `/privacy`, nameless cart delete control, duplicated `data-test="total"` on invoice detail — see `PRODUCT_EXPLORATION.md` §5.)
 
+### 5.26 API suite (`tests/api/**`, `@api`)
+
+REST coverage of the Toolshop API (`API_URL`, a separate host from the UI), run browserless as its
+own project: `npx playwright test --project=api`. Phased in `.ai-docs/api-tests-plan.md`; the layer
+doubles as the arrange path for UI specs (`registerUserWithApi`, `registerUserWithTotpEnabled`).
+
+| Area                                                 | Spec                                             | Coverage                                                                                         | Status |
+| ---------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------ |
+| Users — register/login                               | `users/users.smoke.api.spec.ts`                  | Register → login → Bearer token round-trip                                                       | ✅     |
+| Products — reads                                     | `products/products.read.api.spec.ts`             | List envelope, paging, by-id, unknown-id 404, related, search, brand/category filter, price sort | ✅     |
+| Product specs — reads                                | `products/products.specs.read.api.spec.ts`       | Specs per product, spec by id, distinct spec names                                               | ✅     |
+| Brands — reads                                       | `brands/brands.read.api.spec.ts`                 | List, by-id, unknown-id 404, search                                                              | ✅     |
+| Categories — reads                                   | `categories/categories.read.api.spec.ts`         | Flat list, tree nesting, tree branch by id, search, single-read 405 gap                          | ✅     |
+| Images — reads                                       | `images/images.read.api.spec.ts`                 | List + attribution fields                                                                        | ✅     |
+| Catalog — write rejections                           | `catalog/catalog.mutations.negative.api.spec.ts` | Anonymous 401 / customer-token 403 on DELETE, empty-payload 422, unknown-id 404 on PUT/PATCH     | ✅     |
+| Users — register DDT, session, account lifecycle     | `users/*`                                        | Phase C                                                                                          | ⏭     |
+| Carts — lifecycle                                    | `carts/*`                                        | Phase D                                                                                          | ⏭     |
+| Favorites / invoices / messages / payment / postcode | `favorites\|invoices\|messages\|payment/*`       | Phase E                                                                                          | ⏭     |
+| Admin reads (reports, users, messages)               | `admin/*`                                        | Phase F                                                                                          | ⏭     |
+| Catalog writes with an admin token                   | —                                                | ⛔ out of scope — the catalog is shared production data; writes are negative-only                | —      |
+
+**Data rules (binding, see §3):** every id is resolved live from a list call — no hard-coded
+product/brand/category ids; every mutating test registers its own throwaway user; the admin token is
+read-only and only ever sent with the correct password (§20 lockout is permanent).
+
+**Status:** ✅ Phases A–B implemented. Note the one deliberate coverage hole: whether a _valid_
+anonymous `POST` to a catalog collection is rejected is **untested by design** — the API validates
+before it authenticates, so the only way to find out would risk creating an undeletable row in the
+shared catalog (`PRODUCT_EXPLORATION.md` §4).
+
 ## 6. Non-functional considerations captured as tests
 
 - **Responsiveness:** run the smoke suite additionally under a mobile viewport project (e.g. `Pixel 5`/`iPhone 13`) to catch layout-breaking regressions on nav, cart, and checkout.

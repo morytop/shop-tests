@@ -74,25 +74,30 @@ These are product behaviors that make certain flows unsafe to run against shared
 
 Genuine defects in the deployed app, pinned in tests rather than worked around.
 
-| #   | Area                        | Bug                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| --- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Registration (§19)          | **Password strength meter is broken.** The template wires `(input)="… = passwordStrength(f['password'].value)"` but the form is `updateOn:'blur'`, so it reads the _stale pre-blur_ value — always the empty string → `'Invalid'` → bar stuck at `0%`, no active label, even for a fully valid password. The intended Weak→Excellent 5-step mapping never shows. (The **change-password** meter with identical markup works correctly — §25.) |
-| 2   | Forgot password (§21)       | **Format-error box renders empty.** The email control uses `Validators.pattern`, populating `errors.pattern`, but the template only prints copy for `errors.required` / `errors['email']`. A malformed non-empty address makes `[data-test="email-error"]` visible **with no text** (`innerHTML` = `<!----><!---->`). Only the empty field shows a message.                                                                                   |
-| 3   | Forgot password (§21)       | **Success banner shows a raw i18n key.** The template reads `t('page.forgot-password.confirm')` (singular `page.`) while `en.json` defines `pages.forgot-password.confirm`. Transloco falls back to echoing the key, so the banner literally reads **`page.forgot-password.confirm`** instead of "Your password is successfully updated!".                                                                                                    |
-| 4   | TOTP setup (§22)            | **An invalid code tears down the whole setup UI.** The QR, secret and verify form are gated behind `@if (!profile?.totp_enabled && !errorMessage)`, so one mistyped code removes them all — the user can't retry without reloading the page.                                                                                                                                                                                                  |
-| 5   | TOTP setup (§22)            | **Spurious dual banner after enabling.** A reload re-POSTs `/totp/setup`, which now returns **400** ("TOTP already enabled"); the component only special-cases 403, so it shows _"Two-Factor Authentication already enabled."_ **and** _"Error: Failed to load TOTP setup details."_ side by side.                                                                                                                                            |
-| 6   | Payment — Credit Card (§17) | **Card-holder-name field shows no error text.** A pattern violation turns the input `ng-invalid` and disables Confirm, but the `.alert-danger` box is empty (the template only prints text for a `required` error, and the field is pattern-only).                                                                                                                                                                                            |
-| 7   | Privacy policy (§35)        | **No headings anywhere.** `app-privacy` renders a flat run of `<strong>Title:</strong>` + `<p>` pairs — zero `<h1>`–`<h6>`, zero `data-test`. The missing `<h1>` is an accessibility defect.                                                                                                                                                                                                                                                  |
-| 8   | Invoices (§29/§33)          | **Billing-address column is unreliable / three inputs share `data-test="total"`.** See Discrepancies + Accessibility below.                                                                                                                                                                                                                                                                                                                   |
+| #   | Area                        | Bug                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Registration (§19)          | **Password strength meter is broken.** The template wires `(input)="… = passwordStrength(f['password'].value)"` but the form is `updateOn:'blur'`, so it reads the _stale pre-blur_ value — always the empty string → `'Invalid'` → bar stuck at `0%`, no active label, even for a fully valid password. The intended Weak→Excellent 5-step mapping never shows. (The **change-password** meter with identical markup works correctly — §25.)                    |
+| 2   | Forgot password (§21)       | **Format-error box renders empty.** The email control uses `Validators.pattern`, populating `errors.pattern`, but the template only prints copy for `errors.required` / `errors['email']`. A malformed non-empty address makes `[data-test="email-error"]` visible **with no text** (`innerHTML` = `<!----><!---->`). Only the empty field shows a message.                                                                                                      |
+| 3   | Forgot password (§21)       | **Success banner shows a raw i18n key.** The template reads `t('page.forgot-password.confirm')` (singular `page.`) while `en.json` defines `pages.forgot-password.confirm`. Transloco falls back to echoing the key, so the banner literally reads **`page.forgot-password.confirm`** instead of "Your password is successfully updated!".                                                                                                                       |
+| 4   | TOTP setup (§22)            | **An invalid code tears down the whole setup UI.** The QR, secret and verify form are gated behind `@if (!profile?.totp_enabled && !errorMessage)`, so one mistyped code removes them all — the user can't retry without reloading the page.                                                                                                                                                                                                                     |
+| 5   | TOTP setup (§22)            | **Spurious dual banner after enabling.** A reload re-POSTs `/totp/setup`, which now returns **400** ("TOTP already enabled"); the component only special-cases 403, so it shows _"Two-Factor Authentication already enabled."_ **and** _"Error: Failed to load TOTP setup details."_ side by side.                                                                                                                                                               |
+| 6   | Payment — Credit Card (§17) | **Card-holder-name field shows no error text.** A pattern violation turns the input `ng-invalid` and disables Confirm, but the `.alert-danger` box is empty (the template only prints text for a `required` error, and the field is pattern-only).                                                                                                                                                                                                               |
+| 7   | Privacy policy (§35)        | **No headings anywhere.** `app-privacy` renders a flat run of `<strong>Title:</strong>` + `<p>` pairs — zero `<h1>`–`<h6>`, zero `data-test`. The missing `<h1>` is an accessibility defect.                                                                                                                                                                                                                                                                     |
+| 8   | Invoices (§29/§33)          | **Billing-address column is unreliable / three inputs share `data-test="total"`.** See Discrepancies + Accessibility below.                                                                                                                                                                                                                                                                                                                                      |
+| 9   | Registration API (§API-C)   | **`POST /users/register` never validates the email format.** `email` is checked for presence only, so `"not-an-email"` registers and returns **201**. The account is real, logs in normally, and can never be sent a reset mail — `/users/forgot-password` for it succeeds (200) while delivering nowhere. Unreachable from the UI (the form validates client-side), so only the API exposes it. Pinned as an observed-201 test in `users.register.api.spec.ts`. |
 
 ---
 
 ## 4. Security & privacy smells
 
-- **Forgot-password has no anti-enumeration (§21).** An unknown email returns **422**
-  `"The selected email is invalid."` while a known one succeeds — the form reliably distinguishes
-  registered from unregistered addresses. Combined with the no-token instant reset (§2), worth
-  flagging to the team.
+- **Forgot-password has no anti-enumeration (§21, §API-C).** An unknown email is rejected while a
+  known one succeeds, so the endpoint reliably distinguishes registered from unregistered addresses —
+  unauthenticated, unthrottled, and usable as an account oracle. Combined with the no-token instant
+  reset (§2), worth flagging to the team. The **status differs by layer**: the UI form reported
+  **422** `"The selected email is invalid."` (§21), while the API answers **404**
+  `"Resource not found"` for an unknown address against **200** `{success: true}` for a known one
+  (observed §API-C, pinned in `users.account.api.spec.ts`). The two were not observed in the same
+  session and the divergence is unexplained — the leak, not the code, is the stable part.
 - **TOTP provisional token is correctly scoped (clean, §23).** The `access_token` handed out
   alongside `requires_totp: true` returns **401 "Unauthorized token usage"** on `GET /users/me`; it
   only works as the `access_token` argument of the second (TOTP) login leg. Not an auth bypass.
@@ -340,6 +345,44 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
   is enveloped like `/products`.
 - **`/products/{id}/related` returns 4 products from the same category, excluding the product
   itself (§API-B)** — consistent enough to assert on both properties.
+- **Only 4 of the register fields are actually required (§API-C).** `first_name`, `last_name`,
+  `email`, `password` are enforced; **`dob`, `phone` and the entire `address` object are optional** —
+  omitting them returns **201** and stores the address as all-nulls. The UI marks them required, so
+  this gap is API-only. `dob` is unvalidated when absent but strict when present: wrong shape →
+  `"The dob field must match the format Y-m-d."`, under-18 → `"Customer must be 18 years old."`.
+  Names cap at 40 characters.
+- **A duplicate register is 409, not 422 (§API-C)** — `"A customer with this email address already
+exists."`. Worth knowing for anything retrying a register: a collision is distinguishable from a
+  validation failure by status alone.
+- **New passwords are checked against a breach corpus (§API-C).** Register and change-password both
+  reject with `"The given password has appeared in a data leak. Please choose a different
+password."` (a HaveIBeenPwned-style rule). **Any hard-coded password literal in a test is a time
+  bomb** — it passes until the string turns up in a future breach list, then fails every case that
+  uses it, and the error names the password rather than the rule under test. `prepareRandomPassword()`
+  is the only safe source. This bit the Phase C probing before the specs were written.
+- **`POST /users/change-password` answers 404 for an invalid _new_ password (§API-C).** Wrong current
+  password → **400** `{success: false}` (`"Your current password does not matches with the password."`),
+  but a mismatched confirmation, a missing confirmation, or a too-weak new password all return **404**
+  `"Resource not found"` — a generic not-found for what is plainly a validation failure, and nothing
+  in the body names the offending field.
+- **A customer cannot delete their own account (§API-C).** `DELETE /users/{ownId}` → **403**
+  `"Forbidden"` even with a valid own token, and the account still logs in afterwards. Deletion is
+  admin-only, and admin writes are out of scope — **so every user the API suite registers is
+  permanent**. The register-per-test fixtures add a row to the shared database on every run and no
+  cleanup path exists; this is a known, accepted cost, not an oversight. (The Phase C plan assumed
+  self-delete worked and would double as cleanup. It does not.)
+- **Own-data enforcement on `/users/{id}` is correct but inconsistently worded (§API-C).**
+  `PUT`/`PATCH` on another user → **403** `{"error": "You can only update your own data."}`;
+  `DELETE` on another → **403** `{"message": "Forbidden"}`. Anonymous → **401**. Unlike the catalog
+  (§API-B), auth here is the outermost gate.
+- **`GET /users/refresh` rotates the token (§API-C).** The returned token works and **the token that
+  bought it is immediately dead** (401). Likewise `GET /users/logout` → 200
+  `"Successfully logged out"` and its token stops working at once — the JWTs are genuinely revoked
+  server-side, not merely left to expire. Code that refreshes and keeps the old token in hand fails
+  on the _next_ call, not the refresh.
+- **`POST /users/login` never answers 422 (§API-C).** A wrong password and an unknown email both give
+  **401** `{"error": "Unauthorized"}`; a structurally invalid body (no password) also gives **401**,
+  distinguishable only by `{"error": "Invalid login request"}`.
 
 ---
 
@@ -393,6 +436,13 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
 - **The pinned `sprint5/` source is a good first draft but drifts from prod (§17).** Live-verify error
   copy in particular — production had stricter gift-card rules and different card-holder behavior than
   the pinned source showed.
+- **A 2xx from this API does not always mean success (§API-C).** Two of them lie, and both are
+  load-bearing. `POST /users/login` on a TOTP account returns **200** carrying `requires_totp: true`
+  and a _provisional_ token that authorises only the second login leg (§23) — so
+  `getAuthorizationHeader()`, which reads `access_token` off any 200 without inspecting
+  `requires_totp`, hands back a token that 401s on whatever it is later used for, with nothing at the
+  call site to explain why. `POST /users/register` returns **201** for a malformed email (§3.9). The
+  rule: on this API, assert the field that carries the meaning, not just the status.
 - **Shared-backend contention causes real, non-deterministic flakiness (§17, §33).** Running many
   checkout/order-placing specs in parallel against the slow shared prod backend intermittently trips the
   60s timeout on a _different_ test each run; it reproduces on a clean tree. The postcode-lookup geocoder

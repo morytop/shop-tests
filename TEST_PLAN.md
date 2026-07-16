@@ -313,29 +313,42 @@ REST coverage of the Toolshop API (`API_URL`, a separate host from the UI), run 
 own project: `npx playwright test --project=api`. Phased in `.ai-docs/api-tests-plan.md`; the layer
 doubles as the arrange path for UI specs (`registerUserWithApi`, `registerUserWithTotpEnabled`).
 
-| Area                                                 | Spec                                             | Coverage                                                                                         | Status |
-| ---------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------ |
-| Users — register/login                               | `users/users.smoke.api.spec.ts`                  | Register → login → Bearer token round-trip                                                       | ✅     |
-| Products — reads                                     | `products/products.read.api.spec.ts`             | List envelope, paging, by-id, unknown-id 404, related, search, brand/category filter, price sort | ✅     |
-| Product specs — reads                                | `products/products.specs.read.api.spec.ts`       | Specs per product, spec by id, distinct spec names                                               | ✅     |
-| Brands — reads                                       | `brands/brands.read.api.spec.ts`                 | List, by-id, unknown-id 404, search                                                              | ✅     |
-| Categories — reads                                   | `categories/categories.read.api.spec.ts`         | Flat list, tree nesting, tree branch by id, search, single-read 405 gap                          | ✅     |
-| Images — reads                                       | `images/images.read.api.spec.ts`                 | List + attribution fields                                                                        | ✅     |
-| Catalog — write rejections                           | `catalog/catalog.mutations.negative.api.spec.ts` | Anonymous 401 / customer-token 403 on DELETE, empty-payload 422, unknown-id 404 on PUT/PATCH     | ✅     |
-| Users — register DDT, session, account lifecycle     | `users/*`                                        | Phase C                                                                                          | ⏭     |
-| Carts — lifecycle                                    | `carts/*`                                        | Phase D                                                                                          | ⏭     |
-| Favorites / invoices / messages / payment / postcode | `favorites\|invoices\|messages\|payment/*`       | Phase E                                                                                          | ⏭     |
-| Admin reads (reports, users, messages)               | `admin/*`                                        | Phase F                                                                                          | ⏭     |
-| Catalog writes with an admin token                   | —                                                | ⛔ out of scope — the catalog is shared production data; writes are negative-only                | —      |
+| Area                                                 | Spec                                             | Coverage                                                                                                                            | Status |
+| ---------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| Users — register/login                               | `users/users.smoke.api.spec.ts`                  | Register → login → Bearer token round-trip                                                                                          | ✅     |
+| Products — reads                                     | `products/products.read.api.spec.ts`             | List envelope, paging, by-id, unknown-id 404, related, search, brand/category filter, price sort                                    | ✅     |
+| Product specs — reads                                | `products/products.specs.read.api.spec.ts`       | Specs per product, spec by id, distinct spec names                                                                                  | ✅     |
+| Brands — reads                                       | `brands/brands.read.api.spec.ts`                 | List, by-id, unknown-id 404, search                                                                                                 | ✅     |
+| Categories — reads                                   | `categories/categories.read.api.spec.ts`         | Flat list, tree nesting, tree branch by id, search, single-read 405 gap                                                             | ✅     |
+| Images — reads                                       | `images/images.read.api.spec.ts`                 | List + attribution fields                                                                                                           | ✅     |
+| Catalog — write rejections                           | `catalog/catalog.mutations.negative.api.spec.ts` | Anonymous 401 / customer-token 403 on DELETE, empty-payload 422, unknown-id 404 on PUT/PATCH                                        | ✅     |
+| Users — register validation DDT                      | `users/users.register.api.spec.ts`               | Required/optional fields, password policy, dob format + age, name length, duplicate 409, non-standard names, malformed-email defect | ✅     |
+| Users — login                                        | `users/users.login.api.spec.ts`                  | Token shape, wrong password / unknown email / no password 401, TOTP `requires_totp` 200                                             | ✅     |
+| Users — session                                      | `users/users.session.api.spec.ts`                | `/users/me`, anonymous + malformed token 401, refresh rotation, logout revocation                                                   | ✅     |
+| Users — account                                      | `users/users.account.api.spec.ts`                | Change password (+ negatives), own-profile PUT/PATCH, other-user 403, self-delete 403, forgot-password                              | ✅     |
+| TOTP — rejections                                    | `users/totp.negative.api.spec.ts`                | Wrong code 400 at enrolment, provisional-token 401, anonymous 401                                                                   | ✅     |
+| Carts — lifecycle                                    | `carts/*`                                        | Phase D                                                                                                                             | ⏭     |
+| Favorites / invoices / messages / payment / postcode | `favorites\|invoices\|messages\|payment/*`       | Phase E                                                                                                                             | ⏭     |
+| Admin reads (reports, users, messages)               | `admin/*`                                        | Phase F                                                                                                                             | ⏭     |
+| Catalog writes with an admin token                   | —                                                | ⛔ out of scope — the catalog is shared production data; writes are negative-only                                                   | —      |
 
 **Data rules (binding, see §3):** every id is resolved live from a list call — no hard-coded
 product/brand/category ids; every mutating test registers its own throwaway user; the admin token is
 read-only and only ever sent with the correct password (§20 lockout is permanent).
 
-**Status:** ✅ Phases A–B implemented. Note the one deliberate coverage hole: whether a _valid_
-anonymous `POST` to a catalog collection is rejected is **untested by design** — the API validates
-before it authenticates, so the only way to find out would risk creating an undeletable row in the
-shared catalog (`PRODUCT_EXPLORATION.md` §4).
+**Status:** ✅ Phases A–C implemented. Two things Phase C settled that bind everything after it:
+
+- **Registered users are permanent.** A customer cannot delete their own account (403 — deletion is
+  admin-only, out of scope), so the register-per-test fixtures add a row to the shared database on
+  every run, with no cleanup path. Accepted cost; a reason not to pull a `*RequestLogged` fixture
+  into a spec that does not need auth.
+- **Never hard-code a password.** Both register and change-password reject passwords found in a
+  breach corpus, so a literal is a time bomb that fails loudly and misleadingly once the string is
+  leaked. Use `prepareRandomPassword()` (`PRODUCT_EXPLORATION.md` §6).
+
+The one deliberate coverage hole remains: whether a _valid_ anonymous `POST` to a catalog collection
+is rejected is **untested by design** — the API validates before it authenticates, so the only way to
+find out would risk creating an undeletable row in the shared catalog (`PRODUCT_EXPLORATION.md` §4).
 
 ## 6. Non-functional considerations captured as tests
 

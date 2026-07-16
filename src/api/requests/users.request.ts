@@ -2,6 +2,7 @@ import { APIRequestContext, APIResponse } from '@playwright/test';
 import { Headers } from '@src/api/models/headers.api.model';
 import {
   ChangePasswordPayload,
+  InvalidUserRegisterPayload,
   UserRegisterPayload,
 } from '@src/api/models/user.api.model';
 import { BaseRequest } from '@src/api/requests/base.request';
@@ -23,7 +24,9 @@ export class UsersRequest extends BaseRequest {
     super(request, apiUrls.USERS, headers);
   }
 
-  async post(data: UserRegisterPayload): Promise<APIResponse> {
+  async post(
+    data: UserRegisterPayload | InvalidUserRegisterPayload,
+  ): Promise<APIResponse> {
     return await this.request.post(apiUrls.REGISTER, {
       headers: this.headers,
       data,

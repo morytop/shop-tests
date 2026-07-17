@@ -29,4 +29,12 @@ export class MessagesRequest extends BaseRequest {
       multipart: { file },
     });
   }
+
+  /** The same call with the `file` part omitted — for the "no file attached" rejection. */
+  async attachFileless(messageId: string): Promise<APIResponse> {
+    return await this.request.post(`${this.url}/${messageId}/attach-file`, {
+      headers: this.headers,
+      multipart: {},
+    });
+  }
 }

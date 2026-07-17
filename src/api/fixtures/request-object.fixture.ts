@@ -12,6 +12,7 @@ import { InvoicesRequest } from '@src/api/requests/invoices.request';
 import { LoginRequest } from '@src/api/requests/login.request';
 import { MessagesRequest } from '@src/api/requests/messages.request';
 import { PaymentRequest } from '@src/api/requests/payment.request';
+import { PostcodeRequest } from '@src/api/requests/postcode.request';
 import { ProductsRequest } from '@src/api/requests/products.request';
 import { ReportsRequest } from '@src/api/requests/reports.request';
 import { UsersRequest } from '@src/api/requests/users.request';
@@ -30,6 +31,7 @@ export interface Requests {
   invoicesRequest: InvoicesRequest;
   messagesRequest: MessagesRequest;
   paymentRequest: PaymentRequest;
+  postcodeRequest: PostcodeRequest;
 }
 
 /**
@@ -100,6 +102,9 @@ export const requestObjectTest = baseTest.extend<
   },
   paymentRequest: async ({ request }, use) => {
     await use(new PaymentRequest(request));
+  },
+  postcodeRequest: async ({ request }, use) => {
+    await use(new PostcodeRequest(request));
   },
 
   loggedApiUser: async ({ usersRequest }, use) => {

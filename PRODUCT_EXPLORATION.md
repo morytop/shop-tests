@@ -413,6 +413,51 @@ password."` (a HaveIBeenPwned-style rule). **Any hard-coded password literal in 
 - **`POST /users/login` never answers 422 (§API-C).** A wrong password and an unknown email both give
   **401** `{"error": "Unauthorized"}`; a structurally invalid body (no password) also gives **401**,
   distinguishable only by `{"error": "Invalid login request"}`.
+- **Favorites are a bare array, and the single read drops what the list embeds (§API-E).**
+  `GET /favorites` returns `[...]` (not the `{data: []}` envelope `/products` uses), each row carrying
+  the whole `product` object; `GET /favorites/{id}` returns the row without it. Favoriting the same
+  product twice → **409** `"Duplicate Entry"`; an unknown `product_id` → **422**
+  `"The selected product id is invalid"` — referential integrity checked the same way as cart lines
+  (§API-D), not a 404. `DELETE` on an unknown favorite id, though, is **204** rather than the 404 every
+  other unknown-id path in this API answers with — success reported for a row that never existed.
+- **`POST /invoices` requires a token even with an otherwise-valid payload; only `/invoices/guest`
+  is genuinely anonymous (§API-E).** Auth is the outermost gate here, same as `/users/{id}` (§API-C)
+  and unlike the catalog (§API-B). A guest order is truly ownerless — `user_id: null`, no account is
+  created for `guest_email` — and the create response carries no `status` field, only the list/detail
+  reads do (`AWAITING_FULFILLMENT` on creation). Empty-payload validation on `/invoices` answers with
+  a bare field map (`{payment_method: [...], billing_street: [...], ...}`), while `/invoices/guest`'s
+  missing-guest-field validation wraps the same shape under `{errors: {...}}` — two response shapes
+  from the same resource depending on which fields are missing.
+- **An empty cart still produces a real invoice, not a validation error (§API-E).** `POST /invoices`
+  against a cart with no lines → **201**, a genuine `$0` order with `invoicelines: []`. The UI can't
+  reach this (checkout is unreachable with an empty cart), but the API has no such guard — pinned as
+  an observed-201 test, not a requirement. An **unknown** cart id, by contrast, is a real **404** —
+  unlike the cart endpoint's own unknown-`product_id` check, which is a 422 (§API-D).
+- **PDF generation is an async queued job, and its pending state is reported as an error (§API-E).**
+  `GET .../download-pdf-status` answers **400** with `{"status": "NOT_INITIATED"}` before the job
+  starts, walking `NOT_INITIATED → INITIATED → COMPLETED` on its own over roughly 15–40s — a client
+  polling for a 200 sees a failure first, not a "not ready yet" response.
+- **The contact form only truly requires `subject` and `message` (§API-E).** `name` and `email` are
+  both optional — a message posts (**200**, not the 201 every other create answers with, and the body
+  is the stored message rather than `{success: true}`) with either omitted — but `email`, when
+  present, **is** format-validated (unlike register's, §API-C). The message body has a real
+  server-side upper bound (250 chars, **422**) but no lower one — the UI's 50-character minimum and
+  fixed subject `<select>` are both client-only, and the API stores a 9-character message or an
+  arbitrary subject string happily. The attach-file endpoint's rejections (non-empty file, no file
+  part) both answer **400** with `{"errors": ["..."]}` — a bare array, unlike every other validation
+  failure's field-keyed body — while the happy path (`{success: true}`) is the one place in this API
+  that shape is real.
+- **`POST /payment/check` never validates that `payment_method` is one of its five known slugs
+  (§API-E).** An unrecognised method — or a completely empty payload — skips the per-method rule set
+  entirely and answers **200** `"Payment was successful"`. Recognised methods validate their
+  `payment_details` and flatten the nested object into dotted field names in the error body
+  (`payment_details.credit_card_number`, etc.).
+- **`GET /postcode-lookup` is deterministic but under-validates its country (§API-E).** The same
+  `country`+`postcode` pair always geocodes to the same address; the `housenumber` query param is
+  accepted but silently ignored — the response's `house_number` never reflects it, consistent with its
+  odd one-word spelling next to the `house_number` field it returns. An unrecognised country code
+  (`"ZZ"`) still answers **200** with a fabricated-looking address — only the postcode's format is
+  checked, never that the country itself is real.
 
 ---
 

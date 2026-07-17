@@ -305,7 +305,42 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
 - **Risk:** low, provided the admin credentials come from `adminUser` (env) and are only ever
   used with the correct password. Skip-with-annotation if `ADMIN_EMAIL` is unset.
 
-### Phase G — reuse API calls in UI tests (the follow-up the suite is really for)
+### Phase G — reuse API calls in UI tests (the follow-up the suite is really for) — ✅ implemented
+
+> **Implemented 2026-07-17.** The guiding rule (owner-confirmed): the API replaces an arrange only
+> where the same UI action is _already exercised as the subject of another test_ — every feature area
+> keeps at least one UI-driven basic scenario, because real user behaviour is what the suite tests.
+> Candidate by candidate:
+>
+> 1. **`addFavoritesWithApi(request, credentials, count)`** (`favorite.api.factory.ts`) — arranges
+>    `favorites.spec.ts` AC3 (removal): the two favorites are filed over the API, the removal and
+>    list assertions stay UI. AC2 (favoriting from the detail page) deliberately keeps the UI add —
+>    that _is_ its subject.
+> 2. **`createInvoiceWithApi(request, credentials)`** (`invoice.api.factory.ts`) — composes the
+>    existing cart/billing/payload factories into a COD order for the given user; arranges
+>    `invoices.spec.ts` AC2 (detail). AC1 keeps the UI checkout wizard on purpose: it is the one
+>    end-to-end "place an order → see it in the invoice list" user path, and `discounts`/
+>    `checkout-e2e` keep `placeCodOrderFromCart` in use. The API total is a plain number, so the
+>    spec rebuilds each page's `$`-format from it; knowing the exact cart product also let AC2 pin
+>    the line-item name it previously only asserted non-empty.
+> 3. **`sendMessageWithApi(request, credentials, payload)`** (`message.api.factory.ts`) — arranges
+>    `messages.spec.ts` AC2/AC3 (detail + reply threads); AC1 keeps the contact-form submit.
+>    Enabled by a live probe: a token-authenticated `POST /messages` sets `user_id` (with
+>    `name`/`email` stored null), so the message lands in that account's own list — recorded as
+>    §API-G in `PRODUCT_EXPLORATION.md`.
+> 4. **Cart seeding — evaluated and rejected.** The gate question was answered from the app source
+>    (`cart.service.ts`): the contract is `sessionStorage['cart_id']` **plus** a client-maintained
+>    `cart_quantity` counter the nav badge renders, incremented locally on every add. Injecting a
+>    cart means faking both keys against a private contract with no server reconciliation. The UI
+>    `addProductToCart` fixture stays. Details in `PRODUCT_EXPLORATION.md` §8.
+> 5. **API-token `storageState` for `login.setup.ts`** — untouched, as planned (perf follow-up only).
+>
+> Retries are targeted, never blind: a repeat-run promptly hit the §9/§33 catalog-churn race in two
+> arranges — a product id read from `GET /products` was stale by the time the write landed (422,
+> which provably wrote nothing). `addFavoritesWithApi()` and `createCartWithProduct()` therefore
+> retry with the product (and cart) **re-resolved** per attempt, skipping already-favorited ids so
+> no retry can double-file a row. The invoice `POST` and message `POST` themselves still fail fast:
+> a blind re-POST after an ambiguous failure (a 5xx) could double-file the very row it arranges.
 
 - **Goal:** replace slow/fragile UI arranges with API preconditions, keeping assertions in the UI.
 - **Existing precedents to extend (not reinvent):** `registerUserWithApi()` feeding
@@ -366,4 +401,7 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
 2. ~~`attach-file`: the UI enforces a 0-byte file — does the API enforce the same?~~ **Answered in
    Phase E: yes.** A non-empty file → 400 `{"errors": ["Currently we only allow empty files."]}`; the
    rule is genuinely server-side, not client-only. See `PRODUCT_EXPLORATION.md` §API-E.
-3. Cart-id browser-storage contract (Phase G item 4) — inspect before building.
+3. ~~Cart-id browser-storage contract (Phase G item 4) — inspect before building.~~ **Answered in
+   Phase G: rejected.** `sessionStorage['cart_id']` + a client-maintained `cart_quantity` badge
+   counter — a private two-key contract not worth faking. See the Phase G note and
+   `PRODUCT_EXPLORATION.md` §8.

@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { sendMessageWithApi } from '@src/api/factories/message.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/merge.fixture';
 import { prepareRandomMessage } from '@src/ui/factories/contact.factory';
@@ -74,15 +75,19 @@ test.describe('Verify messages', () => {
   // involvement (§30). The original message is asserted *before* replying: the reply form
   // renders while `GET /messages/{id}` is still in flight, and a reply posted then does
   // not land (§30).
+  //
+  // The message is filed over the API (Phase G): submitting the contact form is AC1's
+  // subject, and this AC is about the detail view — so the arrange skips the form and
+  // the UI drives only the list → detail → reply flow.
   test(
     'message detail shows the full message and replies in chronological order',
     { tag: ['@auth', '@messages', '@regression'] },
     async ({
       accountPage,
-      contactPage,
       loginPage,
       messageDetailPage,
       messagesPage,
+      request,
       usersRequest,
     }) => {
       const user = await registerUserWithApi(usersRequest);
@@ -90,14 +95,11 @@ test.describe('Verify messages', () => {
       const message = prepareRandomMessage();
       const firstReply = prepareRandomMessage(100);
       const secondReply = prepareRandomMessage(100);
+      await sendMessageWithApi(request, user, { subject, message });
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
       await accountPage.pageTitle.waitFor();
-
-      await contactPage.goto();
-      await contactPage.sendMessage(subject, message);
-      await expect(contactPage.confirmationMessage).toBeVisible();
 
       await messagesPage.gotoAndAwaitLoaded();
       await messagesPage.openDetails();
@@ -129,29 +131,29 @@ test.describe('Verify messages', () => {
   // NEW to IN_PROGRESS on the first reply (§30), which is asserted here as the
   // server-side effect of the reply landing. Asserting the NEW badge first also gates on
   // the thread having loaded, without which the reply is dropped (§30).
+  //
+  // Like AC2, the thread being replied to is arranged over the API (Phase G) — the reply
+  // itself, the thing under test, still goes through the UI.
   test(
     'submitting a reply appends it to the thread',
     { tag: ['@auth', '@messages', '@regression'] },
     async ({
       accountPage,
-      contactPage,
       loginPage,
       messageDetailPage,
       messagesPage,
+      request,
       usersRequest,
     }) => {
       const user = await registerUserWithApi(usersRequest);
       const subject = faker.helpers.arrayElement(CONTACT_SUBJECTS);
       const message = prepareRandomMessage();
       const reply = prepareRandomMessage(100);
+      await sendMessageWithApi(request, user, { subject, message });
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
       await accountPage.pageTitle.waitFor();
-
-      await contactPage.goto();
-      await contactPage.sendMessage(subject, message);
-      await expect(contactPage.confirmationMessage).toBeVisible();
 
       await messagesPage.gotoAndAwaitLoaded();
       await messagesPage.openDetails();

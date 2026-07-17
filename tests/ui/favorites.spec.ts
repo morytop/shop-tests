@@ -1,3 +1,4 @@
+import { addFavoritesWithApi } from '@src/api/factories/favorite.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/merge.fixture';
 import { truncate } from '@src/ui/utils/text.util';
@@ -87,28 +88,26 @@ test.describe('Verify favorites', () => {
   // list rather than splicing optimistically, so the auto-retrying count assertion is
   // what proves the card disappeared without a reload. The two names are read off the
   // rendered list rather than assumed from insertion order.
+  //
+  // The two favorites are arranged over the API (Phase G): favoriting through the UI
+  // is AC2's subject, so here the add loop is pure precondition and the UI only drives
+  // what this AC is about — the removal.
   test(
     'remove a favorite and update the list immediately',
     { tag: ['@auth', '@favorites', '@regression'] },
     async ({
       accountPage,
       favoritesPage,
-      homePage,
       loginPage,
-      productDetailPage,
+      request,
       usersRequest,
     }) => {
       const user = await registerUserWithApi(usersRequest);
+      await addFavoritesWithApi(request, user, 2);
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
       await accountPage.pageTitle.waitFor();
-      await homePage.goto();
-      await homePage.clickProductCard(0);
-      await productDetailPage.addToFavoritesAndAwaitResponse();
-      await homePage.goto();
-      await homePage.clickProductCard(1);
-      await productDetailPage.addToFavoritesAndAwaitResponse();
       await favoritesPage.gotoAndAwaitLoaded();
       await expect(favoritesPage.favoriteCards).toHaveCount(2);
       const [removedName, remainingName] =

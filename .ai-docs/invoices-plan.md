@@ -154,3 +154,9 @@ total (no discount). (5) COD label = `Cash on Delivery`, no extra details.
   regression). AC1's list-street assertion relaxed to present-not-pinned after discovering the
   list "Billing Address" column can diverge from the submitted street (shared-prefill / async
   race — see TEST_PLAN.md §29). AC4/AC5 deferred as planned.
+
+- 2026-07-17 (Phase G): AC2's arrange (the full checkout wizard via `placeCodOrderAsLoggedInUser`)
+  replaced with `createInvoiceWithApi()` (`src/api/factories/invoice.api.factory.ts`); the list →
+  detail navigation and every assertion stay UI, and the known cart product let the line-item name
+  be pinned exactly. AC1 keeps the UI wizard on purpose — it is the one end-to-end
+  "place an order → see its invoice" user path. See `.ai-docs/api-tests-plan.md` Phase G.

@@ -458,6 +458,11 @@ password."` (a HaveIBeenPwned-style rule). **Any hard-coded password literal in 
   odd one-word spelling next to the `house_number` field it returns. An unrecognised country code
   (`"ZZ"`) still answers **200** with a fabricated-looking address — only the postcode's format is
   checked, never that the country itself is real.
+- **A token-authenticated `POST /messages` files the message under the token's user (§API-G).** The
+  row gets `user_id` set and shows up in that account's own `GET /messages` list, with `name`/`email`
+  stored as null — those two fields only matter for anonymous submissions (§API-E). This is the
+  association the messages UI relies on when a logged-in customer submits the contact form, and what
+  makes `sendMessageWithApi()` a valid arrange for the per-user messages pages (Phase G).
 
 ---
 
@@ -508,6 +513,14 @@ password."` (a HaveIBeenPwned-style rule). **Any hard-coded password literal in 
   not neutral on a shared, mutable catalog — when someone PATCHed an out-of-stock product to the front,
   three cart-driving tests broke and silently healed when it reverted. Select by the property the test
   needs (in-stock, rental) via a page walk, not by index.
+- **Cart seeding via browser storage: evaluated and rejected (Phase G).** The SPA's cart contract
+  (per `cart.service.ts` in the app source) is two `sessionStorage` keys: `cart_id` (the server cart)
+  and `cart_quantity` — the latter a **client-maintained running counter** the nav badge renders,
+  incremented locally on every add rather than derived from the server (`GET /carts/{id}` resyncs it
+  only when the cart page loads). Pre-seeding a checkout test would mean injecting both keys before
+  `goto` and hand-maintaining the counter against a private contract that already lies to itself
+  (nothing reconciles it if the server cart changes). Not worth it — checkout/cart specs keep the
+  stable UI `addProductToCart` arrange.
 - **The pinned `sprint5/` source is a good first draft but drifts from prod (§17).** Live-verify error
   copy in particular — production had stricter gift-card rules and different card-holder behavior than
   the pinned source showed.

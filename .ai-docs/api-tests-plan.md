@@ -178,9 +178,16 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
 >    "Unauthorized token usage". The 400 "Invalid TOTP" path is reachable only with a _pre_-enrolment
 >    token, so the spec tests both tokens rather than one code.
 >
-> Also observed: duplicate register → **409** (not 422); invalid _new_ passwords on change-password →
-> **404**; `refresh`/`logout` genuinely revoke their token; passwords are checked against a breach
-> corpus, so no literal password is safe. All recorded in `PRODUCT_EXPLORATION.md` §API-C.
+> Also observed: duplicate register → **409** (not 422); `refresh`/`logout` genuinely revoke their
+> token; passwords are checked against a breach corpus, so no literal password is safe. All recorded
+> in `PRODUCT_EXPLORATION.md` §API-C.
+>
+> **Corrected by Phase D (2026-07-17):** this note previously recorded "invalid _new_ passwords on
+> change-password → **404**" and a matching 404 on forgot-password for an unknown email. Both were
+> wrong — artifacts of the suite not sending `Accept: application/json`, which made Laravel answer
+> validation failures with a 302 that Playwright followed into a bogus 404. The real answers are
+> **422** with proper field errors. `BaseRequest` now sends the header; the two specs were fixed and
+> `PRODUCT_EXPLORATION.md` §4/§6/§8 updated.
 
 - **Goal:** the register DDT (the L11 showcase pattern) plus the authenticated-user lifecycle.
 - **Steps:**
@@ -206,7 +213,21 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
 - **Risk:** med — this phase writes the most users to the shared DB. All writes are
   self-contained throwaways; the `DELETE own user` test doubles as partial cleanup.
 
-### Phase D — cart lifecycle (`tests/api/carts/`)
+### Phase D — cart lifecycle (`tests/api/carts/`) — ✅ implemented
+
+> **Implemented 2026-07-17.** The lifecycle landed as planned — every status the plan guessed
+> (201 create, 200 add, 204 deletes, 404 after delete) matched production. Three things the plan did
+> not anticipate:
+>
+> 1. **The framework had a client bug, not the API.** Cart validation appeared to answer 404 until
+>    `Accept: application/json` was added to `BaseRequest`; it then answered 422 with full field
+>    errors. This retroactively falsified two Phase C findings (see the Phase C note above) — the
+>    fix is the most valuable thing in this phase.
+> 2. **`POST /carts/{id}` accumulates, `PUT .../product/quantity` replaces**, and both return the
+>    same `"item added or updated"` message without echoing the line. Pinned as its own test.
+> 3. **An unknown `product_id` is a 422**, not the 404 its id shape suggests — the validator enforces
+>    referential integrity. An unknown _cart_ id is a real 404, worded four different ways (one with
+>    a typo), so the negative spec asserts statuses only.
 
 - **Goal:** the full anonymous cart flow (carts are throwaway server objects — safe to create).
 - **Steps:**

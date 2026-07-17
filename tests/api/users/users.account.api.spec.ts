@@ -71,12 +71,6 @@ test.describe('API users — account', () => {
     },
   );
 
-  /**
-   * A mismatched confirmation answers **404 "Resource not found"** — the endpoint's
-   * generic reply to any invalid *new* password (a too-weak one gets the same). It
-   * is a misleading status for a validation failure, but it is what production
-   * does; asserted as observed and recorded in PRODUCT_EXPLORATION.md.
-   */
   test(
     'rejects a password change whose confirmation does not match',
     { tag: ['@api', '@auth'] },
@@ -89,8 +83,13 @@ test.describe('API users — account', () => {
 
       expect(
         response.status(),
-        `mismatched confirmation expected the observed 404, got ${response.status()}`,
-      ).toBe(404);
+        `mismatched confirmation expected 422, got ${response.status()}`,
+      ).toBe(422);
+
+      const body = await response.json();
+      expect
+        .soft(body.errors.new_password.join(' '))
+        .toContain('confirmation does not match');
     },
   );
 
@@ -228,13 +227,14 @@ test.describe('API users — account', () => {
   );
 
   /**
-   * An unknown address answers 404 where a known one answers 200, which makes the
-   * endpoint an unauthenticated oracle for "is this email registered?" — the exact
-   * user-enumeration leak a reset endpoint is normally written to avoid. Asserted as
-   * observed; recorded as a security smell in PRODUCT_EXPLORATION.md.
+   * An unknown address is rejected outright where a registered one answers
+   * `200 {success: true}`, which makes the endpoint an unauthenticated oracle for
+   * "is this email registered?" — the exact user-enumeration leak a reset endpoint
+   * is normally written to avoid. Recorded as a security smell in
+   * PRODUCT_EXPLORATION.md; asserted here so a fix has to come past this test.
    */
   test(
-    'reveals that an email is unregistered via 404 (enumeration leak)',
+    'reveals that an email is unregistered via 422 (enumeration leak)',
     { tag: ['@api', '@auth'] },
     async ({ usersRequest }) => {
       const response = await usersRequest.forgotPassword(
@@ -243,8 +243,13 @@ test.describe('API users — account', () => {
 
       expect(
         response.status(),
-        `unknown email expected the observed 404, got ${response.status()}`,
-      ).toBe(404);
+        `unknown email expected the observed 422, got ${response.status()}`,
+      ).toBe(422);
+
+      const body = await response.json();
+      expect
+        .soft(body.errors.email.join(' '))
+        .toContain('The selected email is invalid');
     },
   );
 });

@@ -7,7 +7,7 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class CategoriesRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.CATEGORIES, headers);
   }

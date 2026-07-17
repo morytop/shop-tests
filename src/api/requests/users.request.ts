@@ -19,7 +19,7 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class UsersRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.USERS, headers);
   }

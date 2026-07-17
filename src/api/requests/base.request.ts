@@ -12,11 +12,24 @@ export type QueryParams = Record<string, string | number | boolean>;
  * their happy-path overrides.
  */
 export class BaseRequest {
+  protected headers: Headers;
+
   constructor(
     protected request: APIRequestContext,
     protected url: string,
-    protected headers?: Headers,
-  ) {}
+    headers?: Headers,
+  ) {
+    // `Accept: application/json` is not optional politeness — it decides what the
+    // API does on a validation failure. The backend is Laravel: without it, a 422
+    // becomes a 302 redirect to the API root, which Playwright silently follows,
+    // so the test sees a bewildering `404 Resource not found` instead of the real
+    // error. The Angular client sends this header on every call; so do we.
+    //
+    // Note for subclasses: take `headers` as a plain parameter, never a
+    // `protected` parameter property. A parameter property is assigned *after*
+    // `super()` returns and would overwrite this merge with the raw argument.
+    this.headers = { Accept: 'application/json', ...headers };
+  }
 
   async get(params?: QueryParams): Promise<APIResponse> {
     return await this.request.get(this.url, {

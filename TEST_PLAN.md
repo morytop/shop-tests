@@ -327,7 +327,8 @@ doubles as the arrange path for UI specs (`registerUserWithApi`, `registerUserWi
 | Users — session                                      | `users/users.session.api.spec.ts`                | `/users/me`, anonymous + malformed token 401, refresh rotation, logout revocation                                                   | ✅     |
 | Users — account                                      | `users/users.account.api.spec.ts`                | Change password (+ negatives), own-profile PUT/PATCH, other-user 403, self-delete 403, forgot-password                              | ✅     |
 | TOTP — rejections                                    | `users/totp.negative.api.spec.ts`                | Wrong code 400 at enrolment, provisional-token 401, anonymous 401                                                                   | ✅     |
-| Carts — lifecycle                                    | `carts/*`                                        | Phase D                                                                                                                             | ⏭     |
+| Carts — lifecycle                                    | `carts/carts.lifecycle.api.spec.ts`              | Create, add item, read back, quantity replace vs repeat-add accumulate, remove line, delete cart                                    | ✅     |
+| Carts — rejections                                   | `carts/carts.negative.api.spec.ts`               | Add-item validation DDT (missing/invalid product id, quantity rules), unknown-cart 404 on all four verbs                            | ✅     |
 | Favorites / invoices / messages / payment / postcode | `favorites\|invoices\|messages\|payment/*`       | Phase E                                                                                                                             | ⏭     |
 | Admin reads (reports, users, messages)               | `admin/*`                                        | Phase F                                                                                                                             | ⏭     |
 | Catalog writes with an admin token                   | —                                                | ⛔ out of scope — the catalog is shared production data; writes are negative-only                                                   | —      |
@@ -336,7 +337,13 @@ doubles as the arrange path for UI specs (`registerUserWithApi`, `registerUserWi
 product/brand/category ids; every mutating test registers its own throwaway user; the admin token is
 read-only and only ever sent with the correct password (§20 lockout is permanent).
 
-**Status:** ✅ Phases A–C implemented. Two things Phase C settled that bind everything after it:
+**Status:** ✅ Phases A–D implemented. Three things that bind everything after them:
+
+- **Every request must send `Accept: application/json`** — `BaseRequest` now merges it in, and it
+  must stay. Without it the Laravel backend answers a validation failure with a 302 to the API root,
+  which Playwright follows into a bogus `404 "Resource not found"`, hiding the real 422 and its field
+  errors. This produced two _incorrect_ Phase C findings before Phase D caught it; both are corrected
+  in `PRODUCT_EXPLORATION.md` §4/§6, and the trap is written up in §8.
 
 - **Registered users are permanent.** A customer cannot delete their own account (403 — deletion is
   admin-only, out of scope), so the register-per-test fixtures add a row to the shared database on

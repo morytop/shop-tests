@@ -8,7 +8,7 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class PaymentRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.PAYMENT_CHECK, headers);
   }

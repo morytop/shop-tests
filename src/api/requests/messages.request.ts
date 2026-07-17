@@ -11,7 +11,7 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class MessagesRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.MESSAGES, headers);
   }

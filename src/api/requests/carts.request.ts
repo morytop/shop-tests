@@ -1,5 +1,8 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
-import { CartItemPayload } from '@src/api/models/cart.api.model';
+import {
+  CartItemPayload,
+  InvalidCartItemPayload,
+} from '@src/api/models/cart.api.model';
 import { Headers } from '@src/api/models/headers.api.model';
 import { BaseRequest } from '@src/api/requests/base.request';
 import { apiUrls } from '@src/api/utils/api.util';
@@ -13,12 +16,15 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class CartsRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.CARTS, headers);
   }
 
-  async addItem(cartId: string, data: CartItemPayload): Promise<APIResponse> {
+  async addItem(
+    cartId: string,
+    data: CartItemPayload | InvalidCartItemPayload,
+  ): Promise<APIResponse> {
     return await this.request.post(`${this.url}/${cartId}`, {
       headers: this.headers,
       data,

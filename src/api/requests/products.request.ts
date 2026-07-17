@@ -11,7 +11,7 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class ProductsRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.PRODUCTS, headers);
   }

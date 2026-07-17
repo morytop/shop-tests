@@ -7,7 +7,7 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class LoginRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.LOGIN, headers);
   }

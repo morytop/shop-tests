@@ -13,7 +13,7 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class TotpRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.TOTP_SETUP, headers);
   }

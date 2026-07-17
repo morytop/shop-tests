@@ -15,7 +15,7 @@ import { apiUrls } from '@src/api/utils/api.util';
 export class InvoicesRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,
-    protected headers?: Headers,
+    headers?: Headers,
   ) {
     super(request, apiUrls.INVOICES, headers);
   }

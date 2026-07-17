@@ -90,14 +90,16 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
 
 ## 4. Security & privacy smells
 
-- **Forgot-password has no anti-enumeration (§21, §API-C).** An unknown email is rejected while a
-  known one succeeds, so the endpoint reliably distinguishes registered from unregistered addresses —
+- **Forgot-password has no anti-enumeration (§21, §API-C).** An unknown email is rejected with
+  **422** `"The selected email is invalid."` while a known one succeeds with **200**
+  `{success: true}`, so the endpoint reliably distinguishes registered from unregistered addresses —
   unauthenticated, unthrottled, and usable as an account oracle. Combined with the no-token instant
-  reset (§2), worth flagging to the team. The **status differs by layer**: the UI form reported
-  **422** `"The selected email is invalid."` (§21), while the API answers **404**
-  `"Resource not found"` for an unknown address against **200** `{success: true}` for a known one
-  (observed §API-C, pinned in `users.account.api.spec.ts`). The two were not observed in the same
-  session and the divergence is unexplained — the leak, not the code, is the stable part.
+  reset (§2), worth flagging to the team. Pinned in `users.account.api.spec.ts`.
+
+  > **Correction (§API-D).** This entry previously recorded the API answering **404** > `"Resource not found"` where the UI reported 422, and called the divergence "unexplained".
+  > There was never a divergence: the 404 was **our own test artifact**, not the API's answer. See
+  > the `Accept: application/json` trap in §8 — the UI and the API agree at 422.
+
 - **TOTP provisional token is correctly scoped (clean, §23).** The `access_token` handed out
   alongside `requires_totp: true` returns **401 "Unauthorized token usage"** on `GET /users/me`; it
   only works as the `access_token` argument of the second (TOTP) login leg. Not an auth bypass.
@@ -345,6 +347,26 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
   is enveloped like `/products`.
 - **`/products/{id}/related` returns 4 products from the same category, excluding the product
   itself (§API-B)** — consistent enough to assert on both properties.
+- **The two cart write verbs are not interchangeable (§API-D).** `POST /carts/{id}` **accumulates**
+  onto an existing line (add 1, then add 3 → quantity 4, still one line item), while
+  `PUT /carts/{id}/product/quantity` **replaces** it (→ 3). Both answer **200**
+  `{"result": "item added or updated"}` — the same message for an add, an accumulate and a replace —
+  and neither echoes the resulting line, so the only way to know what a cart holds is to `GET` it.
+  A test that trusts the write response cannot tell the two verbs apart. Pinned in
+  `carts.lifecycle.api.spec.ts`.
+- **Cart line items and carts have independent lifetimes (§API-D).** `DELETE /carts/{id}/product/{pid}`
+  → **204** and empties `cart_items`, but the cart survives as an empty object; `DELETE /carts/{id}`
+  → **204**, after which `GET` is 404.
+- **The cart validator enforces referential integrity, so an unknown product is a 422, not a 404
+  (§API-D).** `POST /carts/{id}` with a well-formed but nonexistent `product_id` →
+  **422** `"The selected product id is invalid."`, not the 404 the id shape suggests. Quantity is
+  validated as an integer ≥ 1 (`0`/`-3` → `"must be at least 1"`, `"two"` → `"must be an integer"`).
+  An unknown _cart_ id, though, is a genuine **404** on all four cart-scoped verbs.
+- **The cart 404s are worded four different ways, one with a typo (§API-D).** Same status, four
+  messages: `GET /carts/{id}` → `"Requested item not found"`, `POST /carts/{id}` → `"Cart not found"`,
+  `PUT .../product/quantity` → `"Cart doesn't exist"`, `DELETE /carts/{id}` → `"Cart doesnt exists"`.
+  Cosmetic, but it means **cart tests must assert the status and not the message** — the copy is too
+  inconsistent to be a contract.
 - **Only 4 of the register fields are actually required (§API-C).** `first_name`, `last_name`,
   `email`, `password` are enforced; **`dob`, `phone` and the entire `address` object are optional** —
   omitting them returns **201** and stores the address as all-nulls. The UI marks them required, so
@@ -360,11 +382,19 @@ password."` (a HaveIBeenPwned-style rule). **Any hard-coded password literal in 
   bomb** — it passes until the string turns up in a future breach list, then fails every case that
   uses it, and the error names the password rather than the rule under test. `prepareRandomPassword()`
   is the only safe source. This bit the Phase C probing before the specs were written.
-- **`POST /users/change-password` answers 404 for an invalid _new_ password (§API-C).** Wrong current
-  password → **400** `{success: false}` (`"Your current password does not matches with the password."`),
-  but a mismatched confirmation, a missing confirmation, or a too-weak new password all return **404**
-  `"Resource not found"` — a generic not-found for what is plainly a validation failure, and nothing
-  in the body names the offending field.
+- **`POST /users/change-password` mixes two rejection styles (§API-C, corrected §API-D).** Wrong
+  current password → **400** `{success: false}`
+  (`"Your current password does not matches with the password."`) — an odd status for an auth
+  failure, and the endpoint's own hand-rolled check rather than the validator. An invalid _new_
+  password, by contrast, goes through Laravel's validator and answers a normal **422** naming the
+  field: a mismatched confirmation → `"The new password field confirmation does not match."`, a
+  too-weak one → the full rule list under `errors.new_password`.
+
+  > **Correction (§API-D).** This entry previously claimed the invalid-new-password path returned a
+  > generic **404** `"Resource not found"` with nothing naming the field. That was **our own test
+  > artifact**, not the API's behaviour — see the `Accept: application/json` trap in §8. The
+  > validation responses are well-formed and specific.
+
 - **A customer cannot delete their own account (§API-C).** `DELETE /users/{ownId}` → **403**
   `"Forbidden"` even with a valid own token, and the account still logs in afterwards. Deletion is
   admin-only, and admin writes are out of scope — **so every user the API suite registers is
@@ -443,6 +473,22 @@ password."` (a HaveIBeenPwned-style rule). **Any hard-coded password literal in 
   `requires_totp`, hands back a token that 401s on whatever it is later used for, with nothing at the
   call site to explain why. `POST /users/register` returns **201** for a malformed email (§3.9). The
   rule: on this API, assert the field that carries the meaning, not just the status.
+- **🚨 Without `Accept: application/json`, this API hides every validation error behind a fake 404
+  (§API-D).** The backend is Laravel. On a validation failure it checks whether the caller wants
+  JSON; if not, it does the _web_ thing and answers **302**, redirecting to the API root — which
+  itself answers **404 `"Resource not found"`**. Playwright follows redirects silently, so the test
+  sees a 404 for what is really a 422, with the body and field errors gone. `curl` without the header
+  shows the bare 302; the Angular client always sends the header, so **the UI and the API never
+  actually disagreed** — only our client did.
+
+  This burned Phase C twice, and both times the wrong answer looked like a real finding worth
+  documenting: a "generic 404 on change-password validation" (§6) and a "404 vs 422 enumeration
+  divergence" the doc called _unexplained_ (§4). Both entries are now corrected; the real answers are
+  ordinary, specific 422s. `BaseRequest` now merges `Accept: application/json` into every request, so
+  this cannot recur — **the lesson is the general one: a surprising status from this API is a claim
+  about our client until the request headers have been ruled out.** An unexplained result is a
+  prompt to keep digging, not a finding to write down.
+
 - **Shared-backend contention causes real, non-deterministic flakiness (§17, §33).** Running many
   checkout/order-placing specs in parallel against the slow shared prod backend intermittently trips the
   60s timeout on a _different_ test each run; it reproduces on a clean tree. The postcode-lookup geocoder

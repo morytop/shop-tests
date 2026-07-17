@@ -240,7 +240,31 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
 - **Risk:** low. Watch for §33 5xx on the create — the lifecycle spec may reuse the
   fresh-retry pattern on the _arrange_ create only.
 
-### Phase E — customer resources (`tests/api/favorites|invoices|messages|payment/`)
+### Phase E — customer resources (`tests/api/favorites|invoices|messages|payment/`) — ✅ implemented
+
+> **Implemented 2026-07-17.** The five specs matched the plan's shape; production disagreed with a
+> handful of response-shape assumptions written before the endpoints were probed live, all now fixed
+> and recorded in `PRODUCT_EXPLORATION.md` §API-E:
+>
+> 1. **`POST /invoices` gates on auth before validation** (like `/users/{id}`, unlike the catalog) —
+>    an anonymous request with an otherwise-valid payload is 401, not 422. Only `/invoices/guest` is
+>    genuinely anonymous.
+> 2. **Two different 422 body shapes on the same resource.** `/invoices`' own required-field
+>    validation answers a bare field map; `/invoices/guest`'s missing-guest-field validation wraps the
+>    same shape under `{errors: {...}}`. The contact form's validation is bare too, and its
+>    attach-file rejections are bare **arrays** (`{errors: [...]}`) rather than field-keyed.
+> 3. **The contact form only requires `subject`/`message`.** `name` and `email` are optional (the
+>    plan assumed all four); `email`, when present, is format-validated — unlike register's (§API-C).
+> 4. **`POST /payment/check` never validates `payment_method` itself** — an unrecognised slug, or an
+>    empty payload entirely, skips the per-method rule set and reports success. This was the "pinned
+>    as its own tests" item the DDT data file's comment flagged as unresolved.
+> 5. **`GET /postcode-lookup` silently ignores `housenumber`** and never validates that a country
+>    code is real — ties to item 2 of the plan's open questions.
+>
+> Also confirmed as written: favorites' bare-array list with an embedded `product` the single read
+> drops, its 409-duplicate/422-unknown-product/204-on-unknown-delete quirks; an empty cart producing
+> a real `$0` invoice rather than a validation error; and PDF generation as an async job whose
+> pre-ready state reports 400, not a pending 200.
 
 - **Goal:** authenticated own-data CRUD and the checkout-adjacent public endpoints.
 - **Steps:**
@@ -332,6 +356,7 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
    "customer-token `DELETE` on a real id" probe could have mutated production before the
    "2xx-is-a-failure" assertion could report it.
 
-2. `attach-file`: the UI enforces a 0-byte file — does the API enforce the same? One probe in
-   Phase E decides the assertion.
+2. ~~`attach-file`: the UI enforces a 0-byte file — does the API enforce the same?~~ **Answered in
+   Phase E: yes.** A non-empty file → 400 `{"errors": ["Currently we only allow empty files."]}`; the
+   rule is genuinely server-side, not client-only. See `PRODUCT_EXPLORATION.md` §API-E.
 3. Cart-id browser-storage contract (Phase G item 4) — inspect before building.

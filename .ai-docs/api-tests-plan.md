@@ -288,7 +288,14 @@ Validation gate for every phase: `npm run lint && npm run tsc:check && npx playw
 - **Risk:** med — invoice creation is the §33 contention hot spot; these specs are the first
   candidates for the `@order`-style serial split if they flake on retry.
 
-### Phase F — admin read-only smoke (`tests/api/admin/`)
+### Phase F — admin read-only smoke (`tests/api/admin/`) — ✅ implemented
+
+> **Implemented 2026-07-17.** Landed as planned, one deviation: `reportsRequestAdmin`'s
+> anonymous counterpart doesn't exist as a fixture (reports have no public use case), so
+> the negative test builds a bare `new ReportsRequest(request)` directly — the same
+> pattern `users.session.api.spec.ts` already uses for its malformed-token case. All
+> three groups (`reports`, `users`, `messages`) confirmed genuinely admin-gated: every
+> one 401s anonymously, matching the UI dashboard's non-admin redirect.
 
 - **Goal:** mirror the read-only `@admin` UI sweep at the API level. GETs only.
 - **Steps:** one spec, `admin.reads.api.spec.ts`, using the `*RequestAdmin` fixtures:

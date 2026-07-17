@@ -155,3 +155,8 @@ API-mutated, out-of-stock product. Recorded in `TEST_PLAN.md` §26 as a follow-u
 
 **Still deferred:** the §5.3 product-detail favorites ACs (add-success / "already in favorites" toasts, logged-out
 "Unauthorized"), per the confirmed scope.
+
+**2026-07-17 (Phase G):** AC3's arrange (two favorites added by walking the detail page twice) replaced
+with `addFavoritesWithApi()` (`src/api/factories/favorite.api.factory.ts`) — the removal and all
+assertions stay UI. AC2 deliberately keeps the UI add: favoriting from the detail page is that AC's
+subject. See `.ai-docs/api-tests-plan.md` Phase G.

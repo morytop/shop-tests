@@ -16,29 +16,45 @@ export interface CartWithProduct {
  * hard-coded. Carts are throwaway server objects owned by nobody, so creating
  * one is safe; the caller should still `DELETE` it when the cart outlives the
  * test's purpose for it.
+ *
+ * The whole arrange retries with everything re-resolved (§33): the shared
+ * catalog mutates and periodically reseeds under live runs, so the product id
+ * read from the list can be gone by the time the add-item lands (a 422, which
+ * provably wrote nothing — safe to retry). The cart is re-created per attempt
+ * for the same reason; an abandoned throwaway cart is harmless.
  */
 export async function createCartWithProduct(
   cartsRequest: CartsRequest,
   productsRequest: ProductsRequest,
   quantity = 1,
 ): Promise<CartWithProduct> {
-  const products = await (await productsRequest.get()).json();
-  const product = products.data[0];
+  const maxAttempts = 3;
+  let addedStatus = 0;
 
-  const created = await cartsRequest.post();
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const created = await cartsRequest.post();
+    expect(
+      created.status(),
+      `cart create expected 201, got ${created.status()}`,
+    ).toBe(201);
+    const cartId = (await created.json()).id;
+
+    const products = await (await productsRequest.get()).json();
+    const product = products.data[0];
+
+    const added = await cartsRequest.addItem(cartId, {
+      product_id: product.id,
+      quantity,
+    });
+    if (added.status() === 200) {
+      return { cartId, product };
+    }
+    addedStatus = added.status();
+  }
+
   expect(
-    created.status(),
-    `cart create expected 201, got ${created.status()}`,
-  ).toBe(201);
-  const cartId = (await created.json()).id;
-
-  const added = await cartsRequest.addItem(cartId, {
-    product_id: product.id,
-    quantity,
-  });
-  expect(added.status(), `add item expected 200, got ${added.status()}`).toBe(
-    200,
-  );
-
-  return { cartId, product };
+    addedStatus,
+    `add item expected 200, got ${addedStatus} after ${maxAttempts} attempts`,
+  ).toBe(200);
+  throw new Error('unreachable — the expect above always fails');
 }

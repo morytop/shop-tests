@@ -1,3 +1,4 @@
+import { createInvoiceWithApi } from '@src/api/factories/invoice.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/merge.fixture';
 
@@ -5,8 +6,9 @@ import { expect, test } from '@src/merge.fixture';
 // AC1 the invoice appears in the list, AC2 the invoice detail page, AC3 a non-existent
 // id → not-found. AC4 (discounted invoice) and AC5 (PDF download) are deferred (§9/§29).
 //
-// Data safety (§3): AC1/AC2 place a REAL Cash-on-Delivery order (simulated payment, §2),
-// so each registers its own throwaway user via the API and logs in inline — a fresh user
+// Data safety (§3): AC1/AC2 place a REAL Cash-on-Delivery order (simulated payment, §2) —
+// AC1 through the checkout wizard, AC2 over the API (Phase G) — so each registers its own
+// throwaway user via the API and logs in inline — a fresh user
 // guarantees a single-invoice list, so the assertions are deterministic. Never `testUser1`
 // (it IS the shared seeded `customer@`) or the `@logged` session (shared across specs;
 // `checkout-e2e` AC2 already places orders as it). Billing is completed via the postcode
@@ -57,6 +59,10 @@ test.describe('Verify invoices', () => {
   // AC2 — the invoice detail page shows number/date/total, the full billing address, the
   // payment method, and the line items. Values render as read-only inputs; the total here
   // carries a space (`$ X.XX`), unlike the list (§29).
+  //
+  // The order is placed over the API (Phase G): the checkout wizard is AC1's (and
+  // checkout-e2e's) subject, and this AC only needs *an* invoice to open — so the
+  // arrange skips the wizard and the UI drives just the list → detail navigation.
   test(
     'invoice detail page shows number, address, payment method, and line items',
     { tag: ['@auth', '@invoices', '@regression'] },
@@ -65,18 +71,18 @@ test.describe('Verify invoices', () => {
       invoiceDetailPage,
       invoicesPage,
       loginPage,
-      placeCodOrderAsLoggedInUser,
+      request,
       usersRequest,
     }) => {
       const user = await registerUserWithApi(usersRequest);
+      const order = await createInvoiceWithApi(request, user);
+      // The API reports the total as a number (14.15), rebuilt here into each
+      // page's own render format.
+      const amount = order.total.toFixed(2);
 
       await loginPage.goto();
       await loginPage.login(user.email, user.password);
       await accountPage.pageTitle.waitFor();
-
-      const order = await placeCodOrderAsLoggedInUser();
-      // "$14.15" (list/cart) → "14.15", to rebuild each page's own format.
-      const amount = order.total.replace('$', '').trim();
 
       await invoicesPage.gotoAndAwaitLoaded();
       await invoicesPage.openDetails(order.invoiceNumber);
@@ -109,7 +115,11 @@ test.describe('Verify invoices', () => {
 
       const firstItem = invoiceDetailPage.lineItemRows.first();
       await expect(firstItem.getByRole('cell').nth(0)).toHaveText('1');
-      await expect(firstItem.getByRole('cell').nth(1)).not.toBeEmpty();
+      // The API arrange knows exactly which product the cart held, so the line
+      // item's name is pinned rather than just present.
+      await expect(firstItem.getByRole('cell').nth(1)).toHaveText(
+        order.product.name,
+      );
       await expect(firstItem.getByRole('cell').nth(2)).toHaveText(`$${amount}`);
     },
   );

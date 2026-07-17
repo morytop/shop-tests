@@ -87,3 +87,9 @@ form page object, since submitting a contact message is the precondition for eve
 ## Status
 
 Steps 1–7 complete. Ready for review.
+
+**2026-07-17 (Phase G):** AC2/AC3's arrange (submitting the contact form) replaced with
+`sendMessageWithApi()` (`src/api/factories/message.api.factory.ts`) — a token-authenticated
+`POST /messages` files the row under the user (`PRODUCT_EXPLORATION.md` §API-G). The reply flow and
+all assertions stay UI; AC1 keeps the form submit, which is its subject. See
+`.ai-docs/api-tests-plan.md` Phase G.

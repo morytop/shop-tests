@@ -334,14 +334,14 @@ doubles as the arrange path for UI specs (`registerUserWithApi`, `registerUserWi
 | Messages — contact form                | `messages/messages.api.spec.ts`                  | Anonymous create, attach-file happy path + non-empty/no-file 400s, required-field 422, length bound, client-only rules                                                                                       | ✅     |
 | Payment — check                        | `payment/payment.check.api.spec.ts`              | Per-method DDT (5 methods) valid + invalid, unrecognised-method and empty-payload gaps                                                                                                                       | ✅     |
 | Postcode lookup                        | `postcode/postcode-lookup.api.spec.ts`           | Geocode round-trip, housenumber-ignored gap, invalid-postcode 422, missing-params 422, unknown-country gap                                                                                                   | ✅     |
-| Admin reads (reports, users, messages) | `admin/*`                                        | Phase F                                                                                                                                                                                                      | ⏭     |
+| Admin reads (reports, users, messages) | `admin/admin.reads.api.spec.ts`                  | 7 reports return arrays, users list/search/by-id, messages list/by-id, anonymous 401 on all three                                                                                                            | ✅     |
 | Catalog writes with an admin token     | —                                                | ⛔ out of scope — the catalog is shared production data; writes are negative-only                                                                                                                            | —      |
 
 **Data rules (binding, see §3):** every id is resolved live from a list call — no hard-coded
 product/brand/category ids; every mutating test registers its own throwaway user; the admin token is
 read-only and only ever sent with the correct password (§20 lockout is permanent).
 
-**Status:** ✅ Phases A–D implemented. Three things that bind everything after them:
+**Status:** ✅ Phases A–F implemented. Three things that bind everything after them:
 
 - **Every request must send `Accept: application/json`** — `BaseRequest` now merges it in, and it
   must stay. Without it the Laravel backend answers a validation failure with a 302 to the API root,

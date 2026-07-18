@@ -149,7 +149,11 @@ export const GetCartParams = zod.object({
 })
 
 export const GetCartResponse = zod.strictObject({
-  "id": zod.string()
+  "id": zod.string(),
+  "additional_discount_percentage": zod.unknown().optional(),
+  "lat": zod.unknown().optional(),
+  "lng": zod.unknown().optional(),
+  "cart_items": zod.array(zod.unknown()).optional()
 })
 
 
@@ -398,9 +402,24 @@ export const SendMessageBody = zod.object({
   "message": zod.string().max(sendMessageBodyMessageMax)
 })
 
-export const SendMessageResponse = zod.strictObject({
-  "success": zod.boolean()
-})
+export const SendMessageResponse = zod.union([zod.strictObject({
+  "name": zod.string(),
+  "email": zod.string(),
+  "subject": zod.string(),
+  "message": zod.string(),
+  "status": zod.string(),
+  "id": zod.string(),
+  "created_at": zod.string()
+}),zod.strictObject({
+  "user_id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "subject": zod.string(),
+  "message": zod.string(),
+  "status": zod.string(),
+  "id": zod.string(),
+  "created_at": zod.string()
+})])
 
 
 /**
@@ -494,8 +513,8 @@ export const ReplyToMessageResponse = zod.strictObject({
   "id": zod.string(),
   "provider": zod.string().nullable(),
   "totp_enabled": zod.boolean(),
-  "enabled": zod.boolean(),
-  "failed_login_attempts": zod.number().nullable(),
+  "enabled": zod.boolean().optional(),
+  "failed_login_attempts": zod.number().nullish(),
   "created_at": zod.string()
 })
 })
@@ -540,14 +559,14 @@ export const GetFavoritesResponseItem = zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
   "slug": zod.string().optional()
-}),
+}).optional(),
   "category": zod.strictObject({
   "id": zod.string(),
   "parent_id": zod.string().nullish(),
   "name": zod.string(),
   "slug": zod.string().optional(),
   "sub_categories": zod.array(zod.unknown()).optional()
-}),
+}).optional(),
   "product_image": zod.strictObject({
   "by_name": zod.string(),
   "by_url": zod.string(),
@@ -640,27 +659,27 @@ export const GetInvoicesResponse = zod.strictObject({
   "billing_country": zod.string(),
   "billing_state": zod.string(),
   "billing_postal_code": zod.string(),
-  "additional_discount_percentage": zod.number(),
+  "additional_discount_percentage": zod.number().nullable(),
   "additional_discount_amount": zod.number(),
   "subtotal": zod.number(),
   "total": zod.number(),
   "status": zod.string(),
-  "status_message": zod.string(),
+  "status_message": zod.string().nullish(),
   "invoicelines": zod.array(zod.strictObject({
   "id": zod.string(),
   "invoice_id": zod.string(),
   "product_id": zod.string(),
   "unit_price": zod.number(),
-  "discount_percentage": zod.number(),
-  "discounted_price": zod.number(),
+  "discount_percentage": zod.number().nullable(),
+  "discounted_price": zod.number().nullable(),
   "quantity": zod.number(),
   "product": zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
-  "description": zod.string(),
+  "description": zod.string().optional(),
   "price": zod.number(),
-  "is_location_offer": zod.boolean(),
-  "is_rental": zod.boolean(),
+  "is_location_offer": zod.boolean().optional(),
+  "is_rental": zod.boolean().optional(),
   "in_stock": zod.boolean(),
   "co2_rating": zod.string(),
   "is_eco_friendly": zod.boolean(),
@@ -668,27 +687,30 @@ export const GetInvoicesResponse = zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
   "slug": zod.string().optional()
-}),
+}).optional(),
   "category": zod.strictObject({
   "id": zod.string(),
   "parent_id": zod.string().nullish(),
   "name": zod.string(),
   "slug": zod.string().optional(),
   "sub_categories": zod.array(zod.unknown()).optional()
-}),
+}).optional(),
   "product_image": zod.strictObject({
   "by_name": zod.string(),
   "by_url": zod.string(),
-  "source_name": zod.string(),
-  "source_url": zod.string(),
-  "file_name": zod.string(),
-  "title": zod.string(),
+  "source_name": zod.string().optional(),
+  "source_url": zod.string().optional(),
+  "file_name": zod.string().optional(),
+  "title": zod.string().optional(),
   "id": zod.string()
 }),
   "specs": zod.array(zod.unknown()).optional()
 })
 })),
-  "created_at": zod.string()
+  "created_at": zod.string().optional(),
+  "payment": zod.unknown().optional(),
+  "eco_discount_percentage": zod.unknown().optional(),
+  "eco_discount_amount": zod.unknown().optional()
 })),
   "from": zod.number(),
   "last_page": zod.number(),
@@ -739,27 +761,27 @@ export const StoreInvoiceResponse = zod.strictObject({
   "billing_country": zod.string(),
   "billing_state": zod.string(),
   "billing_postal_code": zod.string(),
-  "additional_discount_percentage": zod.number(),
+  "additional_discount_percentage": zod.number().nullable(),
   "additional_discount_amount": zod.number(),
   "subtotal": zod.number(),
   "total": zod.number(),
   "status": zod.string(),
-  "status_message": zod.string(),
+  "status_message": zod.string().nullish(),
   "invoicelines": zod.array(zod.strictObject({
   "id": zod.string(),
   "invoice_id": zod.string(),
   "product_id": zod.string(),
   "unit_price": zod.number(),
-  "discount_percentage": zod.number(),
-  "discounted_price": zod.number(),
+  "discount_percentage": zod.number().nullable(),
+  "discounted_price": zod.number().nullable(),
   "quantity": zod.number(),
   "product": zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
-  "description": zod.string(),
+  "description": zod.string().optional(),
   "price": zod.number(),
-  "is_location_offer": zod.boolean(),
-  "is_rental": zod.boolean(),
+  "is_location_offer": zod.boolean().optional(),
+  "is_rental": zod.boolean().optional(),
   "in_stock": zod.boolean(),
   "co2_rating": zod.string(),
   "is_eco_friendly": zod.boolean(),
@@ -767,27 +789,30 @@ export const StoreInvoiceResponse = zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
   "slug": zod.string().optional()
-}),
+}).optional(),
   "category": zod.strictObject({
   "id": zod.string(),
   "parent_id": zod.string().nullish(),
   "name": zod.string(),
   "slug": zod.string().optional(),
   "sub_categories": zod.array(zod.unknown()).optional()
-}),
+}).optional(),
   "product_image": zod.strictObject({
   "by_name": zod.string(),
   "by_url": zod.string(),
-  "source_name": zod.string(),
-  "source_url": zod.string(),
-  "file_name": zod.string(),
-  "title": zod.string(),
+  "source_name": zod.string().optional(),
+  "source_url": zod.string().optional(),
+  "file_name": zod.string().optional(),
+  "title": zod.string().optional(),
   "id": zod.string()
 }),
   "specs": zod.array(zod.unknown()).optional()
 })
 })),
-  "created_at": zod.string()
+  "created_at": zod.string().optional(),
+  "payment": zod.unknown().optional(),
+  "eco_discount_percentage": zod.unknown().optional(),
+  "eco_discount_amount": zod.unknown().optional()
 })
 
 
@@ -836,27 +861,27 @@ export const StoreGuestInvoiceResponse = zod.strictObject({
   "billing_country": zod.string(),
   "billing_state": zod.string(),
   "billing_postal_code": zod.string(),
-  "additional_discount_percentage": zod.number(),
+  "additional_discount_percentage": zod.number().nullable(),
   "additional_discount_amount": zod.number(),
   "subtotal": zod.number(),
   "total": zod.number(),
   "status": zod.string(),
-  "status_message": zod.string(),
+  "status_message": zod.string().nullish(),
   "invoicelines": zod.array(zod.strictObject({
   "id": zod.string(),
   "invoice_id": zod.string(),
   "product_id": zod.string(),
   "unit_price": zod.number(),
-  "discount_percentage": zod.number(),
-  "discounted_price": zod.number(),
+  "discount_percentage": zod.number().nullable(),
+  "discounted_price": zod.number().nullable(),
   "quantity": zod.number(),
   "product": zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
-  "description": zod.string(),
+  "description": zod.string().optional(),
   "price": zod.number(),
-  "is_location_offer": zod.boolean(),
-  "is_rental": zod.boolean(),
+  "is_location_offer": zod.boolean().optional(),
+  "is_rental": zod.boolean().optional(),
   "in_stock": zod.boolean(),
   "co2_rating": zod.string(),
   "is_eco_friendly": zod.boolean(),
@@ -864,27 +889,30 @@ export const StoreGuestInvoiceResponse = zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
   "slug": zod.string().optional()
-}),
+}).optional(),
   "category": zod.strictObject({
   "id": zod.string(),
   "parent_id": zod.string().nullish(),
   "name": zod.string(),
   "slug": zod.string().optional(),
   "sub_categories": zod.array(zod.unknown()).optional()
-}),
+}).optional(),
   "product_image": zod.strictObject({
   "by_name": zod.string(),
   "by_url": zod.string(),
-  "source_name": zod.string(),
-  "source_url": zod.string(),
-  "file_name": zod.string(),
-  "title": zod.string(),
+  "source_name": zod.string().optional(),
+  "source_url": zod.string().optional(),
+  "file_name": zod.string().optional(),
+  "title": zod.string().optional(),
   "id": zod.string()
 }),
   "specs": zod.array(zod.unknown()).optional()
 })
 })),
-  "created_at": zod.string()
+  "created_at": zod.string().optional(),
+  "payment": zod.unknown().optional(),
+  "eco_discount_percentage": zod.unknown().optional(),
+  "eco_discount_amount": zod.unknown().optional()
 })
 
 
@@ -906,27 +934,27 @@ export const GetInvoiceResponse = zod.strictObject({
   "billing_country": zod.string(),
   "billing_state": zod.string(),
   "billing_postal_code": zod.string(),
-  "additional_discount_percentage": zod.number(),
+  "additional_discount_percentage": zod.number().nullable(),
   "additional_discount_amount": zod.number(),
   "subtotal": zod.number(),
   "total": zod.number(),
   "status": zod.string(),
-  "status_message": zod.string(),
+  "status_message": zod.string().nullish(),
   "invoicelines": zod.array(zod.strictObject({
   "id": zod.string(),
   "invoice_id": zod.string(),
   "product_id": zod.string(),
   "unit_price": zod.number(),
-  "discount_percentage": zod.number(),
-  "discounted_price": zod.number(),
+  "discount_percentage": zod.number().nullable(),
+  "discounted_price": zod.number().nullable(),
   "quantity": zod.number(),
   "product": zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
-  "description": zod.string(),
+  "description": zod.string().optional(),
   "price": zod.number(),
-  "is_location_offer": zod.boolean(),
-  "is_rental": zod.boolean(),
+  "is_location_offer": zod.boolean().optional(),
+  "is_rental": zod.boolean().optional(),
   "in_stock": zod.boolean(),
   "co2_rating": zod.string(),
   "is_eco_friendly": zod.boolean(),
@@ -934,27 +962,30 @@ export const GetInvoiceResponse = zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
   "slug": zod.string().optional()
-}),
+}).optional(),
   "category": zod.strictObject({
   "id": zod.string(),
   "parent_id": zod.string().nullish(),
   "name": zod.string(),
   "slug": zod.string().optional(),
   "sub_categories": zod.array(zod.unknown()).optional()
-}),
+}).optional(),
   "product_image": zod.strictObject({
   "by_name": zod.string(),
   "by_url": zod.string(),
-  "source_name": zod.string(),
-  "source_url": zod.string(),
-  "file_name": zod.string(),
-  "title": zod.string(),
+  "source_name": zod.string().optional(),
+  "source_url": zod.string().optional(),
+  "file_name": zod.string().optional(),
+  "title": zod.string().optional(),
   "id": zod.string()
 }),
   "specs": zod.array(zod.unknown()).optional()
 })
 })),
-  "created_at": zod.string()
+  "created_at": zod.string().optional(),
+  "payment": zod.unknown().optional(),
+  "eco_discount_percentage": zod.unknown().optional(),
+  "eco_discount_amount": zod.unknown().optional()
 })
 
 
@@ -1056,27 +1087,27 @@ export const DownloadPDFResponse = zod.strictObject({
   "billing_country": zod.string(),
   "billing_state": zod.string(),
   "billing_postal_code": zod.string(),
-  "additional_discount_percentage": zod.number(),
+  "additional_discount_percentage": zod.number().nullable(),
   "additional_discount_amount": zod.number(),
   "subtotal": zod.number(),
   "total": zod.number(),
   "status": zod.string(),
-  "status_message": zod.string(),
+  "status_message": zod.string().nullish(),
   "invoicelines": zod.array(zod.strictObject({
   "id": zod.string(),
   "invoice_id": zod.string(),
   "product_id": zod.string(),
   "unit_price": zod.number(),
-  "discount_percentage": zod.number(),
-  "discounted_price": zod.number(),
+  "discount_percentage": zod.number().nullable(),
+  "discounted_price": zod.number().nullable(),
   "quantity": zod.number(),
   "product": zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
-  "description": zod.string(),
+  "description": zod.string().optional(),
   "price": zod.number(),
-  "is_location_offer": zod.boolean(),
-  "is_rental": zod.boolean(),
+  "is_location_offer": zod.boolean().optional(),
+  "is_rental": zod.boolean().optional(),
   "in_stock": zod.boolean(),
   "co2_rating": zod.string(),
   "is_eco_friendly": zod.boolean(),
@@ -1084,27 +1115,30 @@ export const DownloadPDFResponse = zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
   "slug": zod.string().optional()
-}),
+}).optional(),
   "category": zod.strictObject({
   "id": zod.string(),
   "parent_id": zod.string().nullish(),
   "name": zod.string(),
   "slug": zod.string().optional(),
   "sub_categories": zod.array(zod.unknown()).optional()
-}),
+}).optional(),
   "product_image": zod.strictObject({
   "by_name": zod.string(),
   "by_url": zod.string(),
-  "source_name": zod.string(),
-  "source_url": zod.string(),
-  "file_name": zod.string(),
-  "title": zod.string(),
+  "source_name": zod.string().optional(),
+  "source_url": zod.string().optional(),
+  "file_name": zod.string().optional(),
+  "title": zod.string().optional(),
   "id": zod.string()
 }),
   "specs": zod.array(zod.unknown()).optional()
 })
 })),
-  "created_at": zod.string()
+  "created_at": zod.string().optional(),
+  "payment": zod.unknown().optional(),
+  "eco_discount_percentage": zod.unknown().optional(),
+  "eco_discount_amount": zod.unknown().optional()
 })
 
 
@@ -1126,27 +1160,27 @@ export const DownloadPDFStatusResponse = zod.strictObject({
   "billing_country": zod.string(),
   "billing_state": zod.string(),
   "billing_postal_code": zod.string(),
-  "additional_discount_percentage": zod.number(),
+  "additional_discount_percentage": zod.number().nullable(),
   "additional_discount_amount": zod.number(),
   "subtotal": zod.number(),
   "total": zod.number(),
   "status": zod.string(),
-  "status_message": zod.string(),
+  "status_message": zod.string().nullish(),
   "invoicelines": zod.array(zod.strictObject({
   "id": zod.string(),
   "invoice_id": zod.string(),
   "product_id": zod.string(),
   "unit_price": zod.number(),
-  "discount_percentage": zod.number(),
-  "discounted_price": zod.number(),
+  "discount_percentage": zod.number().nullable(),
+  "discounted_price": zod.number().nullable(),
   "quantity": zod.number(),
   "product": zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
-  "description": zod.string(),
+  "description": zod.string().optional(),
   "price": zod.number(),
-  "is_location_offer": zod.boolean(),
-  "is_rental": zod.boolean(),
+  "is_location_offer": zod.boolean().optional(),
+  "is_rental": zod.boolean().optional(),
   "in_stock": zod.boolean(),
   "co2_rating": zod.string(),
   "is_eco_friendly": zod.boolean(),
@@ -1154,27 +1188,30 @@ export const DownloadPDFStatusResponse = zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
   "slug": zod.string().optional()
-}),
+}).optional(),
   "category": zod.strictObject({
   "id": zod.string(),
   "parent_id": zod.string().nullish(),
   "name": zod.string(),
   "slug": zod.string().optional(),
   "sub_categories": zod.array(zod.unknown()).optional()
-}),
+}).optional(),
   "product_image": zod.strictObject({
   "by_name": zod.string(),
   "by_url": zod.string(),
-  "source_name": zod.string(),
-  "source_url": zod.string(),
-  "file_name": zod.string(),
-  "title": zod.string(),
+  "source_name": zod.string().optional(),
+  "source_url": zod.string().optional(),
+  "file_name": zod.string().optional(),
+  "title": zod.string().optional(),
   "id": zod.string()
 }),
   "specs": zod.array(zod.unknown()).optional()
 })
 })),
-  "created_at": zod.string()
+  "created_at": zod.string().optional(),
+  "payment": zod.unknown().optional(),
+  "eco_discount_percentage": zod.unknown().optional(),
+  "eco_discount_amount": zod.unknown().optional()
 })
 
 
@@ -1222,27 +1259,27 @@ export const SearchInvoiceResponse = zod.strictObject({
   "billing_country": zod.string(),
   "billing_state": zod.string(),
   "billing_postal_code": zod.string(),
-  "additional_discount_percentage": zod.number(),
+  "additional_discount_percentage": zod.number().nullable(),
   "additional_discount_amount": zod.number(),
   "subtotal": zod.number(),
   "total": zod.number(),
   "status": zod.string(),
-  "status_message": zod.string(),
+  "status_message": zod.string().nullish(),
   "invoicelines": zod.array(zod.strictObject({
   "id": zod.string(),
   "invoice_id": zod.string(),
   "product_id": zod.string(),
   "unit_price": zod.number(),
-  "discount_percentage": zod.number(),
-  "discounted_price": zod.number(),
+  "discount_percentage": zod.number().nullable(),
+  "discounted_price": zod.number().nullable(),
   "quantity": zod.number(),
   "product": zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
-  "description": zod.string(),
+  "description": zod.string().optional(),
   "price": zod.number(),
-  "is_location_offer": zod.boolean(),
-  "is_rental": zod.boolean(),
+  "is_location_offer": zod.boolean().optional(),
+  "is_rental": zod.boolean().optional(),
   "in_stock": zod.boolean(),
   "co2_rating": zod.string(),
   "is_eco_friendly": zod.boolean(),
@@ -1250,27 +1287,30 @@ export const SearchInvoiceResponse = zod.strictObject({
   "id": zod.string(),
   "name": zod.string(),
   "slug": zod.string().optional()
-}),
+}).optional(),
   "category": zod.strictObject({
   "id": zod.string(),
   "parent_id": zod.string().nullish(),
   "name": zod.string(),
   "slug": zod.string().optional(),
   "sub_categories": zod.array(zod.unknown()).optional()
-}),
+}).optional(),
   "product_image": zod.strictObject({
   "by_name": zod.string(),
   "by_url": zod.string(),
-  "source_name": zod.string(),
-  "source_url": zod.string(),
-  "file_name": zod.string(),
-  "title": zod.string(),
+  "source_name": zod.string().optional(),
+  "source_url": zod.string().optional(),
+  "file_name": zod.string().optional(),
+  "title": zod.string().optional(),
   "id": zod.string()
 }),
   "specs": zod.array(zod.unknown()).optional()
 })
 })),
-  "created_at": zod.string()
+  "created_at": zod.string().optional(),
+  "payment": zod.unknown().optional(),
+  "eco_discount_percentage": zod.unknown().optional(),
+  "eco_discount_amount": zod.unknown().optional()
 })),
   "from": zod.number(),
   "last_page": zod.number(),
@@ -1885,8 +1925,8 @@ export const GetUsersResponse = zod.strictObject({
   "id": zod.string(),
   "provider": zod.string().nullable(),
   "totp_enabled": zod.boolean(),
-  "enabled": zod.boolean(),
-  "failed_login_attempts": zod.number().nullable(),
+  "enabled": zod.boolean().optional(),
+  "failed_login_attempts": zod.number().nullish(),
   "created_at": zod.string()
 })),
   "from": zod.number(),
@@ -1957,10 +1997,10 @@ export const StoreUserResponse = zod.strictObject({
   "dob": zod.string(),
   "email": zod.string(),
   "id": zod.string(),
-  "provider": zod.string().nullable(),
-  "totp_enabled": zod.boolean(),
-  "enabled": zod.boolean(),
-  "failed_login_attempts": zod.number().nullable(),
+  "provider": zod.string().nullish(),
+  "totp_enabled": zod.boolean().optional(),
+  "enabled": zod.boolean().optional(),
+  "failed_login_attempts": zod.number().nullish(),
   "created_at": zod.string()
 })
 
@@ -2028,8 +2068,8 @@ export const GetCurrentCustomerInfoResponse = zod.strictObject({
   "id": zod.string(),
   "provider": zod.string().nullable(),
   "totp_enabled": zod.boolean(),
-  "enabled": zod.boolean(),
-  "failed_login_attempts": zod.number().nullable(),
+  "enabled": zod.boolean().optional(),
+  "failed_login_attempts": zod.number().nullish(),
   "created_at": zod.string()
 })
 
@@ -2079,8 +2119,8 @@ export const GetUserResponse = zod.strictObject({
   "id": zod.string(),
   "provider": zod.string().nullable(),
   "totp_enabled": zod.boolean(),
-  "enabled": zod.boolean(),
-  "failed_login_attempts": zod.number().nullable(),
+  "enabled": zod.boolean().optional(),
+  "failed_login_attempts": zod.number().nullish(),
   "created_at": zod.string()
 })
 
@@ -2230,8 +2270,8 @@ export const SearchUserResponseItem = zod.strictObject({
   "id": zod.string(),
   "provider": zod.string().nullable(),
   "totp_enabled": zod.boolean(),
-  "enabled": zod.boolean(),
-  "failed_login_attempts": zod.number().nullable(),
+  "enabled": zod.boolean().optional(),
+  "failed_login_attempts": zod.number().nullish(),
   "created_at": zod.string()
 })
 export const SearchUserResponse = zod.array(SearchUserResponseItem)

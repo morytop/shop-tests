@@ -51,6 +51,187 @@ const schemaDeviations: SchemaDeviation[] = [
   },
   {
     reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): `GET /carts/{id}` serves ' +
+      '`additional_discount_percentage`, `lat`, `lng` and the `cart_items` ' +
+      "rows beyond the bare `{id}` the docs' CartResponse declares",
+    apply: (spec): void => {
+      // Shapes deliberately unconstrained ({}): the keys are undocumented, so
+      // there is no doc contract for their values to validate against.
+      addOptionalProperty(
+        spec,
+        'CartResponse',
+        'additional_discount_percentage',
+        {},
+      );
+      addOptionalProperty(spec, 'CartResponse', 'lat', {});
+      addOptionalProperty(spec, 'CartResponse', 'lng', {});
+      addOptionalProperty(spec, 'CartResponse', 'cart_items', {
+        type: 'array',
+        items: {},
+      });
+    },
+  },
+  {
+    reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): `POST /messages` answers with the ' +
+      'stored message row, never the documented `{success: true}` ack — the ' +
+      'response is repointed at the same ContactResponse refs the by-id read documents',
+    apply: (spec): void =>
+      replaceResponseSchema(
+        spec,
+        '/messages',
+        'post',
+        '200',
+        'AddContactMessageResponse',
+        {
+          oneOf: [
+            { $ref: '#/components/schemas/ContactResponse' },
+            { $ref: '#/components/schemas/ContactResponseAuthenticated' },
+          ],
+        },
+      ),
+  },
+  {
+    reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): neither `GET /users/me` nor the ' +
+      '`POST /users/register` 201 body serves `enabled`/`failed_login_attempts`, ' +
+      'though the docs reuse the full UserResponse ref for both',
+    apply: (spec): void =>
+      dropFromRequired(spec, 'UserResponse', [
+        'enabled',
+        'failed_login_attempts',
+      ]),
+  },
+  {
+    // Must run after the shared UserResponse drop above — the fork inherits it.
+    reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): the `POST /users/register` 201 ' +
+      'body additionally omits `provider`/`totp_enabled` — the ref is forked ' +
+      'for register alone so both fields stay required on `GET /users/me`, ' +
+      'which does serve them',
+    apply: (spec): void => {
+      forkComponentSchema(spec, 'UserResponse', 'RegisteredUserResponse');
+      dropFromRequired(spec, 'RegisteredUserResponse', [
+        'provider',
+        'totp_enabled',
+      ]);
+      repointResponseRef(
+        spec,
+        '/users/register',
+        'post',
+        '201',
+        'RegisteredUserResponse',
+      );
+    },
+  },
+  {
+    reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): the product embedded in ' +
+      '`GET /favorites` rows carries no `brand`/`category` at all, though the ' +
+      'docs nest the full ProductResponse ref — forked so both stay required ' +
+      'on the product reads that do serve them',
+    apply: (spec): void => {
+      forkComponentSchema(spec, 'ProductResponse', 'FavoritedProductResponse');
+      dropFromRequired(spec, 'FavoritedProductResponse', ['brand', 'category']);
+      repointComponentPropertyRef(
+        spec,
+        'FavoriteWithProductResponse',
+        'product',
+        'FavoritedProductResponse',
+      );
+    },
+  },
+  {
+    reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): invoice discount fields are null ' +
+      'when no discount applies (`additional_discount_percentage` on the ' +
+      'invoice, `discount_percentage`/`discounted_price` on its lines), though ' +
+      'the docs declare them plain numbers',
+    apply: (spec): void => {
+      makePropertyNullable(
+        spec,
+        'InvoiceResponse',
+        'additional_discount_percentage',
+      );
+      makePropertyNullable(spec, 'InvoiceLineResponse', 'discount_percentage');
+      makePropertyNullable(spec, 'InvoiceLineResponse', 'discounted_price');
+    },
+  },
+  {
+    reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): `GET /invoices` rows serve ' +
+      'neither `status_message` nor `created_at` though the docs require ' +
+      'both, and `GET /invoices/{id}` serves `status_message` as null',
+    apply: (spec): void => {
+      dropFromRequired(spec, 'InvoiceResponse', [
+        'status_message',
+        'created_at',
+      ]);
+      makePropertyNullable(spec, 'InvoiceResponse', 'status_message');
+    },
+  },
+  {
+    reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): invoice reads carry undocumented ' +
+      'keys — `payment` on the list rows, plus `eco_discount_percentage`/' +
+      '`eco_discount_amount` on the by-id read',
+    apply: (spec): void => {
+      // Shapes deliberately unconstrained ({}): the keys are undocumented, so
+      // there is no doc contract for their values to validate against.
+      addOptionalProperty(spec, 'InvoiceResponse', 'payment', {});
+      addOptionalProperty(
+        spec,
+        'InvoiceResponse',
+        'eco_discount_percentage',
+        {},
+      );
+      addOptionalProperty(spec, 'InvoiceResponse', 'eco_discount_amount', {});
+    },
+  },
+  {
+    reason:
+      'PRODUCT_EXPLORATION.md §6 (REST API): the product embedded in invoice ' +
+      'lines omits `description`, `is_location_offer`, `is_rental`, `brand` ' +
+      'and `category`, though the docs nest the full ProductResponse ref — ' +
+      'forked so all five stay required on the reads that serve them. Its ' +
+      '`product_image` is trimmed too, to `{by_name, by_url, id}`, on the ' +
+      'by-id read only — the list rows embed the full image',
+    apply: (spec): void => {
+      forkComponentSchema(spec, 'ProductResponse', 'InvoicedProductResponse');
+      dropFromRequired(spec, 'InvoicedProductResponse', [
+        'description',
+        'is_location_offer',
+        'is_rental',
+        'brand',
+        'category',
+      ]);
+      repointComponentPropertyRef(
+        spec,
+        'InvoiceLineResponse',
+        'product',
+        'InvoicedProductResponse',
+      );
+      forkComponentSchema(
+        spec,
+        'ImageResponse',
+        'InvoicedProductImageResponse',
+      );
+      dropFromRequired(spec, 'InvoicedProductImageResponse', [
+        'source_name',
+        'source_url',
+        'file_name',
+        'title',
+      ]);
+      repointComponentPropertyRef(
+        spec,
+        'InvoicedProductResponse',
+        'product_image',
+        'InvoicedProductImageResponse',
+      );
+    },
+  },
+  {
+    reason:
       'PRODUCT_EXPLORATION.md §6 (REST API): `GET /products/{id}/related` rows ' +
       'omit `co2_rating` — the only product read that does, so the shared ' +
       'ProductResponse ref is forked for that endpoint alone rather than ' +
@@ -145,6 +326,99 @@ function forkComponentSchema(
     );
   }
   schemas[forkName] = structuredClone(source);
+}
+
+/**
+ * Swaps out a documented response schema wholesale, for the rare case where the
+ * live endpoint answers with a different shape entirely. The expected title of
+ * the documented inline schema is the staleness guard: when the docs stop
+ * declaring it, the entry throws instead of silently replacing a fixed schema.
+ */
+function replaceResponseSchema(
+  spec: JsonObject,
+  pathKey: string,
+  method: string,
+  status: string,
+  expectedTitle: string,
+  replacement: JsonObject,
+): void {
+  const context = `${method.toUpperCase()} ${pathKey} ${status} response`;
+  const content = getObject(
+    getObject(getObject(spec, 'paths'), pathKey, method),
+    'responses',
+    status,
+    'content',
+    'application/json',
+  );
+  const schema = content.schema;
+  if (!isJsonObject(schema) || schema.title !== expectedTitle) {
+    throw new Error(
+      `Stale deviation: ${context} no longer declares the '${expectedTitle}' schema — the docs may have been fixed; delete the entry.`,
+    );
+  }
+  content.schema = replacement;
+}
+
+/** Widens a documented plain-typed property to also accept null. */
+function makePropertyNullable(
+  spec: JsonObject,
+  schemaName: string,
+  property: string,
+): void {
+  const propertySchema = getObject(
+    componentSchema(spec, schemaName),
+    'properties',
+    property,
+  );
+  if (typeof propertySchema.type !== 'string') {
+    throw new Error(
+      `Stale deviation: ${schemaName}.${property} declares no plain type — the docs may already allow null; delete the entry.`,
+    );
+  }
+  propertySchema.type = [propertySchema.type, 'null'];
+}
+
+/** Repoints a component schema property's `$ref` at a forked component schema. */
+function repointComponentPropertyRef(
+  spec: JsonObject,
+  schemaName: string,
+  property: string,
+  forkName: string,
+): void {
+  const propertySchema = getObject(
+    componentSchema(spec, schemaName),
+    'properties',
+    property,
+  );
+  if (typeof propertySchema.$ref !== 'string') {
+    throw new Error(
+      `Stale deviation: ${schemaName}.${property} carries no $ref.`,
+    );
+  }
+  propertySchema.$ref = `#/components/schemas/${forkName}`;
+}
+
+/** Repoints a JSON response's direct schema `$ref` at a forked component schema. */
+function repointResponseRef(
+  spec: JsonObject,
+  pathKey: string,
+  method: string,
+  status: string,
+  forkName: string,
+): void {
+  const context = `${method.toUpperCase()} ${pathKey} ${status} response`;
+  const schema = getObject(
+    getObject(getObject(spec, 'paths'), pathKey, method),
+    'responses',
+    status,
+    'content',
+    'application/json',
+    'schema',
+  );
+  if (typeof schema.$ref !== 'string') {
+    throw new Error(`Stale deviation: ${context} carries no direct $ref.`);
+  }
+  schema.$ref = `#/components/schemas/${forkName}`;
 }
 
 /** Repoints a JSON response's array-items `$ref` at a forked component schema. */

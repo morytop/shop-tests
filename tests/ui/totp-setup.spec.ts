@@ -1,5 +1,5 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { testUser1 } from '@src/ui/test-data/user.data';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 

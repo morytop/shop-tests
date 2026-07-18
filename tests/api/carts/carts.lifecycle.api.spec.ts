@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * Carts are the one resource this suite may freely create: a cart is a throwaway

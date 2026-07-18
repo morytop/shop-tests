@@ -1,5 +1,5 @@
 import { ReportsRequest } from '@src/api/requests/reports.request';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * Read-only admin sweep at the API level, mirroring `tests/admin/*.spec.ts`. Every

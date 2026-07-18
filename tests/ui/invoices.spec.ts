@@ -1,6 +1,6 @@
 import { createInvoiceWithApi } from '@src/api/factories/invoice.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // User Stories v5 — Invoices (TEST_PLAN.md §5.17). Covers the three deterministic ACs:
 // AC1 the invoice appears in the list, AC2 the invoice detail page, AC3 a non-existent

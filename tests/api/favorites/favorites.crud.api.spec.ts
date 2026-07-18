@@ -1,5 +1,5 @@
 import { UNKNOWN_ID } from '@src/api/data/catalog.data';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * Favorites are per-user data, so every test here runs as the throwaway customer

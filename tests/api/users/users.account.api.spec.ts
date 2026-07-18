@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { getAuthorizationHeader } from '@src/api/factories/authorization-header.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { UsersRequest } from '@src/api/requests/users.request';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomPassword } from '@src/ui/factories/user.factory';
 
 /**

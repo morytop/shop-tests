@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // User Stories v5 — Chat widget (TEST_PLAN.md §5.21), covering the widget shell and the
 // "Find a product" flow. Both are guest-usable and read-only: nothing here touches an

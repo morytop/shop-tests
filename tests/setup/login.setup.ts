@@ -1,6 +1,6 @@
 import { SESSION_USER, STORAGE_STATE } from '@config/storage.config';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { test as setup } from '@src/merge.fixture';
+import { test as setup } from '@src/fixtures/merge.fixture';
 import * as fs from 'fs';
 import * as path from 'path';
 

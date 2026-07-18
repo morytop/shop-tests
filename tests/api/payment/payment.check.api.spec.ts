@@ -2,7 +2,7 @@ import {
   invalidPaymentCases,
   validPaymentCases,
 } from '@src/api/data/payment-methods';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * `POST /payment/check` is anonymous and stateless — nothing here needs a

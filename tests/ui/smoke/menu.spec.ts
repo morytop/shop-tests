@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 test.describe('Verify menu bookmarks @smoke', () => {
   // Links whose destination updates the document <title>.

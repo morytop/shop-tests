@@ -5,7 +5,7 @@ import {
   buildInvoicePayload,
   getGeocodedBillingAddress,
 } from '@src/api/factories/invoice.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * Invoices are the one write this suite makes that a human might later look at:

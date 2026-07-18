@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // User Stories v5 — Rentals (TEST_PLAN.md §5.4). AC1 listing, AC2 detail
 // duration slider, AC3 cart labelling. AC4 (location discount) is excluded —

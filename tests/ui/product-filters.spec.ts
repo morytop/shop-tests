@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { HomePage } from '@src/ui/pages/home.page';
 import { parsePrice } from '@src/ui/utils/price.util';
 import { isSorted, isSortedByString } from '@src/ui/utils/sort.util';

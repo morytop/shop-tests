@@ -1,5 +1,5 @@
 import { UNKNOWN_ID } from '@src/api/data/catalog.data';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // Every id here is resolved live from a list call: the catalog is shared production
 // data that concurrent runs mutate mid-session (§9/§26), so no product, brand or

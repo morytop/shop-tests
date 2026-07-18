@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { registerUserWithTotpEnabled } from '@src/api/factories/totp-user.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * Login, positive and negative.

@@ -1,7 +1,7 @@
 import { UNKNOWN_ID } from '@src/api/data/catalog.data';
 import { invalidCartItemCases } from '@src/api/data/invalid-cart-items';
 import { CartItemPayload } from '@src/api/models/cart.api.model';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 test.describe('API carts — rejections', () => {
   for (const invalidCase of invalidCartItemCases) {

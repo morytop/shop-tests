@@ -1,5 +1,5 @@
 import { UsersRequest } from '@src/api/requests/users.request';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * The authenticated session lifecycle: who am I, refresh, log out.

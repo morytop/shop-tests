@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // User Stories v5 — Admin dashboard (TEST_PLAN.md §5.20), smoke level only. One test per
 // admin section, asserting it loads for an admin and renders its own shell: the page

@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { parsePrice } from '@src/ui/utils/price.util';
 
 // User Stories v5 — Cart (TEST_PLAN.md §5.5), core subset AC1–AC5: columns,

@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { ContactPayload } from '@src/api/models/message.api.model';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * The contact form is anonymous by design, so nothing here needs a token — and

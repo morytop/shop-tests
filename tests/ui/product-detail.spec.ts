@@ -1,5 +1,5 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // User Stories v5 — Product Detail (TEST_PLAN.md §5.3), core subset:
 // display fields, quantity stepper + manual clamp, add-to-cart, out-of-stock,

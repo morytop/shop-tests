@@ -1,7 +1,7 @@
 import { APIResponse } from '@playwright/test';
 import { UserRegisterPayload } from '@src/api/models/user.api.model';
 import { UsersRequest } from '@src/api/requests/users.request';
-import { expect } from '@src/merge.fixture';
+import { expect } from '@src/fixtures/merge.fixture';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 
 // Remap the UI RegisterUser (the single source of random user data) to the API's

@@ -1,6 +1,6 @@
 import { CartsRequest } from '@src/api/requests/carts.request';
 import { ProductsRequest } from '@src/api/requests/products.request';
-import { expect } from '@src/merge.fixture';
+import { expect } from '@src/fixtures/merge.fixture';
 
 export interface CartWithProduct {
   cartId: string;

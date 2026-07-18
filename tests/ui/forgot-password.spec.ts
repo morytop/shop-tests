@@ -1,5 +1,5 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 

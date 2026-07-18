@@ -4,7 +4,7 @@ import {
 } from '@src/api/data/invalid-user-payloads';
 import { nonStandardUserCases } from '@src/api/data/non-standard-inputs';
 import { prepareRandomUserPayload } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * The register-validation table. Every case starts from a valid

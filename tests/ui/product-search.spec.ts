@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // TEST_PLAN.md §5.1 Product Overview / Home — search
 test.describe('Verify product overview / home — search', () => {

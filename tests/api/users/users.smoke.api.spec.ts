@@ -1,6 +1,6 @@
 import { getAuthorizationHeader } from '@src/api/factories/authorization-header.api.factory';
 import { prepareRandomUserPayload } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // Seed API spec: exercises the register + login endpoints the auth setup depends on,
 // proving the request objects, factories and auth-header helper wire up end to end.

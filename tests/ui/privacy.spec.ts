@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { privacySectionTitles } from '@src/ui/test-data/privacy.data';
 
 // User Stories v5 — Privacy policy (TEST_PLAN.md §5.24). The page is static prose, so the

@@ -1,5 +1,5 @@
 import { UNKNOWN_ID } from '@src/api/data/catalog.data';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 test.describe('API brands — reads', () => {
   test(

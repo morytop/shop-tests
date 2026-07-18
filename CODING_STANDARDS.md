@@ -284,11 +284,11 @@ test('should register new user', async ({ page }) => {
 
 ## Fixtures
 
-Fixtures inject ready-to-use objects into a test's arguments, so specs never write `new SomePage(page)` boilerplate or repeat setup. Specs import `{ expect, test }` from `@src/merge.fixture` (never `@playwright/test`) and destructure what they need.
+Fixtures inject ready-to-use objects into a test's arguments, so specs never write `new SomePage(page)` boilerplate or repeat setup. Specs import `{ expect, test }` from `@src/fixtures/merge.fixture` (never `@playwright/test`) and destructure what they need.
 
 ### How the fixtures are layered
 
-The project composes three fixture files into one `test` (`src/merge.fixture.ts` → `mergeTests(cartActionTest, requestObjectTest)`):
+The project composes three fixture files into one `test` (`src/fixtures/merge.fixture.ts` → `mergeTests(cartActionTest, requestObjectTest)`):
 
 - **Page-object fixtures** (`src/ui/fixtures/page-object.fixture.ts`) — one instance of each `*.page.ts` per test (`homePage`, `cartPage`, …). This is the default home for a new page object.
 - **Action fixtures** (`src/ui/fixtures/cart-action.fixture.ts`) — `cartActionTest` extends the page-object fixtures and adds a reusable cross-page _flow_ as a callable: `addProductToCart(index?, expectedBadgeCount?)`. Because it extends `pageObjectTest`, it re-exports every page object too.
@@ -321,4 +321,4 @@ Do **not** add a fixture for:
 - A pure, page-agnostic data transform — that's a util (`src/ui/utils/`) or a factory (`src/ui/factories/`), not a fixture.
 - Anything that would put an assertion in the fixture — fixtures follow the same no-`expect()` rule as Page Objects (API factories are the one sanctioned exception).
 
-After adding a fixture, expose it through the merge in `src/merge.fixture.ts` if it isn't already reachable, and give it a precise type on the `extend<...>()` generic so specs get autocomplete.
+After adding a fixture, expose it through the merge in `src/fixtures/merge.fixture.ts` if it isn't already reachable, and give it a precise type on the `extend<...>()` generic so specs get autocomplete.

@@ -1,6 +1,6 @@
 import { addFavoritesWithApi } from '@src/api/factories/favorite.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { truncate } from '@src/ui/utils/text.util';
 
 // User Stories v5 — Favorites (TEST_PLAN.md §5.16). The favorites page is entered via

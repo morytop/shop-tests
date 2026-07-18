@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { makeValidAddress } from '@src/ui/factories/address.factory';
 
 // User Stories v5 — End-to-end checkout (TEST_PLAN.md §5.9), the critical-path

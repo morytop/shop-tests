@@ -1,7 +1,7 @@
 import { getAuthorizationHeader } from '@src/api/factories/authorization-header.api.factory';
 import { registerUserWithTotpEnabled } from '@src/api/factories/totp-user.api.factory';
 import { TotpRequest } from '@src/api/requests/totp.request';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 
 /**

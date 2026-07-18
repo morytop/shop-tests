@@ -1,5 +1,5 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { parsePrice } from '@src/ui/utils/price.util';
 
 // User Stories v5 — Discounts (TEST_PLAN.md §5.22). Covers the one discount mechanism

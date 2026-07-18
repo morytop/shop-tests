@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { sendMessageWithApi } from '@src/api/factories/message.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomMessage } from '@src/ui/factories/contact.factory';
 import { CONTACT_SUBJECTS } from '@src/ui/test-data/contact.data';
 import { truncate } from '@src/ui/utils/text.util';

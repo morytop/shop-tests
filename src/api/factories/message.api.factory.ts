@@ -3,7 +3,7 @@ import { getAuthorizationHeader } from '@src/api/factories/authorization-header.
 import { LoginData } from '@src/api/models/login.api.model';
 import { ContactPayload } from '@src/api/models/message.api.model';
 import { MessagesRequest } from '@src/api/requests/messages.request';
-import { expect } from '@src/merge.fixture';
+import { expect } from '@src/fixtures/merge.fixture';
 
 /**
  * File a contact message under `credentials`' account, as an arrange step for

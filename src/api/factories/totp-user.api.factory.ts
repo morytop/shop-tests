@@ -7,7 +7,7 @@ import {
 } from '@src/api/models/totp.api.model';
 import { TotpRequest } from '@src/api/requests/totp.request';
 import { UsersRequest } from '@src/api/requests/users.request';
-import { expect } from '@src/merge.fixture';
+import { expect } from '@src/fixtures/merge.fixture';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 
 /**

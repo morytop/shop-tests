@@ -1,5 +1,5 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomProfileDetails } from '@src/ui/factories/user.factory';
 import { RequiredProfileField } from '@src/ui/models/user.model';
 import { REQUIRED_PROFILE_FIELD_ERRORS } from '@src/ui/test-data/user.data';

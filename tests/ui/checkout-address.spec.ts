@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { makeValidAddress } from '@src/ui/factories/address.factory';
 import { AddressTextField } from '@src/ui/models/address.model';
 import { ADDRESS_MAX_LENGTHS } from '@src/ui/test-data/address.data';

@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 import { languages } from '@src/ui/test-data/language.data';
 
 // User Stories v5 — Multi-language (TEST_PLAN.md §5.23). Covers the three automatable

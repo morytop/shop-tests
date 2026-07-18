@@ -2,7 +2,7 @@ import {
   INVALID_POSTCODE_FOR_COUNTRY,
   LOOKUP_ADDRESS,
 } from '@src/api/data/billing.data';
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 /**
  * `GET /postcode-lookup` is anonymous and read-only — the checkout billing

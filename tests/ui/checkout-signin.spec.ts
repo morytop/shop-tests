@@ -1,4 +1,4 @@
-import { expect, test } from '@src/merge.fixture';
+import { expect, test } from '@src/fixtures/merge.fixture';
 
 // User Stories v5 — Checkout Sign in step (TEST_PLAN.md §5.6), AC1 only: a guest
 // proceeding from the cart is shown a login form (email, password, submit) as part

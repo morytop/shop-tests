@@ -17,7 +17,7 @@ import { CartsRequest } from '@src/api/requests/carts.request';
 import { InvoicesRequest } from '@src/api/requests/invoices.request';
 import { PostcodeRequest } from '@src/api/requests/postcode.request';
 import { ProductsRequest } from '@src/api/requests/products.request';
-import { expect } from '@src/merge.fixture';
+import { expect } from '@src/fixtures/merge.fixture';
 
 /**
  * Build a billing address the invoice endpoint will accept, by geocoding one

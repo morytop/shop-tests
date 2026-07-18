@@ -38,7 +38,7 @@
   - They must **never** be used for destructive/mutating tests (password change, account edits, order placement) since they are shared across all test runs and other engineers/CI. Note `customer@` **is** `testUser1` (`USER_EMAIL`), so it is not a safe stand-in for "some logged-in user".
 - Products/categories/brands are treated as read-only fixture data owned by the app; assert on structural properties (e.g., "grid has products", "price format is $X.XX") rather than hard-coded names/prices/IDs. Where a specific product is required (out-of-stock, rental), select it dynamically and fetch its live link/ID immediately before use — the shared catalog is polluted and mutable (`PRODUCT_EXPLORATION.md` §1).
 - Tests must be independent and parallelizable (`fullyParallel: true`) — no shared mutable state, no assertions on absolute cart/favorites counts from a shared session.
-- Use tags (`@smoke`, `@regression`, `@checkout`, `@auth`, `@admin`, `@a11y`, plus feature tags) via Playwright's `tag` option.
+- Use tags (`@smoke`, `@regression`, `@checkout`, `@auth`, `@admin`, `@a11y`, `@api`, `@contract`, plus feature tags) via Playwright's `tag` option. `@contract` marks the API contract (schema-validation) specs under `tests/api/contract/`.
 
 > **Destructive flows** — forgot-password (instant reset), account lockout (permanent at 3 fails),
 > `/admin/settings` (app-wide config), and any account mutation (TOTP/order/password/profile/favorites/
@@ -335,6 +335,9 @@ doubles as the arrange path for UI specs (`registerUserWithApi`, `registerUserWi
 | Payment — check                        | `payment/payment.check.api.spec.ts`              | Per-method DDT (5 methods) valid + invalid, unrecognised-method and empty-payload gaps                                                                                                                       | ✅     |
 | Postcode lookup                        | `postcode/postcode-lookup.api.spec.ts`           | Geocode round-trip, housenumber-ignored gap, invalid-postcode 422, missing-params 422, unknown-country gap                                                                                                   | ✅     |
 | Admin reads (reports, users, messages) | `admin/admin.reads.api.spec.ts`                  | 7 reports return arrays, users list/search/by-id, messages list/by-id, anonymous 401 on all three                                                                                                            | ✅     |
+| Contract — anonymous reads             | `contract/contract.anonymous.api.spec.ts`        | Response bodies of the public catalog reads validated against strict Zod schemas generated from the live OpenAPI docs (`@contract`)                                                                          | ✅     |
+| Contract — docs freshness              | `contract/contract.freshness.api.spec.ts`        | Live docs hash vs the committed `src/api/schemas/spec.hash` — flags docs drift with the regeneration command                                                                                                 | ✅     |
+| Contract — authenticated endpoints     | —                                                | ⏭ Phase 2 of `.ai-docs/api-contract-validation-plan.md` (users/carts/favorites/invoices/messages)                                                                                                           | ⏭     |
 | Catalog writes with an admin token     | —                                                | ⛔ out of scope — the catalog is shared production data; writes are negative-only                                                                                                                            | —      |
 
 **Data rules (binding, see §3):** every id is resolved live from a list call — no hard-coded
@@ -356,6 +359,15 @@ read-only and only ever sent with the correct password (§20 lockout is permanen
 - **Never hard-code a password.** Both register and change-password reject passwords found in a
   breach corpus, so a literal is a time bomb that fails loudly and misleadingly once the string is
   leaked. Use `prepareRandomPassword()` (`PRODUCT_EXPLORATION.md` §6).
+
+**Contract layer** (`tests/api/contract/`, `@contract`): response schemas are generated — never
+hand-edited — from the live OpenAPI docs by `npm run generate:api-schemas` into
+`src/api/schemas/toolshop.zod.ts` (design in `.ai-docs/api-contract-validation-plan.md`). Known
+doc/behaviour mismatches are absorbed by overlay entries in `scripts/schema-deviations.ts`, each
+citing its `PRODUCT_EXPLORATION.md` §6 write-up. Triage rule for a red contract test: record the
+mismatch in `PRODUCT_EXPLORATION.md`, then either it is an API regression (leave it red / report it)
+or a stale doc (add an overlay entry). The freshness spec turns any docs deploy into a visible
+failure naming the regeneration command.
 
 The one deliberate coverage hole remains: whether a _valid_ anonymous `POST` to a catalog collection
 is rejected is **untested by design** — the API validates before it authenticates, so the only way to

@@ -16,6 +16,7 @@
     "warnOnUnsupportedTypeScriptVersion": false
   },
   "plugins": ["@typescript-eslint", "prettier"],
+  "ignorePatterns": ["src/api/schemas/toolshop.zod.ts"],
   "rules": {
     "@typescript-eslint/explicit-function-return-type": "error",
     "no-console": "warn",

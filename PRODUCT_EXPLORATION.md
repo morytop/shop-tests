@@ -463,6 +463,27 @@ password."` (a HaveIBeenPwned-style rule). **Any hard-coded password literal in 
   stored as null — those two fields only matter for anonymous submissions (§API-E). This is the
   association the messages UI relies on when a logged-in customer submits the contact form, and what
   makes `sendMessageWithApi()` a valid arrange for the per-user messages pages (Phase G).
+- **Brand objects nested in product reads never carry `slug` (contract suite).** The docs reuse the
+  full `BrandResponse` ref inside `ProductResponse`, but every product read (`/products`,
+  `/products/{id}`, `/products/search`, `/products/{id}/related`) serves the nested brand as a bare
+  `{id, name}`. Only the brand endpoints themselves (`/brands`, `/brands/{id}`, `/brands/search`)
+  serve `slug`. Absorbed by a `scripts/schema-deviations.ts` overlay entry (slug optional on the
+  shared ref).
+- **Category objects nested in product reads are trimmed differently per endpoint (contract
+  suite).** Against the documented full `CategoryResponse` ref: `/products` list rows serve
+  `{id, name, slug}`, `/products/{id}` serves `{id, name, slug, parent_id}`, and `/products/search` +
+  `/products/{id}/related` rows serve only `{id, name}`. `sub_categories` is never served on a
+  nested category. Absorbed by a `scripts/schema-deviations.ts` overlay entry (`slug`/`parent_id`/
+  `sub_categories` all optional on the shared ref).
+- **`GET /products/{id}` returns an undocumented `specs` key (contract suite)** — the single-product
+  read embeds the product's spec rows, absent from `ProductResponse` in the docs and from every other
+  product read. Absorbed by a `scripts/schema-deviations.ts` overlay entry (optional `specs` array,
+  item shape unconstrained since the docs offer none).
+- **`GET /products/{id}/related` rows omit `co2_rating` (contract suite)** — the only product read
+  that drops it, even though the docs point the response at the same `ProductResponse` ref and every
+  other product read serves the field. Absorbed by a `scripts/schema-deviations.ts` overlay entry
+  that forks the ref for this endpoint alone, so the field stays contractually required where it is
+  actually served.
 
 ---
 

@@ -484,6 +484,33 @@ password."` (a HaveIBeenPwned-style rule). **Any hard-coded password literal in 
   other product read serves the field. Absorbed by a `scripts/schema-deviations.ts` overlay entry
   that forks the ref for this endpoint alone, so the field stays contractually required where it is
   actually served.
+- **`GET /carts/{id}` serves an undocumented cart body beyond `id` (contract suite).** The docs'
+  `CartResponse` declares a bare `{id}`, but the live read adds `additional_discount_percentage`,
+  `lat`, `lng` and the `cart_items` rows (each embedding its product). Absorbed by a
+  `scripts/schema-deviations.ts` overlay entry (optional properties, shapes unconstrained since the
+  docs offer none).
+- **`POST /messages`' documented `{success: true}` ack is never served (contract suite)** — the
+  endpoint answers with the stored message row (§API-E above). Absorbed by an overlay entry
+  repointing the documented response at the `ContactResponse`/`ContactResponseAuthenticated` refs
+  the by-id read documents.
+- **User bodies are trimmed differently per endpoint (contract suite).** Against the documented full
+  `UserResponse` ref: neither `GET /users/me` nor the `POST /users/register` 201 body serves
+  `enabled`/`failed_login_attempts`, and register additionally omits `provider`/`totp_enabled` —
+  both of which `/users/me` does serve. Absorbed by overlay entries (a shared drop plus a
+  register-only fork of the ref).
+- **The product embedded in `GET /favorites` rows carries no `brand`/`category` (contract suite)** —
+  the docs nest the full `ProductResponse` ref, but the rows serve the product without either (its
+  `product_image`, by contrast, is the full image object). Absorbed by an overlay entry forking the
+  ref for favorites alone.
+- **Invoice reads drift from the documented `InvoiceResponse` in five ways (contract suite).**
+  Discount fields are null when no discount applies (`additional_discount_percentage`, and
+  `discount_percentage`/`discounted_price` on the lines); list rows serve neither `status_message`
+  nor `created_at` while the by-id read serves `status_message` as null; undocumented keys appear
+  (`payment` on list rows, `eco_discount_percentage`/`eco_discount_amount` on the by-id read); the
+  invoice-line product omits `description`, `is_location_offer`, `is_rental`, `brand` and
+  `category`; and on the by-id read that product's `product_image` is trimmed to
+  `{by_name, by_url, id}` while list rows embed the full image. All absorbed by overlay entries
+  (nullable/optional widenings plus invoice-only forks of the product and image refs).
 
 ---
 

@@ -4,6 +4,7 @@ import { registerUserWithApi } from '@src/api/factories/user-register.api.factor
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomMessage } from '@src/ui/factories/contact.factory';
 import { CONTACT_SUBJECTS } from '@src/ui/test-data/contact.data';
+import { DATE_TIME_REGEX } from '@src/ui/utils/date.util';
 import { truncate } from '@src/ui/utils/text.util';
 
 // User Stories v5 — Messages (TEST_PLAN.md §5.18). All three ACs: the submitted contact
@@ -26,8 +27,9 @@ test.describe('Verify messages', () => {
   // AC1 — the submitted message shows up in the list with its subject, the body truncated
   // at 50 chars by the app's `TruncatePipe`, a NEW status badge, and a date. The Subject
   // column renders the select's *value* (`warranty`), not its label ("Warranty") — §30.
-  // The NEW badge only holds until someone replies (a reply flips it to IN_PROGRESS), so
-  // this test must not post one.
+  // The row is keyed by its Subject cell and the remaining values are asserted as cells
+  // of that row, independent of column order. The NEW badge only holds until someone
+  // replies (a reply flips it to IN_PROGRESS), so this test must not post one.
   test(
     'submitted contact message appears in the message list',
     { tag: ['@auth', '@messages', '@regression'] },
@@ -57,15 +59,14 @@ test.describe('Verify messages', () => {
       await expect(messagesPage.pageTitle).toHaveText('Messages');
       await expect(messagesPage.messageRows).toHaveCount(1);
 
-      const row = messagesPage.messageRows.first();
-      await expect(row.getByRole('cell').nth(0)).toHaveText(subject);
-      await expect(row.getByRole('cell').nth(1)).toHaveText(
-        truncate(message, 50),
-      );
-      await expect(row.getByRole('cell').nth(2)).toHaveText('NEW');
-      await expect(row.getByRole('cell').nth(3)).toHaveText(
-        /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
-      );
+      await expect(messagesPage.messageRow(subject)).toBeVisible();
+      await expect(
+        messagesPage.messageRowCell(subject, truncate(message, 50)),
+      ).toBeVisible();
+      await expect(messagesPage.messageRowCell(subject, 'NEW')).toBeVisible();
+      await expect(
+        messagesPage.messageRowCell(subject, DATE_TIME_REGEX),
+      ).toBeVisible();
     },
   );
 
@@ -102,15 +103,13 @@ test.describe('Verify messages', () => {
       await accountPage.pageTitle.waitFor();
 
       await messagesPage.gotoAndAwaitLoaded();
-      await messagesPage.openDetails();
+      await messagesPage.openDetails(subject);
 
       await expect(messageDetailPage.messageHeader).toContainText(
         `Subject: ${subject}`,
       );
       await expect(messageDetailPage.messageBody).toHaveText(message);
-      await expect(messageDetailPage.messageDate).toHaveText(
-        /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
-      );
+      await expect(messageDetailPage.messageDate).toHaveText(DATE_TIME_REGEX);
 
       await messageDetailPage.sendReply(firstReply);
       await expect(messageDetailPage.replyCards).toHaveCount(1);
@@ -156,7 +155,7 @@ test.describe('Verify messages', () => {
       await accountPage.pageTitle.waitFor();
 
       await messagesPage.gotoAndAwaitLoaded();
-      await messagesPage.openDetails();
+      await messagesPage.openDetails(subject);
       await expect(messageDetailPage.statusBadge).toHaveText('NEW');
       await expect(messageDetailPage.replyCards).toHaveCount(0);
 

@@ -20,13 +20,27 @@ export class MessagesPage extends BasePage {
   readonly pageTitle: Locator;
   readonly messageTable: Locator;
   readonly messageRows: Locator;
+  readonly messageRow: (subject: string) => Locator;
+  readonly messageRowCell: (subject: string, text: string | RegExp) => Locator;
 
   constructor(page: Page) {
     super(page);
     this.pageTitle = this.page.getByTestId('page-title');
     this.messageTable = this.page.getByRole('table');
-    // Body rows only — `getByRole('row')` on the whole table includes the header row.
-    this.messageRows = this.messageTable.locator('tbody').getByRole('row');
+    // Body rows only — the header row self-excludes because its cells are
+    // `columnheader`s, not `cell`s.
+    this.messageRows = this.messageTable
+      .getByRole('row')
+      .filter({ has: this.page.getByRole('cell') });
+    // Keyed on an exact Subject-cell match: body cells are ≥50 chars (truncated to 53),
+    // so a subject value can never collide with another cell in the row.
+    this.messageRow = (subject: string): Locator =>
+      this.messageRows.filter({
+        has: this.page.getByRole('cell', { name: subject, exact: true }),
+      });
+    // `exact` pins string matches; Playwright ignores it for RegExp names.
+    this.messageRowCell = (subject: string, text: string | RegExp): Locator =>
+      this.messageRow(subject).getByRole('cell', { name: text, exact: true });
   }
 
   /**
@@ -40,9 +54,8 @@ export class MessagesPage extends BasePage {
     ]);
   }
 
-  async openDetails(index = 0): Promise<void> {
-    await this.messageRows
-      .nth(index)
+  async openDetails(subject: string): Promise<void> {
+    await this.messageRow(subject)
       .getByRole('link', { name: 'Details' })
       .click();
   }

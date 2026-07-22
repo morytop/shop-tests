@@ -153,6 +153,24 @@ await navbar.waitForCartQuantity('1');
 
 **Synchronizing without `expect()`:** a Page Object often needs to wait for state (an async write to land, an element to reach a value) before returning — but it must not use `expect()`. Wait with `locator.waitFor()`, narrowing to the target state with `.filter()` / `.and()` (as above) instead of an `expect(...).toHaveText(...)` poll. Assertions on that same state still belong in the spec.
 
+**4. No locator construction in spec files**
+
+- Specs never call `getByRole()` / `getByText()` / `getByTestId()` / `locator()` — not on `page`, and not chained off a Page Object property. Every locator is defined on a Page Object (parametrized if it needs a runtime value — see Locator Definition Strategy) and specs only _compose_ the exposed properties (`.first()`, `.nth()` for genuinely positional assertions, `expect` polls).
+- A locator built inline in a spec hides the element's identity from the Page Object that owns the page, gets duplicated across tests, and couples the spec to DOM details the Page Object exists to encapsulate.
+
+**Bad (spec builds its own cell locator, coupled to column order):**
+
+```typescript
+const row = messagesPage.messageRows.first();
+await expect(row.getByRole('cell').nth(2)).toHaveText('NEW');
+```
+
+**Good (the Page Object exposes a parametrized locator; the spec composes it):**
+
+```typescript
+await expect(messagesPage.messageRowCell(subject, 'NEW')).toBeVisible();
+```
+
 ### Basic Structure
 
 ```typescript
@@ -218,6 +236,20 @@ constructor(page: Page) {
 ```
 
 Spec files then compose these properties (e.g. `homePage.productCardNames.first()`) instead of writing raw `data-test` selector strings inline.
+
+When a locator needs a **runtime value** (a row keyed by its subject, a tab by its name), the sanctioned form is a value-parametrized locator property — still `readonly`, still assigned in the constructor; only ad hoc locator-building methods and getters are banned:
+
+```typescript
+readonly messageRow: (subject: string) => Locator;
+
+constructor(page: Page) {
+  super(page);
+  this.messageRow = (subject: string) =>
+    this.messageRows.filter({
+      has: this.page.getByRole('cell', { name: subject, exact: true }),
+    });
+}
+```
 
 ### Locator Selection Strategy
 

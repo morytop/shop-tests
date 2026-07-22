@@ -9,9 +9,11 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * render below it, oldest first.
  *
  * A customer can reply to their own thread with no admin involvement — the "Add Reply"
- * card is always present. It is a `bg-light` card just like a reply, so reply cards are
- * distinguished by *not* containing the form (TEST_PLAN.md §30). Posting a reply also
- * flips the thread's status from NEW to IN_PROGRESS.
+ * card is always present. None of the cards carry a role or `data-test`, so they are
+ * told apart by user-visible content: the original message is the card containing
+ * "Subject:", and a reply card is one that is neither the original nor the "Add Reply"
+ * form (it contains no textbox) — TEST_PLAN.md §30. Posting a reply also flips the
+ * thread's status from NEW to IN_PROGRESS.
  */
 export class MessageDetailPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.MESSAGES;
@@ -29,18 +31,30 @@ export class MessageDetailPage extends BasePage {
   constructor(page: Page) {
     super(page);
     const detailRoot = this.page.locator('app-message-detail');
-    this.messageCard = detailRoot.locator('div.card.bg-secondary');
-    this.messageHeader = this.messageCard.locator('div.card-header');
-    this.statusBadge = this.messageHeader.locator('span.badge');
-    this.messageBody = this.messageCard.locator('p.card-text');
-    this.messageDate = this.messageCard.locator('div.card-footer');
+    this.messageCard = detailRoot
+      .locator('.card')
+      .filter({ hasText: 'Subject:' });
+    // The header's text node lives directly in the `card-header` div, so the text
+    // engine resolves to it — no structural selector needed.
+    this.messageHeader = this.messageCard.getByText('Subject:');
+    this.statusBadge = this.messageHeader.getByText(
+      /^(NEW|IN_PROGRESS|RESOLVED)$/,
+    );
+    this.messageBody = this.messageCard.getByRole('paragraph');
+    // No role/label exists for the footer, and locating it by the date text it holds
+    // would make the spec's date-format assertion tautological.
+    this.messageDate = this.messageCard.locator('.card-footer');
+    // Inner `filter()` locators must be page-rooted — one chained off `detailRoot`
+    // would be re-evaluated inside each card and never match.
     this.replyCards = detailRoot
-      .locator('div.card.bg-light')
-      .filter({ hasNot: this.page.locator('form') });
-    this.replyHeaders = this.replyCards.locator('div.card-header');
-    this.replyBodies = this.replyCards.locator('p.card-text');
+      .locator('.card')
+      .filter({ hasNotText: 'Subject:' })
+      .filter({ hasNot: this.page.getByRole('textbox') });
+    this.replyHeaders = this.replyCards.locator('.card-header');
+    this.replyBodies = this.replyCards.getByRole('paragraph');
+    // The textarea has no <label>, so `getByLabel` can't reach it — test-id fallback.
     this.replyInput = detailRoot.getByTestId('message');
-    this.replySubmitButton = detailRoot.getByTestId('reply-submit');
+    this.replySubmitButton = detailRoot.getByRole('button', { name: 'Reply' });
   }
 
   /**

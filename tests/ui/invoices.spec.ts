@@ -1,6 +1,7 @@
 import { createInvoiceWithApi } from '@src/api/factories/invoice.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { DATE_TIME_REGEX } from '@src/ui/utils/date.util';
 
 // User Stories v5 — Invoices (TEST_PLAN.md §5.17). Covers the three deterministic ACs:
 // AC1 the invoice appears in the list, AC2 the invoice detail page, AC3 a non-existent
@@ -49,9 +50,7 @@ test.describe('Verify invoices', () => {
         order.invoiceNumber,
       );
       await expect(row.getByRole('cell').nth(1)).not.toBeEmpty();
-      await expect(row.getByRole('cell').nth(2)).toHaveText(
-        /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
-      );
+      await expect(row.getByRole('cell').nth(2)).toHaveText(DATE_TIME_REGEX);
       await expect(row.getByRole('cell').nth(3)).toHaveText(order.total);
     },
   );
@@ -90,9 +89,7 @@ test.describe('Verify invoices', () => {
       await expect(invoiceDetailPage.invoiceNumber).toHaveValue(
         order.invoiceNumber,
       );
-      await expect(invoiceDetailPage.invoiceDate).toHaveValue(
-        /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
-      );
+      await expect(invoiceDetailPage.invoiceDate).toHaveValue(DATE_TIME_REGEX);
       await expect(invoiceDetailPage.total).toHaveValue(`$ ${amount}`);
 
       // The street is asserted present-but-not-pinned, like the list column: the

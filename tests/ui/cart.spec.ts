@@ -1,4 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { USD_PRICE_REGEX } from '@src/ui/constants/formats';
 import { parsePrice } from '@src/ui/utils/price.util';
 
 // User Stories v5 — Cart (TEST_PLAN.md §5.5), core subset AC1–AC5: columns,
@@ -30,8 +31,8 @@ test.describe('Verify cart', () => {
       await expect(cartPage.productTitles).toHaveCount(1);
       await expect(cartPage.productTitles.first()).not.toBeEmpty();
       await expect(cartPage.quantityInputs.first()).toHaveValue('1');
-      await expect(cartPage.productPrices.first()).toHaveText(/^\$\d+\.\d{2}$/);
-      await expect(cartPage.linePrices.first()).toHaveText(/^\$\d+\.\d{2}$/);
+      await expect(cartPage.productPrices.first()).toHaveText(USD_PRICE_REGEX);
+      await expect(cartPage.linePrices.first()).toHaveText(USD_PRICE_REGEX);
       await expect(cartPage.deleteButtons).toHaveCount(1);
     },
   );

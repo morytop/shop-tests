@@ -1,5 +1,6 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { TOTP_SECRET_REGEX } from '@src/ui/constants/formats';
 import { testUser1 } from '@src/ui/test-data/user.data';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 
@@ -35,8 +36,8 @@ test.describe('Verify TOTP setup @totp', () => {
 
       await expect(profilePage.totpHeading).toBeVisible();
       await expect(profilePage.totpQrCode).toBeVisible();
-      // google2fa mints 16 base32 characters; assert the shape, not a fixed value.
-      await expect(profilePage.totpSecret).toHaveText(/^[A-Z2-7]{16}$/);
+      // Assert the shape, not a fixed value — see TOTP_SECRET_REGEX.
+      await expect(profilePage.totpSecret).toHaveText(TOTP_SECRET_REGEX);
       await expect(profilePage.totpForm.codeInput).toBeVisible();
       await expect(profilePage.totpForm.verifyButton).toBeVisible();
     },

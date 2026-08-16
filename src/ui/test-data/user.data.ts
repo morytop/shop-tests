@@ -27,20 +27,26 @@ export const adminUser: LoginUser = {
 };
 
 /**
- * The error the profile form shows for each blanked required field. The copy comes
- * from the API's 422 response, hence the dotted `address.*` payload paths rather
- * than the form's own field labels (TEST_PLAN.md §24).
+ * The required profile fields (blanking any one blocks the save). Phone, postal code
+ * and state are optional — blanking them saves fine (TEST_PLAN.md §24).
  */
-export const REQUIRED_PROFILE_FIELD_ERRORS: Record<
-  RequiredProfileField,
-  string
-> = {
-  firstName: 'The first name field is required.',
-  lastName: 'The last name field is required.',
-  street: 'The address.street field is required.',
-  city: 'The address.city field is required.',
-  country: 'The address.country field is required.',
-};
+export const PROFILE_REQUIRED_FIELDS: RequiredProfileField[] = [
+  'firstName',
+  'lastName',
+  'street',
+  'city',
+  'country',
+];
+
+/**
+ * The single banner the profile form now shows for any blanked required field. The
+ * form validates client-side and raises one generic message rather than surfacing the
+ * API's per-field 422 copy ("The first name field is required." etc.) it used to
+ * (PRODUCT_EXPLORATION.md §24) — the offending field is identified only by its
+ * `ng-invalid` highlighting, not by the banner text.
+ */
+export const PROFILE_VALIDATION_ERROR =
+  'Please correct the highlighted fields before saving.';
 
 /**
  * The three ways the change-password form can be rejected. All are enforced

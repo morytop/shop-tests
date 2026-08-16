@@ -2,7 +2,10 @@ import { registerUserWithApi } from '@src/api/factories/user-register.api.factor
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomProfileDetails } from '@src/ui/factories/user.factory';
 import { RequiredProfileField } from '@src/ui/models/user.model';
-import { REQUIRED_PROFILE_FIELD_ERRORS } from '@src/ui/test-data/user.data';
+import {
+  PROFILE_REQUIRED_FIELDS,
+  PROFILE_VALIDATION_ERROR,
+} from '@src/ui/test-data/user.data';
 
 // User Stories v5 — Customer profile (TEST_PLAN.md §5.14). The form on
 // `/account/profile` is populated by an async `GET /users/me`, so every test gates on
@@ -118,13 +121,13 @@ test.describe('Verify customer profile', () => {
     },
   );
 
-  // AC4 — one test per required field. Unlike the billing step (§16), the submit button
-  // stays enabled and the `PUT` is fired: the save is prevented server-side (422) and
-  // the message surfaces in the form's `.alert-danger`. Only these five fields are
-  // required — phone, postal code and state save fine when blank (§24).
-  for (const field of Object.keys(
-    REQUIRED_PROFILE_FIELD_ERRORS,
-  ) as RequiredProfileField[]) {
+  // AC4 — one test per required field. The submit button stays enabled, but the save is
+  // now blocked with a single generic banner ("Please correct the highlighted fields
+  // before saving.") rather than the per-field API 422 copy it used to show (§24) — so
+  // the blanked field is identified by its `ng-invalid` highlighting, not the banner
+  // text. Only these five fields are required — phone, postal code and state save fine
+  // when blank (§24).
+  for (const field of PROFILE_REQUIRED_FIELDS) {
     test(
       `reject saving the profile with a blank ${field}`,
       { tag: ['@auth', '@profile', '@regression'] },
@@ -148,7 +151,7 @@ test.describe('Verify customer profile', () => {
         await profilePage.submitProfile();
 
         await expect(profilePage.profileError).toContainText(
-          REQUIRED_PROFILE_FIELD_ERRORS[field],
+          PROFILE_VALIDATION_ERROR,
         );
         await expect(profilePage.profileSuccess).toHaveCount(0);
         await expect(profilePage.profileFields[field]).toHaveClass(

@@ -59,7 +59,7 @@ export class CheckoutPaymentPage extends BasePage {
     super(page);
     this.heading = this.page.getByRole('heading', { name: 'Payment' });
     this.paymentMethodSelect = this.page.getByTestId('payment-method');
-    this.paymentMethodOptions = this.paymentMethodSelect.locator('option');
+    this.paymentMethodOptions = this.paymentMethodSelect.getByRole('option');
     this.finishButton = this.page.getByTestId('finish');
 
     this.bankNameInput = this.page.getByTestId('bank_name');
@@ -112,7 +112,7 @@ export class CheckoutPaymentPage extends BasePage {
       'monthly_installments',
     );
     this.monthlyInstallmentsOptions =
-      this.monthlyInstallmentsSelect.locator('option');
+      this.monthlyInstallmentsSelect.getByRole('option');
 
     this.paymentSuccessMessage = this.page.getByTestId(
       'payment-success-message',

@@ -246,9 +246,16 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
   `"Invalid TOTP"` (bare, no `Error:` prefix). The login prompt **survives** an invalid code and is
   retryable — the opposite of the setup form's teardown bug (§22).
 - **Only 5 of 8 editable profile fields are required (§24):** phone, postal_code and state save fine
-  when blank. Profile validation is **server-side** and the error copy leaks API payload paths
-  (`The address.street field is required.` etc.). `country` is a free-text `<input>` here (unlike the
-  billing `<select>`), and `dob`/`house_number` are absent from the profile form.
+  when blank. `country` is a free-text `<input>` here (unlike the billing `<select>`), and
+  `dob`/`house_number` are absent from the profile form.
+- **Profile required-field validation is now a single generic client-side banner (§24).** As of the
+  app build observed 2026-08-16 (v2.4, built 2026-08-14), blanking any required field and saving
+  raises one form-level `.alert-danger` (`role="alert"`) reading **"Please correct the highlighted
+  fields before saving."** — the offending field is identified only by its `ng-invalid` highlighting.
+  This **replaces** the earlier per-field API 422 copy that leaked payload paths (`The first name
+field is required.`, `The address.street field is required.`, etc.), which is now stale — the
+  `REQUIRED_PROFILE_FIELD_ERRORS` map was accordingly swapped for `PROFILE_REQUIRED_FIELDS` +
+  `PROFILE_VALIDATION_ERROR` in `user.data.ts`.
 - **Profile success is an inline `.alert-success` (detached after ~5.4s), not a toast (§24).**
 
 ### Favorites / detail

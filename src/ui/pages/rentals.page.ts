@@ -24,9 +24,9 @@ export class RentalsPage extends BasePage {
       exact: true,
     });
     this.rentalCards = this.page.locator('[data-test^="product-"]');
-    this.rentalCardImages = this.rentalCards.locator('img');
+    this.rentalCardImages = this.rentalCards.getByRole('img');
     this.rentalCardNames = this.rentalCards.getByRole('heading', { level: 5 });
-    this.rentalCardDescriptions = this.rentalCards.locator('p.card-text');
+    this.rentalCardDescriptions = this.rentalCards.getByRole('paragraph');
   }
 
   async clickRentalCard(index: number): Promise<void> {

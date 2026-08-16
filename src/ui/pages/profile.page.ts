@@ -6,9 +6,9 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
 
 /**
- * Shared by the `firstNameInput` locator and the `waitForProfileLoaded()` gate.
- * Stays raw CSS (not `getByTestId`): the gate feeds it to `document.querySelector`
- * inside `waitForFunction`, which only takes a selector string.
+ * Raw selector for the `waitForProfileLoaded()` gate, which feeds it to
+ * `document.querySelector` inside `waitForFunction` (that only takes a selector
+ * string, so it can't reuse the `getByTestId` locator).
  */
 const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
 
@@ -84,7 +84,7 @@ export class ProfilePage extends BasePage {
     this.totpError = this.page.getByTestId('totp-error');
     this.totpSuccess = this.page.getByTestId('totp-success');
     this.pageTitle = this.page.getByTestId('page-title');
-    this.firstNameInput = this.page.locator(FIRST_NAME_SELECTOR);
+    this.firstNameInput = this.page.getByTestId('first-name');
     this.lastNameInput = this.page.getByTestId('last-name');
     this.emailInput = this.page.getByTestId('email');
     this.phoneInput = this.page.getByTestId('phone');
@@ -110,8 +110,12 @@ export class ProfilePage extends BasePage {
     this.profileForm = this.page
       .locator('form')
       .filter({ has: this.updateProfileButton });
-    this.profileSuccess = this.profileForm.locator('.alert-success');
-    this.profileError = this.profileForm.locator('.alert-danger');
+    this.profileSuccess = this.profileForm
+      .getByRole('alert')
+      .and(this.page.locator('.alert-success'));
+    this.profileError = this.profileForm
+      .getByRole('alert')
+      .and(this.page.locator('.alert-danger'));
 
     this.currentPasswordInput = this.page.getByTestId('current-password');
     this.newPasswordInput = this.page.getByTestId('new-password');
@@ -120,8 +124,12 @@ export class ProfilePage extends BasePage {
     this.passwordForm = this.page
       .locator('form')
       .filter({ has: this.changePasswordButton });
-    this.passwordSuccess = this.passwordForm.locator('.alert-success');
-    this.passwordError = this.passwordForm.locator('.alert-danger');
+    this.passwordSuccess = this.passwordForm
+      .getByRole('alert')
+      .and(this.page.locator('.alert-success'));
+    this.passwordError = this.passwordForm
+      .getByRole('alert')
+      .and(this.page.locator('.alert-danger'));
     this.passwordStrength = new PasswordStrengthComponent(this.passwordForm);
   }
 

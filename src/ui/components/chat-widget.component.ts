@@ -39,7 +39,8 @@ export class ChatWidgetComponent {
     // The toggle is swapped out for the window while open, so the two are never both present.
     this.window = this.page.getByTestId('chat-window');
     this.closeButton = this.page.getByTestId('chat-close');
-    this.title = this.window.locator('.chat-title');
+    // The title is a bare <span> (no heading role), so it is matched by its visible copy.
+    this.title = this.window.getByText('Chat Assistant');
     // Message bubbles carry no data-test; bot and user turns differ only by class.
     this.botMessages = this.window.locator('.chat-message.bot-message');
     // The greeting's four options. Scoped to the first bot message because "Back to menu"
@@ -64,7 +65,7 @@ export class ChatWidgetComponent {
     this.productCards = this.page.getByTestId('chat-product');
     this.productCardNames = this.productCards.locator('.product-name');
     this.productCardPrices = this.productCards.locator('.product-price');
-    this.productCardImages = this.productCards.locator('img.product-image');
+    this.productCardImages = this.productCards.getByRole('img');
     this.noProductsFoundMessage = this.window.getByText(
       'No products found. Try a different search.',
     );

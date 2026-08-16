@@ -35,6 +35,7 @@ export abstract class ProductListPage extends BasePage {
   readonly topLevelCategoryCheckboxes: Locator;
   readonly childCategoryCheckboxes: Locator;
   readonly checkedChildCategoryCheckboxes: Locator;
+  readonly brandsGroup: Locator;
   readonly brandCheckboxes: Locator;
   readonly sortSelect: Locator;
   readonly priceRangeMinHandle: Locator;
@@ -43,7 +44,7 @@ export abstract class ProductListPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.productCards = this.page.locator('a.card[data-test^="product-"]');
-    this.productCardImages = this.productCards.locator('img');
+    this.productCardImages = this.productCards.getByRole('img');
     this.productCardNames = this.productCards.getByTestId('product-name');
     this.productCardPrices = this.productCards.getByTestId('product-price');
     this.outOfStockLabelSelector = this.page.getByTestId('out-of-stock');
@@ -82,7 +83,10 @@ export abstract class ProductListPage extends BasePage {
     this.checkedChildCategoryCheckboxes = this.childCategoryCheckboxes.and(
       this.page.locator(':checked'),
     );
-    this.brandCheckboxes = this.page.locator('[data-test^="brand-"]');
+    this.brandsGroup = this.page
+      .getByRole('group', { name: 'Brands', exact: true })
+      .first();
+    this.brandCheckboxes = this.brandsGroup.getByRole('checkbox');
     this.sortSelect = this.page.getByTestId('sort');
     this.priceRangeMinHandle = this.page.getByRole('slider', {
       name: 'ngx-slider',

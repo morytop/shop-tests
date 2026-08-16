@@ -38,7 +38,7 @@ export class FavoritesPage extends BasePage {
     this.favoriteCards = favoritesRoot.locator(
       'div.card[data-test^="favorite-"]',
     );
-    this.favoriteImages = this.favoriteCards.locator('img.card-img');
+    this.favoriteImages = this.favoriteCards.getByRole('img');
     this.favoriteNames = this.favoriteCards.getByTestId('product-name');
     this.favoriteDescriptions = this.favoriteCards.getByTestId(
       'product-description',

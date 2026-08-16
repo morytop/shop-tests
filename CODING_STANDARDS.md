@@ -225,17 +225,24 @@ get outOfStockLabel(): Locator {
 }
 ```
 
-**Good (locator chained from a property, defined once in the constructor):**
+**Good (user-facing parent obtained by role, child scoped off it by role):**
 
 ```typescript
 constructor(page: Page) {
   super(page);
-  this.productCards = this.page.locator('a.card[data-test^="product-"]');
-  this.productCardNames = this.productCards.locator('[data-test="product-name"]');
+  this.cartTable = this.page.getByRole('table');
+  this.columnHeaders = this.cartTable.getByRole('columnheader');
 }
 ```
 
-Spec files then compose these properties (e.g. `homePage.productCardNames.first()`) instead of writing raw `data-test` selector strings inline.
+The parent collection is obtained with a user-facing locator (`getByRole('table')`),
+and the scoped child is chained off that property with another user-facing locator
+(`getByRole('columnheader')`) — no raw CSS selector strings, and nothing built on
+demand in a method. When a card/row child has no usable role or label, fall back to
+`getByTestId` chained off the same parent (as `favoriteCards.getByTestId('product-name')`
+does in `favorites.page.ts`) rather than a raw `[data-test="…"]` string. Spec files
+then compose these properties (e.g. `cartPage.columnHeaders.first()`) instead of
+writing selector strings inline.
 
 When a locator needs a **runtime value** (a row keyed by its subject, a tab by its name), the sanctioned form is a value-parametrized locator property — still `readonly`, still assigned in the constructor; only ad hoc locator-building methods and getters are banned:
 

@@ -52,17 +52,19 @@ export class RegisterPage extends BasePage {
     this.passwordInput = this.page.getByTestId('password');
     this.registerButton = this.page.getByTestId('register-submit');
     this.registerError = this.page.getByTestId('register-error');
-    this.passwordRequirements = this.page.locator('#passwordHelp li');
-    this.reqLength = this.page.locator('#passwordHelp li', {
+    this.passwordRequirements = this.page
+      .locator('#passwordHelp')
+      .getByRole('listitem');
+    this.reqLength = this.passwordRequirements.filter({
       hasText: '8 characters',
     });
-    this.reqMixedCase = this.page.locator('#passwordHelp li', {
+    this.reqMixedCase = this.passwordRequirements.filter({
       hasText: 'uppercase and lowercase',
     });
-    this.reqNumber = this.page.locator('#passwordHelp li', {
+    this.reqNumber = this.passwordRequirements.filter({
       hasText: 'at least one number',
     });
-    this.reqSymbol = this.page.locator('#passwordHelp li', {
+    this.reqSymbol = this.passwordRequirements.filter({
       hasText: 'special symbol',
     });
     this.passwordStrength = new PasswordStrengthComponent(page);

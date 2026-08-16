@@ -2,6 +2,7 @@ import { registerUserWithApi } from '@src/api/factories/user-register.api.factor
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
+import { INVALID_EMAILS } from '@src/ui/test-data/email.data';
 
 // User Stories v5 — Forgot password (TEST_PLAN.md §5.12). The form is one Angular
 // reactive form whose error block is submit-gated (`@if (email.invalid && submitted)`),
@@ -13,9 +14,6 @@ import { prepareRandomUser } from '@src/ui/factories/user.factory';
 // it overwrites that account's password on the spot. AC3 therefore runs against a
 // throwaway API-registered user and never `testUser1` or the shared seeded accounts
 // (§3). See TEST_PLAN.md §21 and .ai-docs/forgot-password-plan.md.
-
-// RFC-format boundary cases rejected by the email pattern validator.
-const INVALID_EMAILS = ['plainaddress', 'foo@', '@example.com'];
 
 test.describe('Verify forgot password @forgot-password', () => {
   // AC1 — the form is reachable from the login page and exposes an email field.

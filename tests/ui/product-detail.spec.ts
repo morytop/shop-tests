@@ -1,5 +1,6 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { BARE_PRICE_REGEX } from '@src/ui/constants/formats';
 
 // User Stories v5 — Product Detail (TEST_PLAN.md §5.3), core subset:
 // display fields, quantity stepper + manual clamp, add-to-cart, out-of-stock,
@@ -30,7 +31,8 @@ test.describe('Verify product detail', () => {
 
       await expect(productDetailPage.productImage).toBeVisible();
       await expect(productDetailPage.productName).not.toBeEmpty();
-      await expect(productDetailPage.productPrice).toHaveText(/^\d+\.\d{2}$/);
+      // Bare price, no `$` — see BARE_PRICE_REGEX (per-surface discrepancy).
+      await expect(productDetailPage.productPrice).toHaveText(BARE_PRICE_REGEX);
       await expect(productDetailPage.productDescription).not.toBeEmpty();
       await expect(productDetailPage.categoryBadge).not.toBeEmpty();
       await expect(productDetailPage.brandBadge).not.toBeEmpty();

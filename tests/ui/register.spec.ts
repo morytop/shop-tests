@@ -1,6 +1,8 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
+import { INVALID_EMAILS, VALID_EMAILS } from '@src/ui/test-data/email.data';
+import { REQUIRED_FIELD_ERRORS } from '@src/ui/test-data/register.data';
 
 // User Stories v5 — Registration (TEST_PLAN.md §5.10). The register form is one
 // Angular reactive form built with `updateOn: 'blur'`, so validators, the inline
@@ -11,27 +13,6 @@ import { prepareRandomUser } from '@src/ui/factories/user.factory';
 // the live site and the sprint5 source; see TEST_PLAN.md §19 for the confirmed
 // production discrepancies (broken strength meter, duplicate-email copy). Users are
 // generated per-test with faker (§3); see .ai-docs/register-validation-plan.md.
-
-// Required fields keyed by their `data-test` id → the message shown on empty submit.
-const REQUIRED_FIELD_ERRORS: Record<string, string> = {
-  'first-name': 'First name is required',
-  'last-name': 'Last name is required',
-  dob: 'Date of Birth is required',
-  country: 'Country is required',
-  postal_code: 'Postcode is required',
-  house_number: 'House number is required',
-  street: 'Street is required',
-  city: 'City is required',
-  state: 'State is required',
-  phone: 'Phone is required.',
-  email: 'Email is required',
-  password: 'Password is required',
-};
-
-// RFC-format boundary cases rejected by the email pattern validator.
-const INVALID_EMAILS = ['plainaddress', 'foo@', '@example.com'];
-// Valid edge cases the pattern accepts.
-const VALID_EMAILS = ['a@b.co', 'first.last+tag@sub.example.com'];
 
 test.describe('Verify register @register', () => {
   test('register with correct data and login', async ({

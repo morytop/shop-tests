@@ -1,4 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { USD_PRICE_REGEX } from '@src/ui/constants/formats';
 
 test.describe('Verify product overview / home', () => {
   test(
@@ -14,7 +15,7 @@ test.describe('Verify product overview / home', () => {
       await expect(homePage.productCardImages.first()).toBeVisible();
       await expect(homePage.productCardNames.first()).not.toBeEmpty();
       await expect(homePage.productCardPrices.first()).toHaveText(
-        /^\$\d+\.\d{2}$/,
+        USD_PRICE_REGEX,
       );
     },
   );

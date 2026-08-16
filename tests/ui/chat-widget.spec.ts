@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { USD_PRICE_REGEX } from '@src/ui/constants/formats';
 
 // User Stories v5 — Chat widget (TEST_PLAN.md §5.21), covering the widget shell and the
 // "Find a product" flow. Both are guest-usable and read-only: nothing here touches an
@@ -84,7 +85,7 @@ test.describe('Verify chat widget', () => {
       expect(resultCount).toBeLessThanOrEqual(5);
       await expect(chatWidget.productCardNames).toContainText([productName]);
       await expect(chatWidget.productCardPrices.first()).toHaveText(
-        /^\$\d+\.\d{2}$/,
+        USD_PRICE_REGEX,
       );
       await expect(chatWidget.productCardImages.first()).toBeVisible();
     },

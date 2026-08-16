@@ -2,6 +2,7 @@ import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { PasswordStrengthComponent } from '@src/ui/components/password-strength.component';
 import { TotpFormComponent } from '@src/ui/components/totp-form.component';
+import { TOTP_SECRET_REGEX } from '@src/ui/constants/formats';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
 
@@ -78,7 +79,7 @@ export class ProfilePage extends BasePage {
     this.totpQrCode = this.page.locator('qrcode canvas');
     this.totpSecret = this.page.getByTestId('totp-secret');
     this.populatedTotpSecret = this.totpSecret.filter({
-      hasText: /^[A-Z2-7]{16}$/,
+      hasText: TOTP_SECRET_REGEX,
     });
     this.totpForm = new TotpFormComponent(page);
     this.totpError = this.page.getByTestId('totp-error');

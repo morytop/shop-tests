@@ -93,6 +93,45 @@ test('should register new user', async ({ page }) => {
 });
 ```
 
+## Assertions
+
+Prefer **web-first (auto-retrying) assertions** — `await expect(locator).…` / `await expect(page).…` — over reading a value out of the page and asserting on the snapshot. A web-first assertion retries until the page settles or the timeout expires (see https://playwright.dev/docs/test-assertions); a bare `expect(value)` asserts a single read that can race the render.
+
+### Guidelines
+
+**✅ DO:**
+
+- Assert on locators: `toBeVisible()`, `toHaveText()`, `toHaveValue()`, `toHaveCount()`, `toHaveURL()`
+- Express counts as locator assertions: "at least one" is `expect(items.first()).toBeVisible()`; "none" is `expect(items).toHaveCount(0)`; "at most N" is `expect(items.nth(N)).toHaveCount(0)` (no N+1th element)
+- Express "every item matches X" as a filtered locator: `expect(items.filter({ hasNot: matching })).toHaveCount(0)` — the negation retries as the grid re-renders
+- Use `toHaveURL(PAGE_URLS.X)` with the plain path string for static routes — `toHaveURL` resolves it against `baseURL` and matches exactly, no regex needed; a regex is only for URLs with a dynamic segment, and then it is a **named, commented constant**, never an inline literal
+- Assert text formats against **named regex constants** (`USD_PRICE_REGEX`, `TOTP_SECRET_REGEX`, …) whose comment says what the format is and which surface renders it
+- When a bare `expect(value)` is genuinely required, pass a message so the failure explains itself: `expect(found, 'no in-stock product found across pages').toBe(true)`
+
+**❌ DON'T:**
+
+- Read `count()` / `allTextContents()` / `innerText()` and assert on the result when a locator assertion can express the same check — the read races the render and does not retry
+- Write inline anonymous regexes in assertions (`toHaveText(/^\$\d+\.\d{2}$/)`) — the reader can't tell what is being checked
+- Override an assertion timeout with a bare number — if headroom beyond the global `expect.timeout` is really needed, use a named constant whose comment explains the app-side timer it accommodates (and never add an override at or below the global value; it is a no-op)
+
+### When a bare `expect(value)` is acceptable
+
+Some checks have no locator form. These stay bare `expect()` calls — always with a descriptive message:
+
+- **Snapshot comparisons**: two reads taken at different times (`expect(page2Names).not.toEqual(page1Names)`). The reads themselves must be synchronized (the triggering Page Object action awaits the refetch) so the compare is deterministic.
+- **Arithmetic over values read once** (`expect(total).toBeCloseTo(subtotal - discount, 2)`): re-reading would not change the numbers; retrying is meaningless.
+- **Return values of Page Object helpers with a non-locator contract** (a multi-page walk returning `boolean`, an awaited response status).
+
+### `expect.poll` is a last resort
+
+Reach for `expect.poll` only when the condition is dynamic **and** has no locator formulation — in this suite that means numeric ordering and numeric bounds over the grid ("prices are sorted", "all prices ≤ max"). Even then:
+
+- Wrap it in a **named assertion util** (`src/ui/utils/` — the `expectToMatchSchema()` pattern: an assertion helper in utils is legitimate because it _is_ the assertion), so specs read intent, not mechanics.
+- Guard against vacuous truth: an empty list is trivially "sorted", so the poll body must require a non-empty read.
+- Pass a `message` — a bare poll fails with only "expected true, received false".
+
+Before writing a poll, check whether the race it absorbs is really a missing sync in the Page Object (an action that doesn't await its API refetch). Fix the sync there instead — see "Synchronizing without `expect()`" below.
+
 ## Page Object Pattern
 
 ### Essential Rules

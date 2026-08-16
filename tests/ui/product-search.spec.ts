@@ -45,7 +45,9 @@ test.describe('Verify product overview / home — search', () => {
       await expect(homePage.productCards.first()).toBeVisible();
       const namesBeforeSearch = await homePage.getProductNames();
 
-      await homePage.search('e');
+      // submitSearch, not search: the app rejects the query client-side and
+      // never fires the request search() would await.
+      await homePage.submitSearch('e');
 
       await expect(homePage.searchInput).toHaveClass(/ng-invalid/);
       const namesAfterSearch = await homePage.getProductNames();

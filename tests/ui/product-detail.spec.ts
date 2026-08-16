@@ -153,7 +153,7 @@ test.describe('Verify product detail', () => {
       await homePage.goto();
       await homePage.clickProductCard(0);
 
-      const status = await productDetailPage.addToFavoritesAndAwaitResponse();
+      const status = await productDetailPage.addToFavorites();
 
       expect(status).toBe(201);
       await expect(productDetailPage.successToast).toHaveText(
@@ -183,11 +183,9 @@ test.describe('Verify product detail', () => {
       await accountPage.pageTitle.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
-      const firstStatus =
-        await productDetailPage.addToFavoritesAndAwaitResponse();
+      const firstStatus = await productDetailPage.addToFavorites();
 
-      const secondStatus =
-        await productDetailPage.addToFavoritesAndAwaitResponse();
+      const secondStatus = await productDetailPage.addToFavorites();
 
       expect(firstStatus).toBe(201);
       expect(secondStatus).toBe(409);
@@ -207,7 +205,7 @@ test.describe('Verify product detail', () => {
       await homePage.goto();
       await homePage.clickProductCard(0);
 
-      const status = await productDetailPage.addToFavoritesAndAwaitResponse();
+      const status = await productDetailPage.addToFavorites();
 
       expect(status).toBe(401);
       await expect(productDetailPage.errorToast).toHaveText(

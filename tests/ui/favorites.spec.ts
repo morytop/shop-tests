@@ -67,7 +67,7 @@ test.describe('Verify favorites', () => {
       const productDescription =
         await productDetailPage.productDescription.innerText();
 
-      await productDetailPage.addToFavoritesAndAwaitResponse();
+      await productDetailPage.addToFavorites();
       await favoritesPage.gotoAndAwaitLoaded();
 
       await expect(favoritesPage.favoriteCards).toHaveCount(1);
@@ -117,9 +117,9 @@ test.describe('Verify favorites', () => {
 
       await expect(favoritesPage.favoriteCards).toHaveCount(1);
       await expect(favoritesPage.favoriteNames).toHaveText([remainingName]);
-      await expect(
-        favoritesPage.favoriteCards.filter({ hasText: removedName }),
-      ).toHaveCount(0);
+      await expect(favoritesPage.favoriteCardByName(removedName)).toHaveCount(
+        0,
+      );
     },
   );
 });

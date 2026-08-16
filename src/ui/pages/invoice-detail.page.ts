@@ -20,6 +20,11 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
  * match 3 elements under strict mode. Their `id`s are the only distinguishing hook
  * (TEST_PLAN.md §33), hence the id selectors below.
  */
+// Column order of the line-items table, which carries no `data-test` on any
+// cell — so cells are addressed by named column, as on the invoices list.
+const LINE_ITEM_COLUMNS = ['quantity', 'product', 'price', 'total'] as const;
+export type LineItemColumn = (typeof LINE_ITEM_COLUMNS)[number];
+
 export class InvoiceDetailPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.INVOICES;
   readonly invoiceNumber: Locator;
@@ -36,6 +41,7 @@ export class InvoiceDetailPage extends BasePage {
   readonly paymentMethod: Locator;
   readonly lineItemsTable: Locator;
   readonly lineItemRows: Locator;
+  readonly lineItemCell: (rowIndex: number, column: LineItemColumn) => Locator;
   readonly notFoundMessage: Locator;
 
   constructor(page: Page) {
@@ -56,6 +62,11 @@ export class InvoiceDetailPage extends BasePage {
     this.paymentMethod = this.page.getByTestId('payment-method');
     this.lineItemsTable = this.page.getByRole('table');
     this.lineItemRows = this.lineItemsTable.locator('tbody').getByRole('row');
+    this.lineItemCell = (rowIndex: number, column: LineItemColumn): Locator =>
+      this.lineItemRows
+        .nth(rowIndex)
+        .getByRole('cell')
+        .nth(LINE_ITEM_COLUMNS.indexOf(column));
     this.notFoundMessage = this.page.getByText("This invoice doesn't exist.");
   }
 

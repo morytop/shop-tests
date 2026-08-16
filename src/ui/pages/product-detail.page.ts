@@ -102,15 +102,15 @@ export class ProductDetailPage extends BasePage {
   }
 
   /**
-   * Favorite the product and wait for the write to land, returning the HTTP status.
+   * Favorite the product, returning the write's HTTP status.
    *
    * The favorite is persisted by an async `POST /favorites`; navigating straight to the
-   * favorites page after a bare click can outrun it, so the response — not the toast —
-   * is the synchronisation point. The component fires that POST unconditionally and
-   * decides which toast to raise from the server's reply (201 added / 409 duplicate /
+   * favorites page after a bare click can outrun it, so the awaited response — not the
+   * toast — is the synchronisation point. The component fires that POST unconditionally
+   * and decides which toast to raise from the server's reply (201 added / 409 duplicate /
    * 401 logged out), so the status is the caller's observable for all three outcomes.
    */
-  async addToFavoritesAndAwaitResponse(): Promise<number> {
+  async addToFavorites(): Promise<number> {
     const [response] = await Promise.all([
       waitForApi(this.page, API_PATHS.FAVORITES, { method: 'POST' }),
       this.addToFavoritesButton.click(),

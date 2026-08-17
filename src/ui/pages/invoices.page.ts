@@ -31,7 +31,6 @@ export class InvoicesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.INVOICES;
   readonly pageTitle: Locator;
   readonly invoiceTable: Locator;
-  readonly invoiceRows: Locator;
   readonly invoiceRow: (invoiceNumber: string) => Locator;
   readonly invoiceRowCell: (
     invoiceNumber: string,
@@ -42,15 +41,13 @@ export class InvoicesPage extends BasePage {
     super(page);
     this.pageTitle = this.page.getByTestId('page-title');
     this.invoiceTable = this.page.getByRole('table');
-    // Body rows only — `getByRole('row')` on the whole table would include the
-    // header row.
-    this.invoiceRows = this.invoiceTable.locator('tbody').getByRole('row');
-    // Keyed on an exact number-cell match (the messages-page precedent): no
-    // other cell in a row can render exactly the `INV-…` number.
+    // A row's accessible name is its cells' text joined, so the full `INV-…`
+    // number keys the row directly (this is also what codegen produces here).
+    // Substring semantics are safe only because callers always pass the full
+    // fixed-width number (it comes from the API's `invoice_number`): a partial
+    // key like `INV-2026` would match every row of the year.
     this.invoiceRow = (invoiceNumber: string): Locator =>
-      this.invoiceRows.filter({
-        has: this.page.getByRole('cell', { name: invoiceNumber, exact: true }),
-      });
+      this.invoiceTable.getByRole('row', { name: invoiceNumber });
     this.invoiceRowCell = (
       invoiceNumber: string,
       column: InvoiceColumn,

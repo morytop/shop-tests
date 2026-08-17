@@ -1,6 +1,6 @@
 # Spec review follow-up — grouped verdicts & phased refactor plan
 
-**Status:** approved plan (2026-08-16); Phases 0–1 implemented, Phases 2–6 pending. Phases are sized to one PR each and are independent enough to land in order 0 → 6.
+**Status:** approved plan (2026-08-16); Phases 0–2 implemented, Phases 3–6 pending. Phases are sized to one PR each and are independent enough to land in order 0 → 6.
 
 **Origin:** a manual review of the UI spec suite (~40 comments across 18 spec files). Every comment was verified against the code, the per-spec `.ai-docs/*-plan.md` rationale, `PRODUCT_EXPLORATION.md`, and `TEST_PLAN.md` before a verdict. Verdicts are either **change** (mapped to a phase) or **keep** (with the argument recorded here). Verification also surfaced a handful of latent races the review didn't mention — they are folded into the same phases.
 

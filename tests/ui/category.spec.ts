@@ -5,7 +5,7 @@ import { isSorted } from '@src/ui/utils/sort.util';
 
 // TEST_PLAN.md §5.2 Browse by Category
 test.describe('Verify browse by category', () => {
-  for (const { name, slug } of categories) {
+  for (const { name, url } of categories) {
     test(
       `${name} nav link opens its category page titled by the category name`,
       { tag: ['@regression', '@category'] },
@@ -43,7 +43,7 @@ test.describe('Verify browse by category', () => {
         // so a shared toHaveTitle would be a false negative for it. The <title>
         // is instead covered by smoke/menu.spec.ts for Hand/Power/Other, which
         // asserts Special Tools via its heading for that same reason.
-        await expect(page).toHaveURL(new RegExp(`/category/${slug}$`));
+        await expect(page).toHaveURL(url);
         await expect(categoryHeadings[name]).toBeVisible();
       },
     );

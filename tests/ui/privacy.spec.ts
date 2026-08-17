@@ -1,4 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { privacySectionTitles } from '@src/ui/test-data/privacy.data';
 
 // User Stories v5 — Privacy policy (TEST_PLAN.md §5.24). The page is static prose, so the
@@ -19,7 +20,7 @@ test.describe('Verify privacy policy page', () => {
     async ({ privacyPage, page }) => {
       await privacyPage.goto();
 
-      await expect(page).toHaveURL(/\/privacy$/);
+      await expect(page).toHaveURL(PAGE_URLS.PRIVACY);
       await expect(page).toHaveTitle(/^Privacy Policy/);
       await expect(privacyPage.content).toBeVisible();
     },
@@ -33,7 +34,7 @@ test.describe('Verify privacy policy page', () => {
 
       await privacyPage.footerLink.click();
 
-      await expect(page).toHaveURL(/\/privacy$/);
+      await expect(page).toHaveURL(PAGE_URLS.PRIVACY);
       await expect(privacyPage.content).toBeVisible();
     },
   );

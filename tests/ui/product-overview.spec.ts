@@ -1,5 +1,6 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { USD_PRICE_REGEX } from '@src/ui/constants/formats';
+import { PRODUCT_DETAIL_URL_REGEX } from '@src/ui/constants/page-urls';
 
 test.describe('Verify product overview / home', () => {
   test(
@@ -28,7 +29,7 @@ test.describe('Verify product overview / home', () => {
 
       await homePage.clickProductCard(0);
 
-      await expect(page).toHaveURL(/\/product\/[A-Za-z0-9]+/);
+      await expect(page).toHaveURL(PRODUCT_DETAIL_URL_REGEX);
     },
   );
 

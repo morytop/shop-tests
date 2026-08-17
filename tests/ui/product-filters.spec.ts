@@ -1,7 +1,8 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { HomePage } from '@src/ui/pages/home.page';
-import { parsePrice } from '@src/ui/utils/price.util';
-import { isSorted, isSortedByString } from '@src/ui/utils/sort.util';
+import {
+  expectGridSorted,
+  expectPricesAtMost,
+} from '@src/ui/utils/grid-assert.util';
 
 // TEST_PLAN.md §5.1 Product Overview / Home — category/brand filters, sorting, price range
 test.describe('Verify product overview / home — filters, sort, price range', () => {
@@ -95,47 +96,17 @@ test.describe('Verify product overview / home — filters, sort, price range', (
     },
   );
 
-  // The four sort options share one shape — apply a sort, then poll until the grid
-  // is ordered — so each case carries its own read-and-check closure (a conditional
-  // on name-vs-price would not be allowed inside a test body).
-  const sortCases: {
-    label: string;
-    sortValue: string;
-    isOrdered: (home: HomePage) => Promise<boolean>;
-  }[] = [
-    {
-      label: 'Name (A-Z)',
-      sortValue: 'name,asc',
-      isOrdered: async (home: HomePage): Promise<boolean> =>
-        isSortedByString(await home.getProductNames(), 'asc'),
-    },
-    {
-      label: 'Name (Z-A)',
-      sortValue: 'name,desc',
-      isOrdered: async (home: HomePage): Promise<boolean> =>
-        isSortedByString(await home.getProductNames(), 'desc'),
-    },
-    {
-      label: 'Price (Low-High)',
-      sortValue: 'price,asc',
-      isOrdered: async (home: HomePage): Promise<boolean> =>
-        isSorted(
-          (await home.getProductPrices()).map(parsePrice),
-          (a, b) => a <= b,
-        ),
-    },
-    {
-      label: 'Price (High-Low)',
-      sortValue: 'price,desc',
-      isOrdered: async (home: HomePage): Promise<boolean> =>
-        isSorted(
-          (await home.getProductPrices()).map(parsePrice),
-          (a, b) => a >= b,
-        ),
-    },
-  ];
+  // The four sort options share one shape — apply a sort, then assert the grid
+  // is ordered — so the cases reduce to field + direction; the name-vs-price
+  // read lives inside expectGridSorted, where conditionals are allowed.
+  const sortCases = [
+    ['name', 'asc', 'Name (A-Z)'],
+    ['name', 'desc', 'Name (Z-A)'],
+    ['price', 'asc', 'Price (Low-High)'],
+    ['price', 'desc', 'Price (High-Low)'],
+  ] as const;
 
-  for (const { label, sortValue, isOrdered } of sortCases) {
+  for (const [field, direction, label] of sortCases) {
     test(
       `sorting by ${label} produces a correctly ordered grid`,
       { tag: ['@regression', '@product-overview'] },
@@ -143,9 +114,9 @@ test.describe('Verify product overview / home — filters, sort, price range', (
         await homePage.goto();
         await expect(homePage.productCards.first()).toBeVisible();
 
-        await homePage.sortBy(sortValue);
+        await homePage.sortBy(`${field},${direction}`);
 
-        await expect.poll(() => isOrdered(homePage)).toBe(true);
+        await expectGridSorted(homePage, field, direction);
       },
     );
   }
@@ -160,14 +131,7 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       await homePage.decreasePriceRangeMax(50);
 
       const maxValue = Number(await homePage.getPriceRangeMaxValue());
-      await expect
-        .poll(async () => {
-          const prices = (await homePage.getProductPrices()).map(parsePrice);
-          return (
-            prices.length > 0 && prices.every((price) => price <= maxValue)
-          );
-        })
-        .toBe(true);
+      await expectPricesAtMost(homePage, maxValue);
     },
   );
 });

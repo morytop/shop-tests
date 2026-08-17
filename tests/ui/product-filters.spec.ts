@@ -44,11 +44,7 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       await homePage.goto();
       await homePage.topLevelCategoryCheckboxes.first().check();
 
-      const checkedChildCount =
-        await homePage.checkedChildCategoryCheckboxes.count();
-      for (let i = checkedChildCount - 1; i >= 0; i--) {
-        await homePage.checkedChildCategoryCheckboxes.nth(i).uncheck();
-      }
+      await homePage.clearAllChildCategoryFilters();
 
       await expect(
         homePage.topLevelCategoryCheckboxes.first(),

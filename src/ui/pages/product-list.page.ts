@@ -27,6 +27,7 @@ export abstract class ProductListPage extends BasePage {
   readonly paginationNextLink: Locator;
   readonly paginationNextItem: Locator;
   readonly paginationPrevItem: Locator;
+  readonly paginationPageLink: (pageNumber: number) => Locator;
   readonly activePageItem: Locator;
   readonly searchInput: Locator;
   readonly searchSubmitButton: Locator;
@@ -67,6 +68,8 @@ export abstract class ProductListPage extends BasePage {
     this.paginationPrevItem = this.page
       .getByTestId('pagination-prev')
       .locator('..');
+    this.paginationPageLink = (pageNumber: number): Locator =>
+      this.page.getByLabel(`Page-${pageNumber}`);
     this.activePageItem = this.page.locator('ul.pagination li.active');
     this.searchInput = this.page.getByTestId('search-query');
     this.searchSubmitButton = this.page.getByTestId('search-submit');
@@ -140,11 +143,13 @@ export abstract class ProductListPage extends BasePage {
   // Every filter change and page turn re-fetches the grid from GET/QUERY
   // /products; awaiting that response keeps reads in step with the server
   // instead of racing the previous result set (which showed up as products
-  // from an unrelated filter leaking into a freshly-collected page).
+  // from an unrelated filter leaking into a freshly-collected page). Search
+  // is the one action served by a different endpoint, hence the path override.
   private async triggerAndAwaitProducts(
     action: Promise<unknown>,
+    path: string = API_PATHS.PRODUCTS,
   ): Promise<void> {
-    await Promise.all([waitForApi(this.page, API_PATHS.PRODUCTS), action]);
+    await Promise.all([waitForApi(this.page, path), action]);
   }
 
   // Advance exactly one page, awaiting both the re-fetch (QUERY /products) and
@@ -173,6 +178,21 @@ export abstract class ProductListPage extends BasePage {
     await this.triggerAndAwaitProducts(
       this.childCategoryCheckboxes.nth(index).uncheck(),
     );
+  }
+
+  /**
+   * Uncheck every checked child category. `checkedChildCategoryCheckboxes` is a
+   * live `:checked`-filtered locator that shrinks as boxes are cleared, so any
+   * index-based iteration walks a moving set; always clearing the first
+   * remaining box until none are left is the stable form. Each uncheck
+   * re-fetches the grid and is awaited like any other filter change.
+   */
+  async clearAllChildCategoryFilters(): Promise<void> {
+    while ((await this.checkedChildCategoryCheckboxes.count()) > 0) {
+      await this.triggerAndAwaitProducts(
+        this.checkedChildCategoryCheckboxes.first().uncheck(),
+      );
+    }
   }
 
   async filterByBrand(index: number): Promise<void> {
@@ -213,7 +233,24 @@ export abstract class ProductListPage extends BasePage {
     return allNames;
   }
 
+  /**
+   * Search re-renders the grid from GET /products/search; awaiting that
+   * response keeps the caller's next read in step with the searched result set
+   * (same rule as every filter change). Queries the client-side validation
+   * rejects (< 3 chars) fire no request at all — those must go through
+   * `submitSearch()`, or this wait would hang on a response that never comes.
+   */
   async search(query: string): Promise<void> {
+    await this.searchInput.fill(query);
+    await this.triggerAndAwaitProducts(
+      this.searchSubmitButton.click(),
+      API_PATHS.PRODUCT_SEARCH,
+    );
+  }
+
+  // Fill-and-submit with no response wait — only for queries the client-side
+  // validation rejects without firing a request (see `search`).
+  async submitSearch(query: string): Promise<void> {
     await this.searchInput.fill(query);
     await this.searchSubmitButton.click();
   }
@@ -239,16 +276,39 @@ export abstract class ProductListPage extends BasePage {
     }
   }
 
-  async getPriceRangeMaxValue(): Promise<string | null> {
-    return this.priceRangeMaxHandle.getAttribute('aria-valuenow');
+  // ngx-slider mounts its handles before stamping aria-valuenow, and callers
+  // feed the value to Number() — where a missing attribute would silently
+  // become 0, a wrong price bound. Wait for the attribute instead, and fail
+  // loudly if it never appears.
+  private async getSliderValue(handle: Locator): Promise<string> {
+    const handleWithValue = handle.and(this.page.locator('[aria-valuenow]'));
+    await handleWithValue.waitFor();
+    const value = await handleWithValue.getAttribute('aria-valuenow');
+    if (value === null) {
+      throw new Error('slider handle lost its aria-valuenow after the wait');
+    }
+    return value;
   }
 
-  async getPriceRangeMinValue(): Promise<string | null> {
-    return this.priceRangeMinHandle.getAttribute('aria-valuenow');
+  async getPriceRangeMaxValue(): Promise<string> {
+    return this.getSliderValue(this.priceRangeMaxHandle);
   }
 
+  async getPriceRangeMinValue(): Promise<string> {
+    return this.getSliderValue(this.priceRangeMinHandle);
+  }
+
+  // Like goToNextPage, a numbered page turn re-fetches the grid and re-renders;
+  // awaiting both keeps the caller's next read from seeing the previous page's
+  // cards (the old bare click() was the root cause behind flaky page-1 vs
+  // page-2 snapshot compares).
   async goToPage(pageNumber: number): Promise<void> {
-    await this.page.getByLabel(`Page-${pageNumber}`).click();
+    await this.triggerAndAwaitProducts(
+      this.paginationPageLink(pageNumber).click(),
+    );
+    await this.activePageItem
+      .filter({ hasText: new RegExp(`^${pageNumber}$`) })
+      .waitFor();
   }
 
   async goToLastPage(): Promise<void> {

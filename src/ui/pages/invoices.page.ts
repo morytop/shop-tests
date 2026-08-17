@@ -16,19 +16,45 @@ import { waitForApi } from '@src/ui/utils/network.util';
  * located structurally by role, and the per-row "Details" link (a bare `<a>` with
  * no `data-test`) is composed off the matching row (TEST_PLAN.md §29).
  */
+// Column order of the invoices table. The cells carry no `data-test`, and the
+// billing/date cells can't be keyed by their text (the values aren't known
+// exactly — see the spec's §29 notes), so cells are addressed by named column.
+const INVOICE_COLUMNS = [
+  'invoiceNumber',
+  'billingAddress',
+  'invoiceDate',
+  'total',
+] as const;
+export type InvoiceColumn = (typeof INVOICE_COLUMNS)[number];
+
 export class InvoicesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.INVOICES;
   readonly pageTitle: Locator;
   readonly invoiceTable: Locator;
-  readonly invoiceRows: Locator;
+  readonly invoiceRow: (invoiceNumber: string) => Locator;
+  readonly invoiceRowCell: (
+    invoiceNumber: string,
+    column: InvoiceColumn,
+  ) => Locator;
 
   constructor(page: Page) {
     super(page);
     this.pageTitle = this.page.getByTestId('page-title');
     this.invoiceTable = this.page.getByRole('table');
-    // Body rows only — `getByRole('row')` on the whole table would include the
-    // header row.
-    this.invoiceRows = this.invoiceTable.locator('tbody').getByRole('row');
+    // A row's accessible name is its cells' text joined, so the full `INV-…`
+    // number keys the row directly (this is also what codegen produces here).
+    // Substring semantics are safe only because callers always pass the full
+    // fixed-width number (it comes from the API's `invoice_number`): a partial
+    // key like `INV-2026` would match every row of the year.
+    this.invoiceRow = (invoiceNumber: string): Locator =>
+      this.invoiceTable.getByRole('row', { name: invoiceNumber });
+    this.invoiceRowCell = (
+      invoiceNumber: string,
+      column: InvoiceColumn,
+    ): Locator =>
+      this.invoiceRow(invoiceNumber)
+        .getByRole('cell')
+        .nth(INVOICE_COLUMNS.indexOf(column));
   }
 
   /**
@@ -44,8 +70,7 @@ export class InvoicesPage extends BasePage {
   }
 
   async openDetails(invoiceNumber: string): Promise<void> {
-    await this.invoiceRows
-      .filter({ hasText: invoiceNumber })
+    await this.invoiceRow(invoiceNumber)
       .getByRole('link', { name: 'Details' })
       .click();
   }

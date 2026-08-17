@@ -43,15 +43,18 @@ test.describe('Verify invoices', () => {
 
       await invoicesPage.gotoAndAwaitLoaded();
 
-      const row = invoicesPage.invoiceRows.filter({
-        hasText: order.invoiceNumber,
-      });
-      await expect(row.getByRole('cell').nth(0)).toHaveText(
-        order.invoiceNumber,
-      );
-      await expect(row.getByRole('cell').nth(1)).not.toBeEmpty();
-      await expect(row.getByRole('cell').nth(2)).toHaveText(DATE_TIME_REGEX);
-      await expect(row.getByRole('cell').nth(3)).toHaveText(order.total);
+      await expect(
+        invoicesPage.invoiceRowCell(order.invoiceNumber, 'invoiceNumber'),
+      ).toHaveText(order.invoiceNumber);
+      await expect(
+        invoicesPage.invoiceRowCell(order.invoiceNumber, 'billingAddress'),
+      ).not.toBeEmpty();
+      await expect(
+        invoicesPage.invoiceRowCell(order.invoiceNumber, 'invoiceDate'),
+      ).toHaveText(DATE_TIME_REGEX);
+      await expect(
+        invoicesPage.invoiceRowCell(order.invoiceNumber, 'total'),
+      ).toHaveText(order.total);
     },
   );
 
@@ -110,14 +113,17 @@ test.describe('Verify invoices', () => {
         'Cash on Delivery',
       );
 
-      const firstItem = invoiceDetailPage.lineItemRows.first();
-      await expect(firstItem.getByRole('cell').nth(0)).toHaveText('1');
+      await expect(invoiceDetailPage.lineItemCell(0, 'quantity')).toHaveText(
+        '1',
+      );
       // The API arrange knows exactly which product the cart held, so the line
       // item's name is pinned rather than just present.
-      await expect(firstItem.getByRole('cell').nth(1)).toHaveText(
+      await expect(invoiceDetailPage.lineItemCell(0, 'product')).toHaveText(
         order.product.name,
       );
-      await expect(firstItem.getByRole('cell').nth(2)).toHaveText(`$${amount}`);
+      await expect(invoiceDetailPage.lineItemCell(0, 'price')).toHaveText(
+        `$${amount}`,
+      );
     },
   );
 

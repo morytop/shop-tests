@@ -22,6 +22,7 @@ export class FavoritesPage extends BasePage {
   readonly pageTitle: Locator;
   readonly emptyMessage: Locator;
   readonly favoriteCards: Locator;
+  readonly favoriteCardByName: (name: string) => Locator;
   readonly favoriteImages: Locator;
   readonly favoriteNames: Locator;
   readonly favoriteDescriptions: Locator;
@@ -38,6 +39,8 @@ export class FavoritesPage extends BasePage {
     this.favoriteCards = favoritesRoot.locator(
       'div.card[data-test^="favorite-"]',
     );
+    this.favoriteCardByName = (name: string): Locator =>
+      this.favoriteCards.filter({ hasText: name });
     this.favoriteImages = this.favoriteCards.getByRole('img');
     this.favoriteNames = this.favoriteCards.getByTestId('product-name');
     this.favoriteDescriptions = this.favoriteCards.getByTestId(

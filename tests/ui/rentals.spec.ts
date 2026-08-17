@@ -13,8 +13,10 @@ test.describe('Verify rentals', () => {
 
       await expect(rentalsPage.pageHeading).toBeVisible();
 
+      // The visible-card assertion doubles as the grid-paint sync: a bare
+      // count() right after goto() can race the rentals XHR and read 0.
+      await expect(rentalsPage.rentalCards.first()).toBeVisible();
       const cardCount = await rentalsPage.rentalCards.count();
-      expect(cardCount).toBeGreaterThan(0);
       await expect(rentalsPage.rentalCardImages).toHaveCount(cardCount);
       await expect(rentalsPage.rentalCardNames).toHaveCount(cardCount);
       await expect(rentalsPage.rentalCardDescriptions).toHaveCount(cardCount);

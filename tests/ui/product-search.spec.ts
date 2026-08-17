@@ -8,18 +8,20 @@ test.describe('Verify product overview / home — search', () => {
     async ({ homePage }) => {
       await homePage.goto();
       await expect(homePage.productCards.first()).toBeVisible();
+      // The term is read off a live card, never hard-coded (§3). Server search
+      // matches product names only (verified live: a description-only word
+      // returns zero hits), so "every card's name contains the term" is the
+      // faithful invariant.
+      const searchTerm = (
+        await homePage.productCardNames.first().innerText()
+      ).trim();
 
-      await homePage.search('pliers');
+      await homePage.search(searchTerm);
 
-      await expect
-        .poll(async () => {
-          const names = await homePage.getProductNames();
-          return (
-            names.length > 0 &&
-            names.every((name) => name.toLowerCase().includes('pliers'))
-          );
-        })
-        .toBe(true);
+      await expect(homePage.productCards.first()).toBeVisible();
+      await expect(
+        homePage.productCardsNotMatchingName(searchTerm),
+      ).toHaveCount(0);
     },
   );
 
@@ -28,10 +30,13 @@ test.describe('Verify product overview / home — search', () => {
     { tag: ['@regression', '@product-overview'] },
     async ({ homePage }) => {
       await homePage.goto();
-      await homePage.brandCheckboxes.first().check();
+      const searchTerm = (
+        await homePage.productCardNames.first().innerText()
+      ).trim();
+      await homePage.filterByBrand(0);
       await expect(homePage.brandCheckboxes.first()).toBeChecked();
 
-      await homePage.search('pliers');
+      await homePage.search(searchTerm);
 
       await expect(homePage.brandCheckboxes.first()).not.toBeChecked();
     },
@@ -51,7 +56,10 @@ test.describe('Verify product overview / home — search', () => {
 
       await expect(homePage.searchInput).toHaveClass(/ng-invalid/);
       const namesAfterSearch = await homePage.getProductNames();
-      expect(namesAfterSearch).toEqual(namesBeforeSearch);
+      expect(
+        namesAfterSearch,
+        'grid changed after a rejected short query',
+      ).toEqual(namesBeforeSearch);
     },
   );
 });

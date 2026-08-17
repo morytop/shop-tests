@@ -81,9 +81,10 @@ test.describe('Verify chat widget', () => {
       await chatWidget.chooseFindAProduct();
       await chatWidget.searchForProduct(productName);
 
-      const resultCount = await chatWidget.productCards.count();
-      expect(resultCount).toBeGreaterThanOrEqual(1);
-      expect(resultCount).toBeLessThanOrEqual(5);
+      await expect(chatWidget.productCards.first()).toBeVisible();
+      // ≤ 5, not === 5: "there is no sixth card" pins the cap without assuming
+      // how many products the shared catalog currently matches.
+      await expect(chatWidget.productCards.nth(5)).toHaveCount(0);
       await expect(chatWidget.productCardNames).toContainText([productName]);
       await expect(chatWidget.productCardPrices.first()).toHaveText(
         USD_PRICE_REGEX,

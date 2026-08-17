@@ -91,12 +91,16 @@ test.describe('Verify browse by category', () => {
     { tag: ['@regression', '@category'] },
     async ({ handToolsPage }) => {
       await handToolsPage.goto();
+      await expect(handToolsPage.productCards.first()).toBeVisible();
       const page1Names = await handToolsPage.getProductNames();
 
       await handToolsPage.goToPage(2);
       const page2Names = await handToolsPage.getProductNames();
 
-      expect(page2Names).not.toEqual(page1Names);
+      expect(
+        page2Names,
+        'page 2 shows the same product names as page 1',
+      ).not.toEqual(page1Names);
     },
   );
 });

@@ -1,4 +1,3 @@
-import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { BARE_PRICE_REGEX } from '@src/ui/constants/formats';
 
@@ -17,9 +16,9 @@ import { BARE_PRICE_REGEX } from '@src/ui/constants/formats';
 // Favorites (§27): the component fires `POST /favorites` unconditionally and picks its
 // toast from the server's reply — 201 → success, 409 → duplicate, 401 → unauthorized —
 // so each favorites test asserts the status alongside the copy. Adding a favorite
-// mutates the account, so those tests register their own throwaway user and log in
-// inline; never `testUser1` (it IS the shared seeded `customer@` account) or the
-// `@logged` storageState session user.
+// mutates the account, so those tests mint and sign in their own throwaway user via
+// `loginAsFreshUser` (API register + token injection); never `testUser1` (it IS the
+// shared seeded `customer@` account) or the `@logged` storageState session user.
 test.describe('Verify product detail', () => {
   test(
     'detail page shows image, name, price, description, category and brand',
@@ -138,18 +137,9 @@ test.describe('Verify product detail', () => {
   test(
     'adding a product to favorites shows a success message',
     { tag: ['@auth', '@favorites', '@regression'] },
-    async ({
-      accountPage,
-      homePage,
-      loginPage,
-      productDetailPage,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ homePage, loginAsFreshUser, productDetailPage }) => {
+      await loginAsFreshUser();
 
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
 
@@ -169,18 +159,9 @@ test.describe('Verify product detail', () => {
   test(
     'adding the same product to favorites twice reports it is already there',
     { tag: ['@auth', '@favorites', '@regression'] },
-    async ({
-      accountPage,
-      homePage,
-      loginPage,
-      productDetailPage,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ homePage, loginAsFreshUser, productDetailPage }) => {
+      await loginAsFreshUser();
 
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
       const firstStatus = await productDetailPage.addToFavorites();

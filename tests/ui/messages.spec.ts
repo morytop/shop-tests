@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker';
 import { sendMessageWithApi } from '@src/api/factories/message.api.factory';
-import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomMessage } from '@src/ui/factories/contact.factory';
 import { CONTACT_SUBJECTS } from '@src/ui/test-data/contact.data';
@@ -12,11 +11,12 @@ import { truncate } from '@src/ui/utils/text.util';
 // its replies in chronological order (AC2), and a reply is appended to the thread (AC3).
 //
 // Data safety (§3): submitting a contact message permanently mutates the account's
-// message list (there is no customer-side delete), so each test registers its own
-// throwaway user via the API and logs in inline — never `testUser1` (it IS the shared
-// seeded `customer@`) and never the `@logged` storageState session, which is shared
-// across every `@logged` spec in a run. A fresh user also guarantees a single-message
-// list, which is what makes the row assertions deterministic.
+// message list (there is no customer-side delete), so each test mints and signs in its
+// own throwaway user via `loginAsFreshUser` (API register + token injection) — never
+// `testUser1` (it IS the shared seeded `customer@`) and never the `@logged`
+// storageState session, which is shared across every `@logged` spec in a run. A fresh
+// user also guarantees a single-message list, which is what makes the row assertions
+// deterministic.
 //
 // Message bodies come from `prepareRandomMessage()`, which respects the app's 50–250
 // character window (the 250 ceiling is undocumented — §30); the messages list is entered
@@ -33,20 +33,10 @@ test.describe('Verify messages', () => {
   test(
     'submitted contact message appears in the message list',
     { tag: ['@auth', '@messages', '@regression'] },
-    async ({
-      accountPage,
-      contactPage,
-      loginPage,
-      messagesPage,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ contactPage, loginAsFreshUser, messagesPage }) => {
+      await loginAsFreshUser();
       const subject = faker.helpers.arrayElement(CONTACT_SUBJECTS);
       const message = prepareRandomMessage();
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
 
       await contactPage.goto();
       await contactPage.sendMessage(subject, message);
@@ -83,24 +73,13 @@ test.describe('Verify messages', () => {
   test(
     'message detail shows the full message and replies in chronological order',
     { tag: ['@auth', '@messages', '@regression'] },
-    async ({
-      accountPage,
-      loginPage,
-      messageDetailPage,
-      messagesPage,
-      request,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ loginAsFreshUser, messageDetailPage, messagesPage, request }) => {
+      const user = await loginAsFreshUser();
       const subject = faker.helpers.arrayElement(CONTACT_SUBJECTS);
       const message = prepareRandomMessage();
       const firstReply = prepareRandomMessage(100);
       const secondReply = prepareRandomMessage(100);
       await sendMessageWithApi(request, user, { subject, message });
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
 
       await messagesPage.gotoAndAwaitLoaded();
       await messagesPage.openDetails(subject);
@@ -136,23 +115,12 @@ test.describe('Verify messages', () => {
   test(
     'submitting a reply appends it to the thread',
     { tag: ['@auth', '@messages', '@regression'] },
-    async ({
-      accountPage,
-      loginPage,
-      messageDetailPage,
-      messagesPage,
-      request,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ loginAsFreshUser, messageDetailPage, messagesPage, request }) => {
+      const user = await loginAsFreshUser();
       const subject = faker.helpers.arrayElement(CONTACT_SUBJECTS);
       const message = prepareRandomMessage();
       const reply = prepareRandomMessage(100);
       await sendMessageWithApi(request, user, { subject, message });
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
 
       await messagesPage.gotoAndAwaitLoaded();
       await messagesPage.openDetails(subject);

@@ -1,4 +1,3 @@
-import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { parsePrice } from '@src/ui/utils/price.util';
 
@@ -12,9 +11,9 @@ import { parsePrice } from '@src/ui/utils/price.util';
 //
 // Data safety (§3): the first two tests run entirely on the guest, per-context
 // localStorage cart, so they mutate nothing shared. The invoice test places a REAL
-// Cash-on-Delivery order (simulated payment, §2), so it registers its own throwaway
-// user via the API — never `testUser1` (it IS the shared seeded `customer@`) nor the
-// `@logged` session user. Products/rentals are chosen dynamically by card index and
+// Cash-on-Delivery order (simulated payment, §2), so it mints and signs in its own
+// throwaway user via `loginAsFreshUser` (API register + token injection) — never
+// `testUser1` (it IS the shared seeded `customer@`) nor the `@logged` session user. Products/rentals are chosen dynamically by card index and
 // every amount is read back from the DOM (§3, §9); the app's rounding direction can't
 // be pinned from the UI (§33), so the assertions check the *relationships* between
 // subtotal, discount, and total rather than reconstructed literals.
@@ -86,20 +85,15 @@ test.describe('Verify discounts', () => {
     'discounted order invoice shows the subtotal, discount, and discounted total',
     { tag: ['@auth', '@checkout', '@discounts', '@invoices', '@regression'] },
     async ({
-      accountPage,
       addProductToCart,
       addRentalToCart,
       cartPage,
       invoiceDetailPage,
       invoicesPage,
-      loginPage,
+      loginAsFreshUser,
       placeCodOrderFromCart,
-      usersRequest,
     }) => {
-      const user = await registerUserWithApi(usersRequest);
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
+      await loginAsFreshUser();
 
       await addProductToCart(0, '1');
       await addRentalToCart(0, '2');

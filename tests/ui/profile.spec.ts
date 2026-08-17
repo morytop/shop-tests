@@ -1,4 +1,3 @@
-import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomProfileDetails } from '@src/ui/factories/user.factory';
 import { RequiredProfileField } from '@src/ui/models/user.model';
@@ -12,12 +11,14 @@ import {
 // `waitForProfileLoaded()` before reading or filling a field — a `fill()` issued
 // earlier is silently overwritten when the response lands (§24).
 //
-// Data safety (§3): AC2/AC4 mutate the account, and AC1/AC3 assert on the account's
-// own registered data, so all four register their own throwaway user via the API and
-// log in inline. None may use `testUser1` (it IS the shared seeded `customer@`
-// account) or ride the `@logged` storageState session — `tests/setup/login.setup.ts`
-// shares one user across every `@logged` spec, and `checkout-address.spec.ts` asserts
-// on that user's stored address.
+// Data safety (§3): every test signs in via the user-action fixture, never as
+// `testUser1` (it IS the shared seeded `customer@` account) and never on the `@logged`
+// storageState session — `tests/setup/login.setup.ts` shares one user across every
+// `@logged` spec, and `checkout-address.spec.ts` asserts on that user's stored
+// address. AC2 mutates the account and AC1/AC3 assert on a *freshly-registered*
+// account's own data, so those mint their own fresh user; the AC4 blank-field loop is
+// blocked client-side and saves nothing, so its five tests share the per-worker
+// `workerUser`.
 //
 // See TEST_PLAN.md §24 and .ai-docs/profile-plan.md.
 
@@ -26,12 +27,9 @@ test.describe('Verify customer profile', () => {
   test(
     'show the current account data for a freshly-registered user',
     { tag: ['@auth', '@profile', '@regression'] },
-    async ({ accountPage, loginPage, profilePage, usersRequest }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ loginAsFreshUser, profilePage }) => {
+      const user = await loginAsFreshUser();
 
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -56,13 +54,10 @@ test.describe('Verify customer profile', () => {
   test(
     'update every editable field and persist the changes after save',
     { tag: ['@auth', '@profile', '@regression'] },
-    async ({ accountPage, loginPage, profilePage, usersRequest }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ loginAsFreshUser, profilePage }) => {
+      await loginAsFreshUser();
       const updatedDetails = prepareRandomProfileDetails();
 
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -105,12 +100,9 @@ test.describe('Verify customer profile', () => {
   test(
     'show the email address as a non-editable field',
     { tag: ['@auth', '@profile', '@regression'] },
-    async ({ accountPage, loginPage, profilePage, usersRequest }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ loginAsFreshUser, profilePage }) => {
+      const user = await loginAsFreshUser();
 
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
@@ -126,24 +118,23 @@ test.describe('Verify customer profile', () => {
   // before saving.") rather than the per-field API 422 copy it used to show (§24) — so
   // the blanked field is identified by its `ng-invalid` highlighting, not the banner
   // text. Only these five fields are required — phone, postal code and state save fine
-  // when blank (§24).
+  // when blank (§24). Nothing is ever saved, so all five tests share the worker user;
+  // the final assertion depends on exactly that: the account still holds its
+  // registered values.
   for (const field of PROFILE_REQUIRED_FIELDS) {
     test(
       `reject saving the profile with a blank ${field}`,
       { tag: ['@auth', '@profile', '@regression'] },
-      async ({ accountPage, loginPage, profilePage, usersRequest }) => {
-        const user = await registerUserWithApi(usersRequest);
+      async ({ loginAs, profilePage, workerUser }) => {
+        await loginAs(workerUser);
         const originalValues: Record<RequiredProfileField, string> = {
-          firstName: user.first_name,
-          lastName: user.last_name,
-          street: user.address.street,
-          city: user.address.city,
-          country: user.address.country,
+          firstName: workerUser.first_name,
+          lastName: workerUser.last_name,
+          street: workerUser.address.street,
+          city: workerUser.address.city,
+          country: workerUser.address.country,
         };
 
-        await loginPage.goto();
-        await loginPage.login(user.email, user.password);
-        await accountPage.pageTitle.waitFor();
         await profilePage.goto();
         await profilePage.waitForProfileLoaded();
 

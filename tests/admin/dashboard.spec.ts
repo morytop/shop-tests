@@ -1,4 +1,3 @@
-import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
@@ -116,18 +115,8 @@ test.describe('Verify admin dashboard', () => {
   test(
     'non-admin user is redirected away from the admin dashboard',
     { tag: ['@admin', '@auth', '@regression'] },
-    async ({
-      accountPage,
-      adminDashboardPage,
-      loginPage,
-      page,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
+    async ({ adminDashboardPage, loginAsFreshUser, page }) => {
+      await loginAsFreshUser();
 
       await adminDashboardPage.goto();
 

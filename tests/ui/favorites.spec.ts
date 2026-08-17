@@ -1,5 +1,4 @@
 import { addFavoritesWithApi } from '@src/api/factories/favorite.api.factory';
-import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { truncate } from '@src/ui/utils/text.util';
 
@@ -8,11 +7,12 @@ import { truncate } from '@src/ui/utils/text.util';
 // while `GET /favorites` is still in flight, so a bare `goto()` makes "not loaded yet"
 // look exactly like "no favorites" (§26).
 //
-// Data safety (§3): all three ACs mutate the account's favorites, so each registers its
-// own throwaway user via the API and logs in inline. None may use `testUser1` (it IS the
-// shared seeded `customer@` account) or ride the `@logged` storageState session, which
-// `tests/setup/login.setup.ts` shares across every `@logged` spec in a run. AC1 also
-// needs a guaranteed-empty list, which only a fresh user gives.
+// Data safety (§3): all three ACs mutate the account's favorites, so each mints and
+// signs in its own throwaway user via `loginAsFreshUser` (API register + token
+// injection). None may use `testUser1` (it IS the shared seeded `customer@` account)
+// or ride the `@logged` storageState session, which `tests/setup/login.setup.ts`
+// shares across every `@logged` spec in a run. AC1 also needs a guaranteed-empty
+// list, which only a fresh user gives.
 //
 // The catalog is shared, mutable production data (§3/§9), so product names and
 // descriptions are read off the live detail page rather than hard-coded.
@@ -24,12 +24,9 @@ test.describe('Verify favorites', () => {
   test(
     'show the empty state for a user with no favorites',
     { tag: ['@auth', '@favorites', '@regression'] },
-    async ({ accountPage, favoritesPage, loginPage, usersRequest }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ favoritesPage, loginAsFreshUser }) => {
+      await loginAsFreshUser();
 
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
       await favoritesPage.gotoAndAwaitLoaded();
 
       await expect(favoritesPage.pageTitle).toHaveText('Favorites');
@@ -49,18 +46,13 @@ test.describe('Verify favorites', () => {
     'show a product favorited from its detail page',
     { tag: ['@auth', '@favorites', '@regression'] },
     async ({
-      accountPage,
       favoritesPage,
       homePage,
-      loginPage,
+      loginAsFreshUser,
       productDetailPage,
-      usersRequest,
     }) => {
-      const user = await registerUserWithApi(usersRequest);
+      await loginAsFreshUser();
 
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
       await homePage.goto();
       await homePage.clickProductCard(0);
       const productName = await productDetailPage.productName.innerText();
@@ -95,19 +87,10 @@ test.describe('Verify favorites', () => {
   test(
     'remove a favorite and update the list immediately',
     { tag: ['@auth', '@favorites', '@regression'] },
-    async ({
-      accountPage,
-      favoritesPage,
-      loginPage,
-      request,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ favoritesPage, loginAsFreshUser, request }) => {
+      const user = await loginAsFreshUser();
       await addFavoritesWithApi(request, user, 2);
 
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
       await favoritesPage.gotoAndAwaitLoaded();
       await expect(favoritesPage.favoriteCards).toHaveCount(2);
       const [removedName, remainingName] =

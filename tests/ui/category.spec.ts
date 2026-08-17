@@ -1,7 +1,6 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { categories } from '@src/ui/test-data/category.data';
-import { parsePrice } from '@src/ui/utils/price.util';
-import { isSorted } from '@src/ui/utils/sort.util';
+import { expectGridSorted } from '@src/ui/utils/grid-assert.util';
 
 // TEST_PLAN.md §5.2 Browse by Category
 test.describe('Verify browse by category', () => {
@@ -58,14 +57,7 @@ test.describe('Verify browse by category', () => {
 
       await handToolsPage.sortBy('price,asc');
 
-      await expect
-        .poll(async () => {
-          const prices = (await handToolsPage.getProductPrices()).map(
-            parsePrice,
-          );
-          return isSorted(prices, (a, b) => a <= b);
-        })
-        .toBe(true);
+      await expectGridSorted(handToolsPage, 'price', 'asc');
     },
   );
 

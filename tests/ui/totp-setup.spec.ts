@@ -1,4 +1,3 @@
-import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { TOTP_SECRET_REGEX } from '@src/ui/constants/formats';
 import { testUser1 } from '@src/ui/test-data/user.data';
@@ -11,12 +10,14 @@ import { generateTotpCode } from '@src/ui/utils/totp.util';
 // every 30s). The API's `verifyKey()` allows ±1 time step, which absorbs modest
 // clock skew between the runner and the server.
 //
-// Data safety (§3): AC1–AC3 enable TOTP, which is a mutation, so each registers
-// its own throwaway user via the API and logs in inline. They deliberately do NOT
-// ride the `@logged` storageState session — `tests/setup/login.setup.ts` shares one
-// user across every `@logged` spec in a run, and enabling TOTP on it would leak
-// into specs like `checkout-e2e`. AC4 is a read-only denial check, the one use the
-// shared seeded `customer@` account is explicitly reserved for.
+// Data safety (§3): AC2 enables TOTP and AC3 submits a code, so each mints and signs
+// in its own throwaway user via `loginAsFreshUser` (API register + token injection);
+// AC1 only *displays* the setup section (the minted-but-unverified secret never
+// gates login), so it shares the per-worker `workerUser`. None ride the `@logged`
+// storageState session — `tests/setup/login.setup.ts` shares one user across every
+// `@logged` spec in a run, and enabling TOTP on it would leak into specs like
+// `checkout-e2e`. AC4 is a read-only denial check, the one use the shared seeded
+// `customer@` account is explicitly reserved for.
 //
 // See TEST_PLAN.md §22 and .ai-docs/totp-setup-plan.md.
 
@@ -26,12 +27,8 @@ test.describe('Verify TOTP setup @totp', () => {
   test(
     'show the TOTP setup section with a QR code and manual secret',
     { tag: ['@auth', '@totp', '@regression'] },
-    async ({ accountPage, loginPage, profilePage, usersRequest }) => {
-      const user = await registerUserWithApi(usersRequest);
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
+    async ({ loginAs, profilePage, workerUser }) => {
+      await loginAs(workerUser);
       await profilePage.goto();
 
       await expect(profilePage.totpHeading).toBeVisible();
@@ -48,12 +45,8 @@ test.describe('Verify TOTP setup @totp', () => {
   test(
     'enable TOTP with a valid generated code',
     { tag: ['@auth', '@totp', '@regression'] },
-    async ({ accountPage, loginPage, profilePage, usersRequest }) => {
-      const user = await registerUserWithApi(usersRequest);
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
+    async ({ loginAsFreshUser, profilePage }) => {
+      await loginAsFreshUser();
       await profilePage.goto();
       const secret = await profilePage.readTotpSecret();
 
@@ -73,12 +66,8 @@ test.describe('Verify TOTP setup @totp', () => {
   test(
     'reject an invalid TOTP code and leave TOTP disabled',
     { tag: ['@auth', '@totp', '@regression'] },
-    async ({ accountPage, loginPage, profilePage, usersRequest }) => {
-      const user = await registerUserWithApi(usersRequest);
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
+    async ({ loginAsFreshUser, profilePage }) => {
+      await loginAsFreshUser();
       await profilePage.goto();
 
       await profilePage.totpForm.submitCode('000000');
@@ -107,10 +96,8 @@ test.describe('Verify TOTP setup @totp', () => {
   test(
     'deny TOTP setup for the shared seeded account',
     { tag: ['@auth', '@totp', '@regression'] },
-    async ({ accountPage, loginPage, profilePage }) => {
-      await loginPage.goto();
-      await loginPage.login(testUser1.email, testUser1.password);
-      await accountPage.pageTitle.waitFor();
+    async ({ loginAs, profilePage }) => {
+      await loginAs(testUser1);
 
       await profilePage.goto();
 

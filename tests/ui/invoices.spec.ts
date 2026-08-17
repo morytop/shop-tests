@@ -1,5 +1,4 @@
 import { createInvoiceWithApi } from '@src/api/factories/invoice.api.factory';
-import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { DATE_TIME_REGEX } from '@src/ui/utils/date.util';
 
@@ -8,9 +7,9 @@ import { DATE_TIME_REGEX } from '@src/ui/utils/date.util';
 // id → not-found. AC4 (discounted invoice) and AC5 (PDF download) are deferred (§9/§29).
 //
 // Data safety (§3): AC1/AC2 place a REAL Cash-on-Delivery order (simulated payment, §2) —
-// AC1 through the checkout wizard, AC2 over the API (Phase G) — so each registers its own
-// throwaway user via the API and logs in inline — a fresh user
-// guarantees a single-invoice list, so the assertions are deterministic. Never `testUser1`
+// AC1 through the checkout wizard, AC2 over the API (Phase G) — so each mints and signs
+// in its own throwaway user via `loginAsFreshUser` (API register + token injection) — a
+// fresh user guarantees a single-invoice list, so the assertions are deterministic. Never `testUser1`
 // (it IS the shared seeded `customer@`) or the `@logged` session (shared across specs;
 // `checkout-e2e` AC2 already places orders as it). Billing is completed via the postcode
 // lookup so the city ↔ country pair is orderable (§18); products are chosen dynamically
@@ -26,18 +25,8 @@ test.describe('Verify invoices', () => {
   test(
     'placed order appears in the invoice list with correct details',
     { tag: ['@auth', '@invoices', '@regression'] },
-    async ({
-      accountPage,
-      invoicesPage,
-      loginPage,
-      placeCodOrderAsLoggedInUser,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
+    async ({ invoicesPage, loginAsFreshUser, placeCodOrderAsLoggedInUser }) => {
+      await loginAsFreshUser();
 
       const order = await placeCodOrderAsLoggedInUser();
 
@@ -68,23 +57,12 @@ test.describe('Verify invoices', () => {
   test(
     'invoice detail page shows number, address, payment method, and line items',
     { tag: ['@auth', '@invoices', '@regression'] },
-    async ({
-      accountPage,
-      invoiceDetailPage,
-      invoicesPage,
-      loginPage,
-      request,
-      usersRequest,
-    }) => {
-      const user = await registerUserWithApi(usersRequest);
+    async ({ invoiceDetailPage, invoicesPage, loginAsFreshUser, request }) => {
+      const user = await loginAsFreshUser();
       const order = await createInvoiceWithApi(request, user);
       // The API reports the total as a number (14.15), rebuilt here into each
       // page's own render format.
       const amount = order.total.toFixed(2);
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
 
       await invoicesPage.gotoAndAwaitLoaded();
       await invoicesPage.openDetails(order.invoiceNumber);
@@ -133,12 +111,8 @@ test.describe('Verify invoices', () => {
   test(
     'non-existent invoice id shows a not-found message',
     { tag: ['@auth', '@invoices', '@regression'] },
-    async ({ accountPage, invoiceDetailPage, loginPage, usersRequest }) => {
-      const user = await registerUserWithApi(usersRequest);
-
-      await loginPage.goto();
-      await loginPage.login(user.email, user.password);
-      await accountPage.pageTitle.waitFor();
+    async ({ invoiceDetailPage, loginAsFreshUser }) => {
+      await loginAsFreshUser();
 
       await invoiceDetailPage.gotoInvoice('01kx0000000000000000000000');
 

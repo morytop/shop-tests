@@ -1,5 +1,6 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { prepareRandomPassword } from '@src/ui/factories/user.factory';
 import {
   CHANGE_PASSWORD_ERRORS,
@@ -191,7 +192,7 @@ test.describe('Verify change password', () => {
       );
       await expect(profilePage.passwordError).toHaveCount(0);
 
-      await expect(page).toHaveURL(/\/auth\/login/, { timeout: 15000 });
+      await expect(page).toHaveURL(PAGE_URLS.LOGIN);
       await expect(loginPage.loginButton).toBeVisible();
 
       // The change took effect: the freshly-set password authenticates.

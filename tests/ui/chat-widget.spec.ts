@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { USD_PRICE_REGEX } from '@src/ui/constants/formats';
+import { PRODUCT_DETAIL_URL_REGEX } from '@src/ui/constants/page-urls';
 
 // User Stories v5 — Chat widget (TEST_PLAN.md §5.21), covering the widget shell and the
 // "Find a product" flow. Both are guest-usable and read-only: nothing here touches an
@@ -112,7 +113,7 @@ test.describe('Verify chat widget', () => {
 
       await chatWidget.clickProductCard(0);
 
-      await expect(page).toHaveURL(/\/product\/\w+$/);
+      await expect(page).toHaveURL(PRODUCT_DETAIL_URL_REGEX);
       await expect(productDetailPage.productName).toHaveText(resultName);
       await expect(productDetailPage.addToCartButton).toBeVisible();
       // Routing away tears the conversation down — the widget reverts to its closed state.

@@ -23,7 +23,7 @@ test.describe('Verify admin dashboard', () => {
     async ({ adminDashboardPage, loginAsAdmin, page }) => {
       await loginAsAdmin();
 
-      await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.ADMIN_DASHBOARD}$`));
+      await expect(page).toHaveURL(PAGE_URLS.ADMIN_DASHBOARD);
       await expect(adminDashboardPage.pageTitle).toHaveText(
         'Sales over the years',
       );
@@ -131,7 +131,7 @@ test.describe('Verify admin dashboard', () => {
 
       await adminDashboardPage.goto();
 
-      await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
+      await expect(page).toHaveURL(PAGE_URLS.LOGIN);
       await expect(adminDashboardPage.salesChart).toHaveCount(0);
     },
   );

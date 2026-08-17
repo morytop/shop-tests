@@ -31,3 +31,9 @@ export const PAGE_URLS = {
 } as const;
 
 export type PageUrl = (typeof PAGE_URLS)[keyof typeof PAGE_URLS];
+
+/**
+ * Product detail route (`/product/<id>`). The id segment is dynamic, so this is
+ * the one page URL that genuinely needs a regex instead of a PAGE_URLS string.
+ */
+export const PRODUCT_DETAIL_URL_REGEX = /\/product\/[A-Za-z0-9]+$/;

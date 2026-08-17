@@ -54,7 +54,7 @@ test.describe('Verify login @login', () => {
       await expect(loginPage.loginError).toHaveText(
         'Account locked, too many failed attempts. Please contact the administrator.',
       );
-      await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
+      await expect(page).toHaveURL(PAGE_URLS.LOGIN);
     },
   );
 
@@ -81,7 +81,7 @@ test.describe('Verify login @login', () => {
         await expect(loginPage.totpForm.verifyButton).toBeVisible();
         // The credentials form is swapped out in place — same route, no redirect.
         await expect(loginPage.loginButton).toHaveCount(0);
-        await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
+        await expect(page).toHaveURL(PAGE_URLS.LOGIN);
       },
     );
 
@@ -115,7 +115,7 @@ test.describe('Verify login @login', () => {
         await loginPage.totpForm.submitCode('000000');
 
         await expect(loginPage.loginError).toHaveText('Invalid TOTP');
-        await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.LOGIN}$`));
+        await expect(page).toHaveURL(PAGE_URLS.LOGIN);
         // Unlike the profile page's setup form (§22), the prompt survives the error.
         await expect(loginPage.totpForm.codeInput).toBeVisible();
       },

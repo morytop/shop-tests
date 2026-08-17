@@ -25,7 +25,7 @@ test.describe('Verify forgot password @forgot-password', () => {
 
       await loginPage.openForgotPassword();
 
-      await expect(page).toHaveURL(new RegExp(`${PAGE_URLS.FORGOT_PASSWORD}$`));
+      await expect(page).toHaveURL(PAGE_URLS.FORGOT_PASSWORD);
       await expect(forgotPasswordPage.heading).toBeVisible();
       await expect(forgotPasswordPage.emailInput).toBeVisible();
       await expect(forgotPasswordPage.submitButton).toBeVisible();

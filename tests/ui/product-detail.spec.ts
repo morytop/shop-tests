@@ -45,7 +45,7 @@ test.describe('Verify product detail', () => {
     async ({ homePage, productDetailPage }) => {
       await homePage.goto();
       const found = await homePage.findInStockCardAcrossPages();
-      expect(found).toBe(true);
+      expect(found, 'no in-stock product found across pages').toBe(true);
       await homePage.inStockCard.click();
 
       await expect(productDetailPage.quantityInput).toHaveValue('1');
@@ -70,7 +70,7 @@ test.describe('Verify product detail', () => {
     async ({ homePage, productDetailPage }) => {
       await homePage.goto();
       const found = await homePage.findInStockCardAcrossPages();
-      expect(found).toBe(true);
+      expect(found, 'no in-stock product found across pages').toBe(true);
       await homePage.inStockCard.click();
 
       await productDetailPage.setQuantity('0');
@@ -90,7 +90,7 @@ test.describe('Verify product detail', () => {
     async ({ homePage, productDetailPage, navbar }) => {
       await homePage.goto();
       const found = await homePage.findInStockCardAcrossPages();
-      expect(found).toBe(true);
+      expect(found, 'no in-stock product found across pages').toBe(true);
       await homePage.inStockCard.click();
 
       await productDetailPage.addToCart();
@@ -108,7 +108,7 @@ test.describe('Verify product detail', () => {
     async ({ homePage, productDetailPage }) => {
       await homePage.goto();
       const found = await homePage.findOutOfStockCardAcrossPages();
-      expect(found).toBe(true);
+      expect(found, 'no out-of-stock product found across pages').toBe(true);
 
       await homePage.outOfStockCard.click();
 
@@ -155,7 +155,7 @@ test.describe('Verify product detail', () => {
 
       const status = await productDetailPage.addToFavorites();
 
-      expect(status).toBe(201);
+      expect(status, 'favorites POST should answer 201 Created').toBe(201);
       await expect(productDetailPage.successToast).toHaveText(
         'Product added to your favorites list.',
       );
@@ -187,8 +187,11 @@ test.describe('Verify product detail', () => {
 
       const secondStatus = await productDetailPage.addToFavorites();
 
-      expect(firstStatus).toBe(201);
-      expect(secondStatus).toBe(409);
+      expect(firstStatus, 'arranging add should answer 201 Created').toBe(201);
+      expect(
+        secondStatus,
+        'duplicate favorites POST should answer 409 Conflict',
+      ).toBe(409);
       await expect(productDetailPage.errorToast).toHaveText(
         'Product already in your favorites list.',
       );
@@ -207,7 +210,10 @@ test.describe('Verify product detail', () => {
 
       const status = await productDetailPage.addToFavorites();
 
-      expect(status).toBe(401);
+      expect(
+        status,
+        'logged-out favorites POST should answer 401 Unauthorized',
+      ).toBe(401);
       await expect(productDetailPage.errorToast).toHaveText(
         'Unauthorized, can not add product to your favorite list.',
       );

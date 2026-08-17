@@ -10,9 +10,6 @@ test.describe('Verify product overview / home', () => {
       await homePage.goto();
 
       await expect(homePage.productCards.first()).toBeVisible();
-      const cardCount = await homePage.productCards.count();
-      expect(cardCount).toBeGreaterThan(0);
-
       await expect(homePage.productCardImages.first()).toBeVisible();
       await expect(homePage.productCardNames.first()).not.toBeEmpty();
       await expect(homePage.productCardPrices.first()).toHaveText(
@@ -38,12 +35,16 @@ test.describe('Verify product overview / home', () => {
     { tag: '@regression' },
     async ({ homePage }) => {
       await homePage.goto();
+      await expect(homePage.productCards.first()).toBeVisible();
       const page1Names = await homePage.getProductNames();
 
       await homePage.goToPage(2);
       const page2Names = await homePage.getProductNames();
 
-      expect(page2Names).not.toEqual(page1Names);
+      expect(
+        page2Names,
+        'page 2 shows the same product names as page 1',
+      ).not.toEqual(page1Names);
     },
   );
 
@@ -67,7 +68,7 @@ test.describe('Verify product overview / home', () => {
 
       const found = await homePage.findOutOfStockCardAcrossPages();
 
-      expect(found).toBe(true);
+      expect(found, 'no out-of-stock product found across pages').toBe(true);
       await expect(homePage.outOfStockLabels.first()).toHaveText(
         'Out of stock',
       );

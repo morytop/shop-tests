@@ -13,13 +13,10 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       await expect(homePage.productCards.first()).toBeVisible();
       const baselineNames = await homePage.getProductNames();
 
-      await homePage.childCategoryCheckboxes.first().check();
+      await homePage.filterByChildCategory(0);
 
-      await expect
-        .poll(() => homePage.getProductNames())
-        .not.toEqual(baselineNames);
-      const filteredNames = await homePage.getProductNames();
-      expect(filteredNames.length).toBeGreaterThan(0);
+      await expect(homePage.productCardNames).not.toHaveText(baselineNames);
+      await expect(homePage.productCards.first()).toBeVisible();
     },
   );
 
@@ -31,9 +28,9 @@ test.describe('Verify product overview / home — filters, sort, price range', (
 
       await homePage.topLevelCategoryCheckboxes.first().check();
 
-      const checkedChildCount =
-        await homePage.checkedChildCategoryCheckboxes.count();
-      expect(checkedChildCount).toBeGreaterThan(0);
+      await expect(
+        homePage.checkedChildCategoryCheckboxes.first(),
+      ).toBeVisible();
     },
   );
 
@@ -60,13 +57,10 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       await expect(homePage.productCards.first()).toBeVisible();
       const baselineNames = await homePage.getProductNames();
 
-      await homePage.brandCheckboxes.first().check();
+      await homePage.filterByBrand(0);
 
-      await expect
-        .poll(() => homePage.getProductNames())
-        .not.toEqual(baselineNames);
-      const filteredNames = await homePage.getProductNames();
-      expect(filteredNames.length).toBeGreaterThan(0);
+      await expect(homePage.productCardNames).not.toHaveText(baselineNames);
+      await expect(homePage.productCards.first()).toBeVisible();
     },
   );
 

@@ -20,6 +20,7 @@ export abstract class ProductListPage extends BasePage {
   readonly productCardImages: Locator;
   readonly productCardNames: Locator;
   readonly productCardPrices: Locator;
+  readonly productCardsNotMatchingName: (term: string) => Locator;
   readonly outOfStockLabelSelector: Locator;
   readonly outOfStockLabels: Locator;
   readonly outOfStockCard: Locator;
@@ -48,6 +49,14 @@ export abstract class ProductListPage extends BasePage {
     this.productCardImages = this.productCards.getByRole('img');
     this.productCardNames = this.productCards.getByTestId('product-name');
     this.productCardPrices = this.productCards.getByTestId('product-price');
+    // "Every card matches the term" in web-first form: cards whose name does
+    // not contain the term (case-insensitive substring — same semantics as the
+    // server's name-only search) must resolve to zero elements, and the
+    // negation keeps retrying while the grid re-renders.
+    this.productCardsNotMatchingName = (term: string): Locator =>
+      this.productCards.filter({
+        hasNot: this.page.getByTestId('product-name').filter({ hasText: term }),
+      });
     this.outOfStockLabelSelector = this.page.getByTestId('out-of-stock');
     this.outOfStockLabels = this.productCards.locator(
       this.outOfStockLabelSelector,

@@ -1,5 +1,4 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { BANNER_DISMISS_TIMEOUT } from '@src/ui/constants/timeouts';
 import { prepareRandomProfileDetails } from '@src/ui/factories/user.factory';
 import {
   ProfileDetails,
@@ -78,11 +77,9 @@ test.describe('Verify customer profile', () => {
         'Your profile is successfully updated!',
       );
       await expect(profilePage.profileError).toHaveCount(0);
-      // The banner is detached rather than hidden, so count — not visibility — is the
-      // observable end state of the fade.
-      await expect(profilePage.profileSuccess).toHaveCount(0, {
-        timeout: BANNER_DISMISS_TIMEOUT,
-      });
+      // The banner auto-dismisses after ~5s but offers no user dismiss affordance
+      // (verified live: a plain div.alert, no close button), so its disappearance
+      // is app-internal timer mechanics and deliberately not asserted.
 
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();

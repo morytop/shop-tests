@@ -38,14 +38,14 @@ export interface ProfileDetails {
 
 /**
  * The profile fields the API rejects when blank. Phone, postal code and state are
- * optional — blanking them saves successfully (TEST_PLAN.md §24).
+ * optional — blanking them saves successfully (TEST_PLAN.md §24). Derived from
+ * `ProfileDetails` (rather than declared as free-standing literals) so renaming a
+ * profile field fails compilation here instead of silently forking the two.
  */
-export type RequiredProfileField =
-  | 'firstName'
-  | 'lastName'
-  | 'street'
-  | 'city'
-  | 'country';
+export type RequiredProfileField = keyof Pick<
+  ProfileDetails,
+  'firstName' | 'lastName' | 'street' | 'city' | 'country'
+>;
 
 /**
  * One step of the change-password strength meter: a sample password, and the bar

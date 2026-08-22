@@ -56,6 +56,9 @@ test.describe('Verify product overview / home', () => {
 
       await homePage.goToLastPage();
 
+      // The pagination links carry no `aria-disabled` (verified live) — the
+      // Bootstrap `disabled` class on the parent <li> is the only DOM signal of
+      // the disabled state, so the class assertion is the best available.
       await expect(homePage.paginationNextItem).toHaveClass(/disabled/);
     },
   );

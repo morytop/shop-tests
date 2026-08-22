@@ -7,6 +7,7 @@ import {
 import {
   LoginUser,
   PasswordStrengthLevel,
+  ProfileDetails,
   RequiredProfileField,
 } from '@src/ui/models/user.model';
 
@@ -25,6 +26,22 @@ export const adminUser: LoginUser = {
   email: ADMIN_EMAIL,
   password: ADMIN_PASSWORD,
 };
+
+/**
+ * Every editable profile-form field, in form order — drives the data-driven
+ * value loops in profile.spec.ts. Email is absent on purpose: it renders
+ * readonly and is asserted separately.
+ */
+export const PROFILE_EDITABLE_FIELDS: readonly (keyof ProfileDetails)[] = [
+  'firstName',
+  'lastName',
+  'phone',
+  'street',
+  'postalCode',
+  'city',
+  'state',
+  'country',
+];
 
 /**
  * The required profile fields (blanking any one blocks the save). Phone, postal code

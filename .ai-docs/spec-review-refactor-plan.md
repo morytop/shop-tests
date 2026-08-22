@@ -1,6 +1,6 @@
 # Spec review follow-up — grouped verdicts & phased refactor plan
 
-**Status:** approved plan (2026-08-16); Phases 0–5 implemented, Phase 6 pending. Phases are sized to one PR each and are independent enough to land in order 0 → 6.
+**Status:** approved plan (2026-08-16); all phases (0–6) implemented. Phases are sized to one PR each and are independent enough to land in order 0 → 6.
 
 **Origin:** a manual review of the UI spec suite (~40 comments across 18 spec files). Every comment was verified against the code, the per-spec `.ai-docs/*-plan.md` rationale, `PRODUCT_EXPLORATION.md`, and `TEST_PLAN.md` before a verdict. Verdicts are either **change** (mapped to a phase) or **keep** (with the argument recorded here). Verification also surfaced a handful of latent races the review didn't mention — they are folded into the same phases.
 
@@ -84,6 +84,7 @@ The reviewer's hunch is correct and understated: the `registerUserWithApi` + 6-l
 
 - `'page.forgot-password.confirm'` — **keep**: this is a pinned production bug, not a typo in the test. The template reads `t('page.forgot-password.confirm')` while `en.json` defines `pages.…`, so transloco falls back to echoing the raw key (PRODUCT_EXPLORATION §3, bug row 3). The spec's header comment already says so; optionally extract the string to test-data with a JSDoc pointing at the bug entry so future readers meet the explanation before the literal.
 - Banner timeouts — the underlying timers are real: the forgot-password alert is detached ~3 s after render (a `setTimeout`-driven `@if`, `forgot-password-plan.md`), the profile banner after ~5.4 s (PRODUCT*EXPLORATION §24). The 10 s / 8 s values are those timers plus headroom, not guesses. Change only consistency: both banners are \_detached*, so both assert `toHaveCount(0)` (forgot-password currently uses `toBeHidden`), and the headroom becomes a named `BANNER_DISMISS_TIMEOUT` constant whose comment explains the app-side timer.
+  **Amended during Phase 6 (reviewer decision):** a live check showed neither banner offers any user dismiss affordance — both render as a plain `div.alert` with no close button (measured detach: forgot-password ~3.0 s, profile ~5.0 s) — so their disappearance is app-internal timer mechanics, not user-facing behavior. The disappearance assertions were **dropped entirely** instead of renamed, `BANNER_DISMISS_TIMEOUT` was not kept, and each spec carries a comment recording the live check. This also removed the ~3–5 s wait per test.
 
 ### Group I — validation data placement (change, Phase 0)
 

@@ -1,5 +1,6 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { strengthBarWidthRegex } from '@src/ui/constants/formats';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 import { INVALID_EMAILS, VALID_EMAILS } from '@src/ui/test-data/email.data';
 import { REQUIRED_FIELD_ERRORS } from '@src/ui/test-data/register.data';
@@ -156,7 +157,7 @@ test.describe('Verify register @register', () => {
 
       await expect(registerPage.passwordStrength.fillBar).toHaveAttribute(
         'style',
-        /width:\s*0%/,
+        strengthBarWidthRegex('0%'),
       );
       await expect(registerPage.passwordStrength.activeLabel).toHaveCount(0);
     },

@@ -1,7 +1,12 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { BANNER_DISMISS_TIMEOUT } from '@src/ui/constants/timeouts';
 import { prepareRandomProfileDetails } from '@src/ui/factories/user.factory';
-import { RequiredProfileField } from '@src/ui/models/user.model';
 import {
+  ProfileDetails,
+  RequiredProfileField,
+} from '@src/ui/models/user.model';
+import {
+  PROFILE_EDITABLE_FIELDS,
   PROFILE_REQUIRED_FIELDS,
   PROFILE_VALIDATION_ERROR,
 } from '@src/ui/test-data/user.data';
@@ -29,22 +34,28 @@ test.describe('Verify customer profile', () => {
     { tag: ['@auth', '@profile', '@regression'] },
     async ({ loginAsFreshUser, profilePage }) => {
       const user = await loginAsFreshUser();
+      const registeredValues: ProfileDetails = {
+        firstName: user.first_name,
+        lastName: user.last_name,
+        phone: user.phone,
+        street: user.address.street,
+        postalCode: user.address.postal_code,
+        city: user.address.city,
+        state: user.address.state,
+        country: user.address.country,
+      };
 
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
       await expect(profilePage.pageTitle).toHaveText('Profile');
-      await expect(profilePage.firstNameInput).toHaveValue(user.first_name);
-      await expect(profilePage.lastNameInput).toHaveValue(user.last_name);
+      // Email is not in profileFields (readonly, not editable) — asserted apart.
       await expect(profilePage.emailInput).toHaveValue(user.email);
-      await expect(profilePage.phoneInput).toHaveValue(user.phone);
-      await expect(profilePage.streetInput).toHaveValue(user.address.street);
-      await expect(profilePage.postalCodeInput).toHaveValue(
-        user.address.postal_code,
-      );
-      await expect(profilePage.cityInput).toHaveValue(user.address.city);
-      await expect(profilePage.stateInput).toHaveValue(user.address.state);
-      await expect(profilePage.countryInput).toHaveValue(user.address.country);
+      for (const field of PROFILE_EDITABLE_FIELDS) {
+        await expect(profilePage.profileFields[field]).toHaveValue(
+          registeredValues[field],
+        );
+      }
     },
   );
 
@@ -70,28 +81,17 @@ test.describe('Verify customer profile', () => {
       // The banner is detached rather than hidden, so count — not visibility — is the
       // observable end state of the fade.
       await expect(profilePage.profileSuccess).toHaveCount(0, {
-        timeout: 8000,
+        timeout: BANNER_DISMISS_TIMEOUT,
       });
 
       await profilePage.goto();
       await profilePage.waitForProfileLoaded();
 
-      await expect(profilePage.firstNameInput).toHaveValue(
-        updatedDetails.firstName,
-      );
-      await expect(profilePage.lastNameInput).toHaveValue(
-        updatedDetails.lastName,
-      );
-      await expect(profilePage.phoneInput).toHaveValue(updatedDetails.phone);
-      await expect(profilePage.streetInput).toHaveValue(updatedDetails.street);
-      await expect(profilePage.postalCodeInput).toHaveValue(
-        updatedDetails.postalCode,
-      );
-      await expect(profilePage.cityInput).toHaveValue(updatedDetails.city);
-      await expect(profilePage.stateInput).toHaveValue(updatedDetails.state);
-      await expect(profilePage.countryInput).toHaveValue(
-        updatedDetails.country,
-      );
+      for (const field of PROFILE_EDITABLE_FIELDS) {
+        await expect(profilePage.profileFields[field]).toHaveValue(
+          updatedDetails[field],
+        );
+      }
     },
   );
 

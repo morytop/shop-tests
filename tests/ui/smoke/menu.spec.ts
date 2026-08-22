@@ -1,6 +1,6 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 
-test.describe('Verify menu bookmarks @smoke', () => {
+test.describe('Verify menu bookmarks', { tag: '@smoke' }, () => {
   // Links whose destination updates the document <title>.
   const titleLinks = [
     { name: 'hand tools', title: /Hand Tools/ },

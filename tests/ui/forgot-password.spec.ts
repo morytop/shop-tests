@@ -1,8 +1,10 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { BANNER_DISMISS_TIMEOUT } from '@src/ui/constants/timeouts';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 import { INVALID_EMAILS } from '@src/ui/test-data/email.data';
+import { FORGOT_PASSWORD_CONFIRMATION_TEXT } from '@src/ui/test-data/forgot-password.data';
 
 // User Stories v5 — Forgot password (TEST_PLAN.md §5.12). The form is one Angular
 // reactive form whose error block is submit-gated (`@if (email.invalid && submitted)`),
@@ -71,12 +73,10 @@ test.describe('Verify forgot password @forgot-password', () => {
     },
   );
 
-  // AC3 — a registered address is accepted and confirmed, and the banner disappears
-  // after ~3s. The user is disposable because this call RESETS its password (§21).
-  // The confirmation renders the raw i18n key `page.forgot-password.confirm`: the
-  // template reads `t('page.…')` while en.json defines `pages.…`, so transloco falls
-  // back to echoing the key. Pinned as-is — the intended copy is
-  // "Your password is successfully updated!".
+  // AC3 — a registered address is accepted and confirmed (with the raw i18n key the
+  // form actually renders — see FORGOT_PASSWORD_CONFIRMATION_TEXT for the pinned
+  // bug), and the banner disappears after ~3s. The user is disposable because this
+  // call RESETS its password (§21).
   test(
     'confirm the reset for a registered email and fade the message',
     { tag: ['@auth', '@forgot-password', '@regression'] },
@@ -87,12 +87,13 @@ test.describe('Verify forgot password @forgot-password', () => {
       await forgotPasswordPage.submitAndAwaitResponse(user.email);
 
       await expect(forgotPasswordPage.successAlert).toHaveText(
-        'page.forgot-password.confirm',
+        FORGOT_PASSWORD_CONFIRMATION_TEXT,
       );
       await expect(forgotPasswordPage.errorAlert).toHaveCount(0);
-      // The banner is detached ~3s after it renders (no CSS fade, an `@if` toggle).
-      await expect(forgotPasswordPage.successAlert).toBeHidden({
-        timeout: 10_000,
+      // The banner is detached (an `@if` toggle, no CSS fade), so count — not
+      // visibility — is the observable end state of the fade.
+      await expect(forgotPasswordPage.successAlert).toHaveCount(0, {
+        timeout: BANNER_DISMISS_TIMEOUT,
       });
     },
   );

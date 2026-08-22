@@ -1,4 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
+import { strengthBarWidthRegex } from '@src/ui/constants/formats';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { prepareRandomPassword } from '@src/ui/factories/user.factory';
 import {
@@ -72,7 +73,7 @@ test.describe('Verify change password', () => {
 
         await expect(profilePage.passwordStrength.fillBar).toHaveAttribute(
           'style',
-          new RegExp(`width:\\s*${level.width};`),
+          strengthBarWidthRegex(level.width),
         );
         await expect(profilePage.passwordStrength.activeLabel).toHaveText(
           level.label,

@@ -85,10 +85,14 @@ test.describe('Verify product overview / home — filters, sort, price range', (
       );
 
       await homePage.filterByChildCategory(0);
-      const combinedNames = await homePage.getAllProductNamesAcrossPages();
+      const combinedNames = new Set(
+        await homePage.getAllProductNamesAcrossPages(),
+      );
 
       // Category + brand together must yield exactly the set-intersection of
-      // the two filters applied alone — no more (union) and no less.
+      // the two filters applied alone — no more (union) and no less. Both sides
+      // are Set-deduplicated: names are not unique in the shared prod catalog,
+      // and set algebra only holds between two deduplicated sides.
       const expectedIntersection = [...categoryOnlyNames]
         .filter((name) => brandOnlyNames.has(name))
         .sort();

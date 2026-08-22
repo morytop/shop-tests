@@ -20,3 +20,12 @@ export const BARE_PRICE_REGEX = /^\d+\.\d{2}$/;
  * populated-secret wait gate.
  */
 export const TOTP_SECRET_REGEX = /^[A-Z2-7]{16}$/;
+
+/**
+ * The password strength meter's fill bar carries its width as an inline
+ * `style="width: 20%;"` (trailing semicolon included — verified live on both the
+ * register and change-password meters). Shared by both specs so the two
+ * assertions can't drift apart in shape again.
+ */
+export const strengthBarWidthRegex = (width: string): RegExp =>
+  new RegExp(`width:\\s*${width};`);

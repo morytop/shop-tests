@@ -7,17 +7,20 @@ import { Locator, Page } from '@playwright/test';
  * and cells carry **no `data-test`** — the same shape as the customer invoices and
  * messages lists (TEST_PLAN.md §29/§30) — so everything is located structurally by role.
  *
- * Concrete subclasses supply only their `PAGE_URL`; the per-row edit/delete controls are
- * keyed by entity ULID and are deliberately not modelled here, this pass being read-only
- * (§31).
+ * The six sections differ only in their URL, so this class is instantiated directly with
+ * one of the `PAGE_URLS.ADMIN_*` constants rather than being subclassed per section. The
+ * per-row edit/delete controls are keyed by entity ULID and are deliberately not modelled
+ * here, this pass being read-only (§31).
  */
-export abstract class AdminListPage extends AdminPage {
+export class AdminListPage extends AdminPage {
+  readonly PAGE_URL: string;
   readonly table: Locator;
   readonly columnHeaders: Locator;
   readonly rows: Locator;
 
-  constructor(page: Page) {
+  constructor(page: Page, pageUrl: string) {
     super(page);
+    this.PAGE_URL = pageUrl;
     this.table = this.page.getByRole('table');
     this.columnHeaders = this.table.getByRole('columnheader');
     // Body rows only — `getByRole('row')` on the table would include the header row.

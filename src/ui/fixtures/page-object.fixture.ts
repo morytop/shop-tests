@@ -1,18 +1,13 @@
 import { test as base } from '@playwright/test';
 import { ChatWidgetComponent } from '@src/ui/components/chat-widget.component';
 import { NavbarComponent } from '@src/ui/components/navbar.component';
+import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { AccountPage } from '@src/ui/pages/account.page';
-import { AdminAverageSalesPerMonthPage } from '@src/ui/pages/admin-average-sales-per-month.page';
-import { AdminAverageSalesPerWeekPage } from '@src/ui/pages/admin-average-sales-per-week.page';
-import { AdminBrandsPage } from '@src/ui/pages/admin-brands.page';
-import { AdminCategoriesPage } from '@src/ui/pages/admin-categories.page';
 import { AdminDashboardPage } from '@src/ui/pages/admin-dashboard.page';
-import { AdminMessagesPage } from '@src/ui/pages/admin-messages.page';
-import { AdminOrdersPage } from '@src/ui/pages/admin-orders.page';
-import { AdminProductsPage } from '@src/ui/pages/admin-products.page';
+import { AdminListPage } from '@src/ui/pages/admin-list.page';
+import { AdminSalesReportPage } from '@src/ui/pages/admin-sales-report.page';
 import { AdminSettingsPage } from '@src/ui/pages/admin-settings.page';
 import { AdminStatisticsPage } from '@src/ui/pages/admin-statistics.page';
-import { AdminUsersPage } from '@src/ui/pages/admin-users.page';
 import { CartPage } from '@src/ui/pages/cart.page';
 import { CheckoutAddressPage } from '@src/ui/pages/checkout-address.page';
 import { CheckoutPaymentPage } from '@src/ui/pages/checkout-payment.page';
@@ -21,7 +16,6 @@ import { ContactPage } from '@src/ui/pages/contact.page';
 import { FavoritesPage } from '@src/ui/pages/favorites.page';
 import { ForgotPasswordPage } from '@src/ui/pages/forgot-password.page';
 import { HandToolsPage } from '@src/ui/pages/hand-tools.page';
-import { HomePage } from '@src/ui/pages/home.page';
 import { InvoiceDetailPage } from '@src/ui/pages/invoice-detail.page';
 import { InvoicesPage } from '@src/ui/pages/invoices.page';
 import { LoginPage } from '@src/ui/pages/login.page';
@@ -31,6 +25,7 @@ import { OtherPage } from '@src/ui/pages/other.page';
 import { PowerToolsPage } from '@src/ui/pages/power-tools.page';
 import { PrivacyPage } from '@src/ui/pages/privacy.page';
 import { ProductDetailPage } from '@src/ui/pages/product-detail.page';
+import { ProductListPage } from '@src/ui/pages/product-list.page';
 import { ProfilePage } from '@src/ui/pages/profile.page';
 import { RegisterPage } from '@src/ui/pages/register.page';
 import { RentalsPage } from '@src/ui/pages/rentals.page';
@@ -38,17 +33,17 @@ import { SpecialToolsPage } from '@src/ui/pages/special-tools.page';
 
 export type Pages = {
   accountPage: AccountPage;
-  adminAverageSalesPerMonthPage: AdminAverageSalesPerMonthPage;
-  adminAverageSalesPerWeekPage: AdminAverageSalesPerWeekPage;
-  adminBrandsPage: AdminBrandsPage;
-  adminCategoriesPage: AdminCategoriesPage;
+  adminAverageSalesPerMonthPage: AdminSalesReportPage;
+  adminAverageSalesPerWeekPage: AdminSalesReportPage;
+  adminBrandsPage: AdminListPage;
+  adminCategoriesPage: AdminListPage;
   adminDashboardPage: AdminDashboardPage;
-  adminMessagesPage: AdminMessagesPage;
-  adminOrdersPage: AdminOrdersPage;
-  adminProductsPage: AdminProductsPage;
+  adminMessagesPage: AdminListPage;
+  adminOrdersPage: AdminListPage;
+  adminProductsPage: AdminListPage;
   adminSettingsPage: AdminSettingsPage;
   adminStatisticsPage: AdminStatisticsPage;
-  adminUsersPage: AdminUsersPage;
+  adminUsersPage: AdminListPage;
   cartPage: CartPage;
   // Rendered on every page and owning no URL of its own, so it is injected directly
   // rather than hanging off one page object (TEST_PLAN.md §32).
@@ -60,7 +55,7 @@ export type Pages = {
   favoritesPage: FavoritesPage;
   forgotPasswordPage: ForgotPasswordPage;
   handToolsPage: HandToolsPage;
-  homePage: HomePage;
+  homePage: ProductListPage;
   invoiceDetailPage: InvoiceDetailPage;
   invoicesPage: InvoicesPage;
   loginPage: LoginPage;
@@ -84,28 +79,32 @@ export const pageObjectTest = base.extend<Pages>({
     await use(new AccountPage(page));
   },
   adminAverageSalesPerMonthPage: async ({ page }, use) => {
-    await use(new AdminAverageSalesPerMonthPage(page));
+    await use(
+      new AdminSalesReportPage(page, PAGE_URLS.ADMIN_AVERAGE_SALES_PER_MONTH),
+    );
   },
   adminAverageSalesPerWeekPage: async ({ page }, use) => {
-    await use(new AdminAverageSalesPerWeekPage(page));
+    await use(
+      new AdminSalesReportPage(page, PAGE_URLS.ADMIN_AVERAGE_SALES_PER_WEEK),
+    );
   },
   adminBrandsPage: async ({ page }, use) => {
-    await use(new AdminBrandsPage(page));
+    await use(new AdminListPage(page, PAGE_URLS.ADMIN_BRANDS));
   },
   adminCategoriesPage: async ({ page }, use) => {
-    await use(new AdminCategoriesPage(page));
+    await use(new AdminListPage(page, PAGE_URLS.ADMIN_CATEGORIES));
   },
   adminDashboardPage: async ({ page }, use) => {
     await use(new AdminDashboardPage(page));
   },
   adminMessagesPage: async ({ page }, use) => {
-    await use(new AdminMessagesPage(page));
+    await use(new AdminListPage(page, PAGE_URLS.ADMIN_MESSAGES));
   },
   adminOrdersPage: async ({ page }, use) => {
-    await use(new AdminOrdersPage(page));
+    await use(new AdminListPage(page, PAGE_URLS.ADMIN_ORDERS));
   },
   adminProductsPage: async ({ page }, use) => {
-    await use(new AdminProductsPage(page));
+    await use(new AdminListPage(page, PAGE_URLS.ADMIN_PRODUCTS));
   },
   adminSettingsPage: async ({ page }, use) => {
     await use(new AdminSettingsPage(page));
@@ -114,7 +113,7 @@ export const pageObjectTest = base.extend<Pages>({
     await use(new AdminStatisticsPage(page));
   },
   adminUsersPage: async ({ page }, use) => {
-    await use(new AdminUsersPage(page));
+    await use(new AdminListPage(page, PAGE_URLS.ADMIN_USERS));
   },
   cartPage: async ({ page }, use) => {
     await use(new CartPage(page));
@@ -144,7 +143,7 @@ export const pageObjectTest = base.extend<Pages>({
     await use(new HandToolsPage(page));
   },
   homePage: async ({ page }, use) => {
-    await use(new HomePage(page));
+    await use(new ProductListPage(page, PAGE_URLS.HOME));
   },
   invoiceDetailPage: async ({ page }, use) => {
     await use(new InvoiceDetailPage(page));

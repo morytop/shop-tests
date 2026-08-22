@@ -6,16 +6,17 @@ import { waitForApi } from '@src/ui/utils/network.util';
 /**
  * Shared product-listing interface backing both the home/overview page and the
  * per-category pages, which are the same Angular overview component (the
- * category variant is merely pre-scoped to a category server-side). Concrete
- * subclasses only supply their own PAGE_URL (and, for category pages, a
- * category heading); the grid/filter/search/sort/price/pagination behaviour
- * lives here once.
+ * category variant is merely pre-scoped to a category server-side). The home page is
+ * this class instantiated directly with `PAGE_URLS.HOME`; category pages subclass it
+ * only to add their category heading, passing their own URL through to this
+ * constructor. The grid/filter/search/sort/price/pagination behaviour lives here once.
  */
-export abstract class ProductListPage extends BasePage {
+export class ProductListPage extends BasePage {
   // Safety bound for the page walkers: far above the real catalog size, it only
   // exists so a broken next-button can't loop a walk forever.
   private static readonly MAX_PAGINATION_PAGES = 50;
 
+  readonly PAGE_URL: string;
   readonly productCards: Locator;
   readonly productCardImages: Locator;
   readonly productCardNames: Locator;
@@ -43,8 +44,9 @@ export abstract class ProductListPage extends BasePage {
   readonly priceRangeMinHandle: Locator;
   readonly priceRangeMaxHandle: Locator;
 
-  constructor(page: Page) {
+  constructor(page: Page, pageUrl: string) {
     super(page);
+    this.PAGE_URL = pageUrl;
     this.productCards = this.page.locator('a.card[data-test^="product-"]');
     this.productCardImages = this.productCards.getByRole('img');
     this.productCardNames = this.productCards.getByTestId('product-name');

@@ -3,11 +3,10 @@ import { Locator, Page } from '@playwright/test';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
 export class SpecialToolsPage extends ProductListPage {
-  readonly PAGE_URL = PAGE_URLS.SPECIAL_TOOLS;
   readonly heading: Locator;
 
   constructor(page: Page) {
-    super(page);
+    super(page, PAGE_URLS.SPECIAL_TOOLS);
     this.heading = page.getByRole('heading', {
       name: 'Category: Special Tools',
     });

@@ -21,13 +21,13 @@ export class ProductDetailPage extends BasePage {
   readonly outOfStockLabel: Locator;
   readonly relatedProductsHeading: Locator;
   readonly relatedProductCards: Locator;
-  readonly successToast: Locator;
-  readonly errorToast: Locator;
+  readonly toastWithText: (text: string) => Locator;
 
   constructor(page: Page) {
     super(page);
-    // The main product image is the only `.figure-img`; related cards use `.card-img-top`.
-    this.productImage = this.page.locator('img.figure-img');
+    // The main product image is the only element wrapped in a <figure> — related
+    // cards render their images as plain <img>, no <figure> ancestor.
+    this.productImage = this.page.getByRole('figure').getByRole('img');
     this.productName = this.page.getByTestId('product-name');
     this.productPrice = this.page.getByTestId('unit-price');
     this.productDescription = this.page.getByTestId('product-description');
@@ -43,9 +43,19 @@ export class ProductDetailPage extends BasePage {
     this.relatedProductsHeading = this.page.getByRole('heading', {
       name: 'Related products',
     });
-    this.relatedProductCards = this.page.locator('a.card');
-    this.successToast = this.page.locator('.ngx-toastr.toast-success');
-    this.errorToast = this.page.locator('.ngx-toastr.toast-error');
+    // Related cards carry no `data-test`; each contains exactly one <h5> (its name).
+    this.relatedProductCards = this.page
+      .getByRole('link')
+      .filter({ has: this.page.getByRole('heading', { level: 5 }) });
+    // ngx-toastr gives both success and error toasts the identical role="alert" with
+    // no other distinguishing role/label — but the toast's `aria-label` duplicates its
+    // full message text (verified live), so filtering by accessible name via `name`
+    // recovers exact-message precision without any CSS. Required, not just tidier: a
+    // bare `getByRole('alert')` throws a strict-mode violation whenever a prior toast
+    // is still fading out when the next one appears (observed live in the
+    // add-favorite-twice flow).
+    this.toastWithText = (text: string): Locator =>
+      this.page.getByRole('alert', { name: text, exact: true });
   }
 
   async increaseQuantity(times: number): Promise<void> {

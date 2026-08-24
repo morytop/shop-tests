@@ -16,6 +16,10 @@ export class RentalsPage extends BasePage {
       name: 'Rentals',
       exact: true,
     });
+    // Verified live: each card is a plain `<div data-test="product-{id}" tabindex="0">`
+    // with no role/label of any kind (not even a button/link role despite being
+    // clickable) and no role-based parent to scope off — the raw prefix match is the
+    // only option.
     this.rentalCards = this.page.locator('[data-test^="product-"]');
     this.rentalCardImages = this.rentalCards.getByRole('img');
     this.rentalCardNames = this.rentalCards.getByRole('heading', { level: 5 });

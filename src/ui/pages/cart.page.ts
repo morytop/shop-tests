@@ -1,6 +1,15 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { parsePrice } from '@src/ui/utils/price.util';
+
+/** The cart's per-line prices plus the Subtotal/Discount/Total breakdown, parsed to numbers. */
+export interface CartFinancialSummary {
+  lineTotals: number[];
+  subtotal: number;
+  discount: number;
+  total: number;
+}
 
 export class CartPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
@@ -67,5 +76,16 @@ export class CartPage extends BasePage {
 
   async proceedToCheckout(): Promise<void> {
     await this.proceedButton.click();
+  }
+
+  async getFinancialSummary(): Promise<CartFinancialSummary> {
+    const lineTotals = (await this.linePrices.allInnerTexts()).map(parsePrice);
+
+    return {
+      lineTotals,
+      subtotal: parsePrice(await this.cartSubtotal.innerText()),
+      discount: parsePrice(await this.cartDiscount.innerText()),
+      total: parsePrice(await this.cartTotal.innerText()),
+    };
   }
 }

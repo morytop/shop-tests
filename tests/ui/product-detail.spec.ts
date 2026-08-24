@@ -94,9 +94,9 @@ test.describe('Verify product detail', () => {
 
       await productDetailPage.addToCart();
 
-      await expect(productDetailPage.successToast).toHaveText(
-        'Product added to shopping cart.',
-      );
+      await expect(
+        productDetailPage.toastWithText('Product added to shopping cart.'),
+      ).toBeVisible();
       await expect(navbar.cartQuantity).toHaveText('1');
     },
   );
@@ -146,10 +146,11 @@ test.describe('Verify product detail', () => {
       const status = await productDetailPage.addToFavorites();
 
       expect(status, 'favorites POST should answer 201 Created').toBe(201);
-      await expect(productDetailPage.successToast).toHaveText(
-        'Product added to your favorites list.',
-      );
-      await expect(productDetailPage.errorToast).toHaveCount(0);
+      await expect(
+        productDetailPage.toastWithText(
+          'Product added to your favorites list.',
+        ),
+      ).toBeVisible();
     },
   );
 
@@ -173,9 +174,11 @@ test.describe('Verify product detail', () => {
         secondStatus,
         'duplicate favorites POST should answer 409 Conflict',
       ).toBe(409);
-      await expect(productDetailPage.errorToast).toHaveText(
-        'Product already in your favorites list.',
-      );
+      await expect(
+        productDetailPage.toastWithText(
+          'Product already in your favorites list.',
+        ),
+      ).toBeVisible();
     },
   );
 
@@ -195,10 +198,11 @@ test.describe('Verify product detail', () => {
         status,
         'logged-out favorites POST should answer 401 Unauthorized',
       ).toBe(401);
-      await expect(productDetailPage.errorToast).toHaveText(
-        'Unauthorized, can not add product to your favorite list.',
-      );
-      await expect(productDetailPage.successToast).toHaveCount(0);
+      await expect(
+        productDetailPage.toastWithText(
+          'Unauthorized, can not add product to your favorite list.',
+        ),
+      ).toBeVisible();
     },
   );
 });

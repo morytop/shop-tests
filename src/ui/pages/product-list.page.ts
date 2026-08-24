@@ -4,6 +4,11 @@ import { API_PATHS } from '@src/api/utils/api.util';
 import { waitForApi } from '@src/ui/utils/network.util';
 
 export class ProductListPage extends BasePage {
+  // Hard ceiling on walkPages' loop: the catalog is shared, mutable production data
+  // (no seeded reset, §3), so a stalled "Next" (app bug) or organic catalog growth
+  // could otherwise hang a test indefinitely. Verified live the product grid currently
+  // runs 5 pages and the same pagination component elsewhere (invoices) already reaches
+  // 11 — 50 is a comfortable, not arbitrary, margin above that.
   private static readonly MAX_PAGINATION_PAGES = 50;
 
   readonly PAGE_URL: string;
@@ -37,7 +42,9 @@ export class ProductListPage extends BasePage {
   constructor(page: Page, pageUrl: string) {
     super(page);
     this.PAGE_URL = pageUrl;
-    this.productCards = this.page.locator('a.card[data-test^="product-"]');
+    this.productCards = this.page
+      .getByRole('link')
+      .filter({ has: this.page.getByTestId('product-name') });
     this.productCardImages = this.productCards.getByRole('img');
     this.productCardNames = this.productCards.getByTestId('product-name');
     this.productCardPrices = this.productCards.getByTestId('product-price');
@@ -130,6 +137,9 @@ export class ProductListPage extends BasePage {
   private async goToNextPage(): Promise<void> {
     const current = Number((await this.activePageItem.textContent())?.trim());
     await this.triggerAndAwaitProducts(this.paginationNextLink.click());
+    // Anchored, not a plain string: hasText does substring matching, so an unanchored
+    // '1' would also match an active item reading "10"/"11" — confirmed live this
+    // pagination component does reach double digits elsewhere (invoices, 11 pages).
     await this.activePageItem
       .filter({ hasText: new RegExp(`^${current + 1}$`) })
       .waitFor();
@@ -215,6 +225,9 @@ export class ProductListPage extends BasePage {
     }
   }
 
+  // `.and()` here isn't picking a different element — it's the "wait until this same
+  // handle also has the attribute" idiom (mirrors `checkedChildCategoryCheckboxes`
+  // above): ngx-slider can render the handle before it attaches `aria-valuenow`.
   private async getSliderValue(handle: Locator): Promise<string> {
     const handleWithValue = handle.and(this.page.locator('[aria-valuenow]'));
     await handleWithValue.waitFor();
@@ -237,6 +250,7 @@ export class ProductListPage extends BasePage {
     await this.triggerAndAwaitProducts(
       this.paginationPageLink(pageNumber).click(),
     );
+    // Anchored for the same reason as goToNextPage — see its comment.
     await this.activePageItem
       .filter({ hasText: new RegExp(`^${pageNumber}$`) })
       .waitFor();

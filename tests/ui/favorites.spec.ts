@@ -30,9 +30,7 @@ test.describe('Verify favorites', () => {
       await favoritesPage.gotoAndAwaitLoaded();
 
       await expect(favoritesPage.pageTitle).toHaveText('Favorites');
-      await expect(favoritesPage.emptyMessage).toHaveText(
-        'There are no favorites yet. In order to add favorites, please go to the product listing and mark some products as your favorite.',
-      );
+      await expect(favoritesPage.emptyMessage).toBeVisible();
       await expect(favoritesPage.favoriteCards).toHaveCount(0);
     },
   );

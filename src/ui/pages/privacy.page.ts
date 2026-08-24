@@ -11,7 +11,9 @@ export class PrivacyPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.content = page.locator('app-privacy');
-    this.sectionTitles = this.content.locator('strong');
+    // <strong> has an implicit ARIA "strong" role (HTML-AAM) — verified live that
+    // Playwright's accessibility tree exposes it, so role-based beats a raw tag selector.
+    this.sectionTitles = this.content.getByRole('strong');
     this.footerLink = page
       .getByRole('contentinfo')
       .getByRole('link', { name: 'Privacy Policy' });

@@ -30,6 +30,10 @@ export class InvoiceDetailPage extends BasePage {
     this.invoiceDate = this.page.getByTestId('invoice-date');
     // Present only on a discounted invoice. `#additional_discount_percentage` holds
     // an *amount* ("$ 22.60") despite its id — the 15% appears only in the label.
+    // Must stay id-based, not getByTestId: verified live that on a discounted invoice
+    // all three of subtotal/discount/total share the exact same `data-test="total"`
+    // (PRODUCT_EXPLORATION.md §5/§33 — a documented app bug), which would make
+    // getByTestId('total') match all three at once.
     this.subtotal = this.page.locator('#subtotal');
     this.discount = this.page.locator('#additional_discount_percentage');
     this.discountLabel = this.page.getByText('Discount (15%)');

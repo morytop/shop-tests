@@ -11,7 +11,7 @@ export class PrivacyPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.content = page.locator('app-privacy');
-    this.sectionTitles = this.content.locator('strong');
+    this.sectionTitles = this.content.getByRole('strong');
     this.footerLink = page
       .getByRole('contentinfo')
       .getByRole('link', { name: 'Privacy Policy' });

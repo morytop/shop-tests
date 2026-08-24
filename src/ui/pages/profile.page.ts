@@ -6,6 +6,10 @@ import { TOTP_SECRET_REGEX } from '@src/ui/constants/formats';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
 
+// Matches `firstNameInput` below (`getByTestId('first-name')`, testIdAttribute
+// `data-test` per playwright.config.ts) — kept as a plain selector because
+// `page.waitForFunction`'s browser-context callback needs a raw string or an
+// ElementHandle, and a Locator can't be passed in directly.
 const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
 
 export class ProfilePage extends BasePage {

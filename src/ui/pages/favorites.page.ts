@@ -16,9 +16,12 @@ export class FavoritesPage extends BasePage {
   constructor(page: Page) {
     super(page);
     const favoritesRoot = this.page.locator('app-favorites');
-    // The empty-state message carries no `data-test` and no role of its own; the only
-    // thing distinguishing it from a favorite is that it is not a card.
-    this.emptyMessage = favoritesRoot.locator('div.col > div:not(.card)');
+    // The empty-state message carries no `data-test` and no role of its own — a bare
+    // `<div>` with the copy as its only content — so exact text is the only handle.
+    this.emptyMessage = favoritesRoot.getByText(
+      'There are no favorites yet. In order to add favorites, please go to the product listing and mark some products as your favorite.',
+      { exact: true },
+    );
     // `data-test` holds the *favorite's* id, not the product's, so match on the prefix.
     this.favoriteCards = favoritesRoot.locator(
       'div.card[data-test^="favorite-"]',

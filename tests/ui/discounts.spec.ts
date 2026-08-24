@@ -1,6 +1,14 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { parsePrice } from '@src/ui/utils/price.util';
 
+// Cart badge counts `addProductToCart`/`addRentalToCart` (cart-action.fixture.ts) wait
+// for after each add — the *running total* of items in the cart, not a rental duration.
+const PRODUCT_CARD_INDEX = 0;
+const RENTAL_CARD_INDEX = 0;
+const CART_BADGE_AFTER_PRODUCT = '1';
+const CART_BADGE_AFTER_RENTAL = '2';
+const COMBINATION_DISCOUNT_RATE = 0.15;
+
 // User Stories v5 — Discounts (TEST_PLAN.md §5.22). Covers the one discount mechanism
 // that is actually automatable: the 15% combination discount a cart earns by holding
 // both a rental and a non-rental item. That is also §5.5 AC7/AC8 (cart breakdown + its
@@ -25,28 +33,26 @@ test.describe('Verify discounts', () => {
     'cart with a rental and a non-rental item gets the 15% combination discount',
     { tag: ['@checkout', '@discounts', '@regression'] },
     async ({ addProductToCart, addRentalToCart, cartPage }) => {
-      await addProductToCart(0, '1');
-      await addRentalToCart(0, '2');
+      await addProductToCart(PRODUCT_CARD_INDEX, CART_BADGE_AFTER_PRODUCT);
+      await addRentalToCart(RENTAL_CARD_INDEX, CART_BADGE_AFTER_RENTAL);
 
       await cartPage.goto();
 
       await expect(cartPage.productTitles).toHaveCount(2);
       await expect(cartPage.cartDiscountLabel).toBeVisible();
 
-      const lineTotal = parsePrice(
-        await cartPage.linePrices.nth(0).innerText(),
-      );
-      const rentalLineTotal = parsePrice(
-        await cartPage.linePrices.nth(1).innerText(),
-      );
-      const subtotal = parsePrice(await cartPage.cartSubtotal.innerText());
-      const discount = parsePrice(await cartPage.cartDiscount.innerText());
-      const total = parsePrice(await cartPage.cartTotal.innerText());
+      const summary = await cartPage.getFinancialSummary();
 
-      expect(subtotal).toBeCloseTo(lineTotal + rentalLineTotal, 2);
-      expect(discount).toBeCloseTo(subtotal * 0.15, 2);
-      expect(total).toBeCloseTo(subtotal - discount, 2);
-      expect(total).toBeLessThan(subtotal);
+      expect(summary.subtotal).toBeCloseTo(
+        summary.lineTotals[0] + summary.lineTotals[1],
+        2,
+      );
+      expect(summary.discount).toBeCloseTo(
+        summary.subtotal * COMBINATION_DISCOUNT_RATE,
+        2,
+      );
+      expect(summary.total).toBeCloseTo(summary.subtotal - summary.discount, 2);
+      expect(summary.total).toBeLessThan(summary.subtotal);
     },
   );
 
@@ -57,8 +63,8 @@ test.describe('Verify discounts', () => {
     'removing the rental removes the combination discount and reverts the total',
     { tag: ['@checkout', '@discounts', '@regression'] },
     async ({ addProductToCart, addRentalToCart, cartPage }) => {
-      await addProductToCart(0, '1');
-      await addRentalToCart(0, '2');
+      await addProductToCart(PRODUCT_CARD_INDEX, CART_BADGE_AFTER_PRODUCT);
+      await addRentalToCart(RENTAL_CARD_INDEX, CART_BADGE_AFTER_RENTAL);
       await cartPage.goto();
       await expect(cartPage.cartDiscount).toBeVisible();
       const survivorLine = (
@@ -95,8 +101,8 @@ test.describe('Verify discounts', () => {
     }) => {
       await loginAsFreshUser();
 
-      await addProductToCart(0, '1');
-      await addRentalToCart(0, '2');
+      await addProductToCart(PRODUCT_CARD_INDEX, CART_BADGE_AFTER_PRODUCT);
+      await addRentalToCart(RENTAL_CARD_INDEX, CART_BADGE_AFTER_RENTAL);
       await cartPage.goto();
       const subtotal = parsePrice(await cartPage.cartSubtotal.innerText());
       const discount = parsePrice(await cartPage.cartDiscount.innerText());
@@ -123,7 +129,7 @@ test.describe('Verify discounts', () => {
         await invoiceDetailPage.total.inputValue(),
       );
       expect(invoiceTotal).toBeCloseTo(parsePrice(order.total), 2);
-      expect(discount).toBeCloseTo(subtotal * 0.15, 2);
+      expect(discount).toBeCloseTo(subtotal * COMBINATION_DISCOUNT_RATE, 2);
 
       await expect(invoiceDetailPage.lineItemRows).toHaveCount(2);
     },

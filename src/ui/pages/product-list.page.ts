@@ -4,11 +4,6 @@ import { API_PATHS } from '@src/api/utils/api.util';
 import { waitForApi } from '@src/ui/utils/network.util';
 
 export class ProductListPage extends BasePage {
-  // Hard ceiling on walkPages' loop: the catalog is shared, mutable production data
-  // (no seeded reset, §3), so a stalled "Next" (app bug) or organic catalog growth
-  // could otherwise hang a test indefinitely. Verified live the product grid currently
-  // runs 5 pages and the same pagination component elsewhere (invoices) already reaches
-  // 11 — 50 is a comfortable, not arbitrary, margin above that.
   private static readonly MAX_PAGINATION_PAGES = 50;
 
   readonly PAGE_URL: string;

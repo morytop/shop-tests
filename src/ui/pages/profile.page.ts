@@ -49,9 +49,6 @@ export class ProfilePage extends BasePage {
     this.totpHeading = this.page.getByRole('heading', {
       name: 'Set up Two-Factor Authentication',
     });
-    // Verified live: <qrcode><div class="qrcode"><canvas>...</canvas></div></qrcode> —
-    // no data-test, role, or aria-label anywhere in the subtree (a <canvas> can't carry
-    // alt text). This CSS chain is genuinely the only way to match it.
     this.totpQrCode = this.page.locator('qrcode canvas');
     this.totpSecret = this.page.getByTestId('totp-secret');
     this.populatedTotpSecret = this.totpSecret.filter({
@@ -106,11 +103,6 @@ export class ProfilePage extends BasePage {
     this.passwordStrength = new PasswordStrengthComponent(this.passwordForm);
   }
 
-  // The value, not just the element, needs waiting on (an async fetch populates it
-  // after render) — no Locator wait expresses that for an input's value, so this polls
-  // the DOM directly via `waitForFunction`. Passing an ElementHandle instead of this
-  // selector was considered, but Playwright's own docs call ElementHandles "inherently
-  // racy" versus Locators and its type can resolve null — not worth it for one field.
   async waitForProfileLoaded(): Promise<void> {
     await this.page.waitForFunction((selector) => {
       const input = document.querySelector<HTMLInputElement>(selector);

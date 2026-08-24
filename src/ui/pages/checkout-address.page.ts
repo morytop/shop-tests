@@ -5,15 +5,6 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { Address, AddressTextField } from '@src/ui/models/address.model';
 import { waitForApi } from '@src/ui/utils/network.util';
 
-/**
- * The "Billing Address" step of the checkout wizard (`/checkout`), reached by
- * advancing past the sign-in step (guest or logged-in) — `goto()` lands on the
- * cart step, not here, like `CheckoutSigninPage`/`ProductDetailPage`. The form is
- * an Angular reactive form: every field is required and the "Proceed to checkout"
- * button (`proceed-3`) stays disabled until the whole form is valid. There are no
- * native `maxlength` attributes and no visible error text — an empty/over-long
- * field only carries the `ng-invalid` class (TEST_PLAN.md §16).
- */
 export class CheckoutAddressPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
   readonly heading: Locator;
@@ -24,14 +15,12 @@ export class CheckoutAddressPage extends BasePage {
   readonly cityInput: Locator;
   readonly stateInput: Locator;
   readonly proceedButton: Locator;
-  /** Text fields keyed by name, so the boundary tests can drive one at a time. */
+  //Text fields keyed by name, so the boundary tests can drive one at a time.
   readonly textFields: Record<AddressTextField, Locator>;
 
   constructor(page: Page) {
     super(page);
     this.heading = this.page.getByRole('heading', { name: 'Billing Address' });
-    // Country is a `<select>` (ISO-code values, full-name option text), not the
-    // free-text field the docs imply (TEST_PLAN.md §9).
     this.countrySelect = this.page.getByTestId('country');
     this.postalCodeInput = this.page.getByTestId('postal_code');
     this.houseNumberInput = this.page.getByTestId('house_number');
@@ -56,9 +45,7 @@ export class CheckoutAddressPage extends BasePage {
     await this.selectCountry(address.country);
     await this.postalCodeInput.fill(address.postalCode);
     // Country + postal + house triggers an async postcode-lookup that auto-fills
-    // street/city/state from an external geocoder (TEST_PLAN.md §16). Await it so a
-    // stale in-flight lookup can't resolve later and overwrite a field the boundary
-    // tests deliberately set over-long (the response echoes the valid values back).
+    // street/city/state from an external geocoder (TEST_PLAN.md §16).
     const lookup = waitForApi(this.page, API_PATHS.POSTCODE_LOOKUP);
     await this.houseNumberInput.fill(address.houseNumber);
     await lookup;
@@ -70,11 +57,7 @@ export class CheckoutAddressPage extends BasePage {
 
   /**
    * Fill only country + postal code + house number and let the postcode lookup
-   * auto-fill street/city/state, leaving those geocoded values untouched. The
-   * invoice API cross-validates city ↔ country, so a manually-typed city is
-   * rejected (422) — only the geocoded triple is internally consistent and
-   * orderable (TEST_PLAN.md §18). House number is cleared then refilled to force
-   * the lookup even when the field is already pre-filled (logged-in path).
+   * auto-fill street/city/state, leaving those geocoded values untouched.
    */
   async fillAddressViaLookup(
     country: string,

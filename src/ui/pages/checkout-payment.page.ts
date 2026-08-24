@@ -5,14 +5,7 @@ import { PaymentMethod } from '@src/ui/models/payment.model';
 
 /**
  * The "Payment" step of the checkout wizard (`/checkout`), reached by advancing
- * past the billing address step (`proceed-3`) — `goto()` lands on the cart step,
- * not here, like the other wizard page objects. The whole step is one Angular
- * reactive `FormGroup`: a `payment-method` `<select>` reveals a method-specific
- * sub-form (each behind an `@if`, so switching method removes the previous
- * method's inputs from the DOM), and the "Confirm" button (`finish`) is disabled
- * until the form is valid. Validation errors surface as visible
- * `.alert.alert-danger` text only once a control is dirty/touched (TEST_PLAN.md
- * §17). Locators/validators mirror the pinned v5.0 source `checkout/payment`.
+ * past the billing address step
  */
 export class CheckoutPaymentPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;
@@ -49,9 +42,7 @@ export class CheckoutPaymentPage extends BasePage {
   readonly monthlyInstallmentsSelect: Locator;
   readonly monthlyInstallmentsOptions: Locator;
 
-  // Order placement (TEST_PLAN.md §18): the first "Confirm" click runs the payment
-  // check and reveals the success message; the second places the order and renders
-  // the confirmation with the invoice number.
+  // Order placement
   readonly paymentSuccessMessage: Locator;
   readonly orderConfirmation: Locator;
 
@@ -89,18 +80,8 @@ export class CheckoutPaymentPage extends BasePage {
       'Expiration date must be in the future.',
     );
     this.cvvError = this.page.getByText('CVV must be 3 or 4 digits.');
-    // NOTE: the card-holder field has no error message on production — a pattern
-    // violation renders an empty `.alert-danger` box (the template only prints text
-    // for a `required` error, but the field is pattern-only). So its invalidity is
-    // asserted via the input's `ng-invalid` class + the disabled Confirm button,
-    // not visible text (TEST_PLAN.md §17).
-
     this.giftCardNumberInput = this.page.getByTestId('gift_card_number');
     this.validationCodeInput = this.page.getByTestId('validation_code');
-    // Production has diverged from the pinned v5.0 source (TEST_PLAN.md §17): the
-    // gift card number must be exactly 16 letters/digits and the validation code
-    // exactly 4 (the code input also carries maxlength=4), each with its own newer
-    // message — not the source's "must be alphanumeric." copy.
     this.giftCardNumberError = this.page.getByText(
       'Please enter a valid gift card number: exactly 16 letters and/or digits.',
     );
@@ -125,9 +106,6 @@ export class CheckoutPaymentPage extends BasePage {
     await this.paymentMethodSelect.selectOption(value);
   }
 
-  // Errors surface only once a control is dirty/touched, so each fill is followed
-  // by a blur to mark the field touched (fill alone leaves untouched-but-invalid
-  // required fields showing no error).
   private async fillAndBlur(field: Locator, value: string): Promise<void> {
     await field.fill(value);
     await field.blur();
@@ -167,12 +145,6 @@ export class CheckoutPaymentPage extends BasePage {
     await this.monthlyInstallmentsSelect.selectOption(value);
   }
 
-  /**
-   * Place the order via the two-step Confirm: the first click runs the payment
-   * check (waits for the success message), the second submits the order (waits for
-   * the confirmation banner). Assertions on the invoice number / cart stay in the
-   * spec — this only synchronizes on each step landing (TEST_PLAN.md §18).
-   */
   async confirmOrder(): Promise<void> {
     await this.finishButton.click();
     await this.paymentSuccessMessage.waitFor();
@@ -180,11 +152,6 @@ export class CheckoutPaymentPage extends BasePage {
     await this.orderConfirmation.waitFor();
   }
 
-  /**
-   * Extract the `INV-…` number from the confirmation banner ("Thanks for your
-   * order! Your invoice number is INV-…."), so a caller can look the order up in
-   * the invoices list. Call after `confirmOrder()` has awaited the banner.
-   */
   async readInvoiceNumber(): Promise<string> {
     const text = await this.orderConfirmation.innerText();
     const match = text.match(/INV-\d+/);

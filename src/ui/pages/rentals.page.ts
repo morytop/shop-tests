@@ -2,13 +2,6 @@ import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
-/**
- * The rentals listing (`/rentals`). Unlike the overview/category grid
- * (ProductListPage), rental cards are a distinct layout: a `card` wrapping a
- * `tabindex`-focusable `div[data-test^="product-"]` (not an `<a>`) that routes
- * to `/product/<id>` on click, and each card shows a description instead of a
- * price. Hence this stays a standalone BasePage, not a ProductListPage subclass.
- */
 export class RentalsPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.RENTALS;
   readonly pageHeading: Locator;

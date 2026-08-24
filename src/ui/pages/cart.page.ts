@@ -42,8 +42,9 @@ export class CartPage extends BasePage {
       'The cart is empty. Nothing to display.',
     );
     this.signInEmail = this.page.getByTestId('email');
-    // ngx-toastr message body (quantity-updated / item-deleted confirmations).
-    this.updateToast = this.page.locator('.toast-message');
+    this.updateToast = this.page.getByRole('alert', {
+      name: 'Product quantity updated.',
+    });
     this.rentalItemLabel = this.page.getByText('Item for rent, price per hour');
   }
 

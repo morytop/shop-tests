@@ -10,7 +10,6 @@ const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
 
 export class ProfilePage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.PROFILE;
-  readonly pageTitle: Locator;
   readonly firstNameInput: Locator;
   readonly lastNameInput: Locator;
   readonly emailInput: Locator;
@@ -54,7 +53,6 @@ export class ProfilePage extends BasePage {
     this.totpForm = new TotpFormComponent(page);
     this.totpError = this.page.getByTestId('totp-error');
     this.totpSuccess = this.page.getByTestId('totp-success');
-    this.pageTitle = this.page.getByTestId('page-title');
     this.firstNameInput = this.page.getByTestId('first-name');
     this.lastNameInput = this.page.getByTestId('last-name');
     this.emailInput = this.page.getByTestId('email');

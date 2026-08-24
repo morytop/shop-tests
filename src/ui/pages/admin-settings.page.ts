@@ -1,8 +1,8 @@
-import { AdminPage } from './admin.page';
+import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
-export class AdminSettingsPage extends AdminPage {
+export class AdminSettingsPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.ADMIN_SETTINGS;
   readonly paymentEndpointInput: Locator;
   readonly geolocationInput: Locator;

@@ -49,9 +49,7 @@ test.describe('Verify cart', () => {
 
       await cartPage.updateQuantity(0, '3');
 
-      await expect(cartPage.updateToast).toHaveText(
-        'Product quantity updated.',
-      );
+      await expect(cartPage.updateToast).toBeVisible();
       const expectedTotal = `$${(unitPrice * 3).toFixed(2)}`;
       await expect(cartPage.linePrices.first()).toHaveText(expectedTotal);
       await expect(cartPage.cartTotal).toHaveText(expectedTotal);

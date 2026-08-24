@@ -23,9 +23,7 @@ test.describe('Verify end-to-end checkout', () => {
       await checkoutPaymentPage.selectPaymentMethod('cash-on-delivery');
       await checkoutPaymentPage.confirmOrder();
 
-      await expect(checkoutPaymentPage.orderConfirmation).toContainText(
-        /Your invoice number is INV-\d+/,
-      );
+      await expect(checkoutPaymentPage.orderConfirmation).toBeVisible();
       await expect(navbar.cartQuantity).toBeHidden();
     },
   );
@@ -71,9 +69,7 @@ test.describe('Verify end-to-end checkout', () => {
       await checkoutPaymentPage.selectPaymentMethod('cash-on-delivery');
       await checkoutPaymentPage.confirmOrder();
 
-      await expect(checkoutPaymentPage.orderConfirmation).toContainText(
-        /Your invoice number is INV-\d+/,
-      );
+      await expect(checkoutPaymentPage.orderConfirmation).toBeVisible();
       await expect(navbar.cartQuantity).toBeHidden();
     },
   );

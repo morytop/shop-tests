@@ -1,5 +1,6 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
+import { ORDER_CONFIRMATION_REGEX } from '@src/ui/constants/formats';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { PaymentMethod } from '@src/ui/models/payment.model';
 
@@ -98,8 +99,7 @@ export class CheckoutPaymentPage extends BasePage {
     this.paymentSuccessMessage = this.page.getByTestId(
       'payment-success-message',
     );
-    // The confirmation banner has no data-test, only an id.
-    this.orderConfirmation = this.page.locator('#order-confirmation');
+    this.orderConfirmation = this.page.getByText(ORDER_CONFIRMATION_REGEX);
   }
 
   async selectPaymentMethod(value: PaymentMethod): Promise<void> {

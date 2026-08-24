@@ -1,7 +1,7 @@
-import { AdminPage } from './admin.page';
+import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 
-export class AdminSalesReportPage extends AdminPage {
+export class AdminSalesReportPage extends BasePage {
   readonly PAGE_URL: string;
   readonly yearSelect: Locator;
   readonly salesChart: Locator;

@@ -1,10 +1,9 @@
-import { AdminPage } from './admin.page';
+import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
-import { waitForApi } from '@src/ui/utils/network.util';
 
-export class AdminDashboardPage extends AdminPage {
+export class AdminDashboardPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.ADMIN_DASHBOARD;
   readonly salesChart: Locator;
   readonly latestOrdersHeading: Locator;
@@ -31,9 +30,6 @@ export class AdminDashboardPage extends AdminPage {
   }
 
   async gotoAndAwaitLoaded(): Promise<void> {
-    await Promise.all([
-      waitForApi(this.page, API_PATHS.INVOICES, { method: 'GET' }),
-      this.goto(),
-    ]);
+    await this.gotoAndAwaitApi(API_PATHS.INVOICES, { method: 'GET' });
   }
 }

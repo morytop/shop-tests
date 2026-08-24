@@ -2,11 +2,9 @@ import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
-import { waitForApi } from '@src/ui/utils/network.util';
 
 export class FavoritesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.FAVORITES;
-  readonly pageTitle: Locator;
   readonly emptyMessage: Locator;
   readonly favoriteCards: Locator;
   readonly favoriteCardByName: (name: string) => Locator;
@@ -18,7 +16,6 @@ export class FavoritesPage extends BasePage {
   constructor(page: Page) {
     super(page);
     const favoritesRoot = this.page.locator('app-favorites');
-    this.pageTitle = this.page.getByTestId('page-title');
     // The empty-state message carries no `data-test` and no role of its own; the only
     // thing distinguishing it from a favorite is that it is not a card.
     this.emptyMessage = favoritesRoot.locator('div.col > div:not(.card)');
@@ -37,10 +34,7 @@ export class FavoritesPage extends BasePage {
   }
 
   async gotoAndAwaitLoaded(): Promise<void> {
-    await Promise.all([
-      waitForApi(this.page, API_PATHS.FAVORITES, { method: 'GET' }),
-      this.goto(),
-    ]);
+    await this.gotoAndAwaitApi(API_PATHS.FAVORITES, { method: 'GET' });
   }
 
   async removeFavorite(index: number): Promise<void> {

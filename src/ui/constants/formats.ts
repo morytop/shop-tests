@@ -22,6 +22,14 @@ export const BARE_PRICE_REGEX = /^\d+\.\d{2}$/;
 export const TOTP_SECRET_REGEX = /^[A-Z2-7]{16}$/;
 
 /**
+ * The order-confirmation banner (`checkout-payment.page.ts`) has no `data-test` and no
+ * ARIA role, so its text is the only stable handle — this is also the locator's own
+ * match condition, not just an assertion format.
+ */
+export const ORDER_CONFIRMATION_REGEX =
+  /Thanks for your order! Your invoice number is INV-\d+\./;
+
+/**
  * The password strength meter's fill bar carries its width as an inline
  * `style="width: 20%;"` (trailing semicolon included — verified live on both the
  * register and change-password meters). Shared by both specs so the two

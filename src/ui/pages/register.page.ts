@@ -20,12 +20,7 @@ export class RegisterPage extends BasePage {
   readonly emailInput: Locator;
   readonly passwordInput: Locator;
   readonly registerButton: Locator;
-  /** Server-side banner shown after a failed submit (e.g. a duplicate email). */
   readonly registerError: Locator;
-  /**
-   * Password requirements list (#passwordHelp) — always rendered; each rule <li>
-   * gains `.text-success` once the form control (updateOn:'blur') satisfies it.
-   */
   readonly passwordRequirements: Locator;
   readonly reqLength: Locator;
   readonly reqMixedCase: Locator;
@@ -78,7 +73,7 @@ export class RegisterPage extends BasePage {
   /**
    * Type a password and blur it. The register form is `updateOn: 'blur'`, so the
    * requirements-list highlighting and control validity only recompute once focus
-   * leaves the field — filling without blurring leaves the control pristine.
+   * leaves the field
    */
   async enterPassword(value: string): Promise<void> {
     await this.passwordInput.fill(value);

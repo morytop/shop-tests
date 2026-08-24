@@ -12,10 +12,6 @@ export class LoginPage extends BasePage {
   readonly passwordInput: Locator;
   readonly loginButton: Locator;
   readonly loginError: Locator;
-  /**
-   * Second-factor prompt: replaces the credentials form in place on /auth/login once
-   * the account is TOTP-enabled. `loginError` is shared with the credential errors.
-   */
   readonly totpForm: TotpFormComponent;
   readonly forgotPasswordLink: Locator;
 
@@ -40,11 +36,6 @@ export class LoginPage extends BasePage {
     await this.loginButton.click();
   }
 
-  /**
-   * Submit the form and await the auth round-trip. Repeated-attempt flows can't
-   * synchronize on the error element becoming visible — it is already visible from
-   * the previous attempt, so its text is only repainted once the response lands.
-   */
   async loginAndAwaitResponse(email: string, password: string): Promise<void> {
     const loginResponse = waitForApi(this.page, API_PATHS.LOGIN);
     await this.login(email, password);

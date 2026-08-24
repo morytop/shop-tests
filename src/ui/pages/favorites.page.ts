@@ -4,19 +4,6 @@ import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { waitForApi } from '@src/ui/utils/network.util';
 
-/**
- * Customer favorites page (`/account/favorites`). Reachable only from the navbar user
- * menu or directly — the `/account` dashboard offers no favorites tile.
- *
- * The component initialises its list to `[]` and guards the empty-state message with
- * `@if (!favorites?.length)`, so that message is on screen *while* `GET /favorites` is
- * still in flight. Reading the page before that response lands therefore looks
- * identical to "this user has no favorites" — callers must enter via
- * `gotoAndAwaitLoaded()` rather than the inherited `goto()`.
- *
- * Card descriptions are truncated server-side of the DOM by the app's `TruncatePipe`
- * (250 chars + "..."), not by CSS — see `truncate()` in `src/ui/utils/text.util.ts`.
- */
 export class FavoritesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.FAVORITES;
   readonly pageTitle: Locator;
@@ -49,11 +36,6 @@ export class FavoritesPage extends BasePage {
     this.deleteButtons = this.favoriteCards.getByTestId('delete');
   }
 
-  /**
-   * Navigate and wait for the list to actually arrive. Without this gate the
-   * empty-state message is indistinguishable from a not-yet-loaded list (see the
-   * class doc), so an assertion on it could pass before the user's favorites render.
-   */
   async gotoAndAwaitLoaded(): Promise<void> {
     await Promise.all([
       waitForApi(this.page, API_PATHS.FAVORITES, { method: 'GET' }),
@@ -61,11 +43,6 @@ export class FavoritesPage extends BasePage {
     ]);
   }
 
-  /**
-   * Removal is a `DELETE /favorites/{id}` followed by a refetch of the whole list, not
-   * an optimistic splice — so the click alone is the action, and callers assert the
-   * resulting list with auto-retrying expectations rather than awaiting a redraw here.
-   */
   async removeFavorite(index: number): Promise<void> {
     await this.deleteButtons.nth(index).click();
   }

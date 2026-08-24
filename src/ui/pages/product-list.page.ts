@@ -3,17 +3,7 @@ import { Locator, Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
 import { waitForApi } from '@src/ui/utils/network.util';
 
-/**
- * Shared product-listing interface backing both the home/overview page and the
- * per-category pages, which are the same Angular overview component (the
- * category variant is merely pre-scoped to a category server-side). The home page is
- * this class instantiated directly with `PAGE_URLS.HOME`; category pages subclass it
- * only to add their category heading, passing their own URL through to this
- * constructor. The grid/filter/search/sort/price/pagination behaviour lives here once.
- */
 export class ProductListPage extends BasePage {
-  // Safety bound for the page walkers: far above the real catalog size, it only
-  // exists so a broken next-button can't loop a walk forever.
   private static readonly MAX_PAGINATION_PAGES = 50;
 
   readonly PAGE_URL: string;
@@ -51,10 +41,6 @@ export class ProductListPage extends BasePage {
     this.productCardImages = this.productCards.getByRole('img');
     this.productCardNames = this.productCards.getByTestId('product-name');
     this.productCardPrices = this.productCards.getByTestId('product-price');
-    // "Every card matches the term" in web-first form: cards whose name does
-    // not contain the term (case-insensitive substring — same semantics as the
-    // server's name-only search) must resolve to zero elements, and the
-    // negation keeps retrying while the grid re-renders.
     this.productCardsNotMatchingName = (term: string): Locator =>
       this.productCards.filter({
         hasNot: this.page.getByTestId('product-name').filter({ hasText: term }),
@@ -66,11 +52,6 @@ export class ProductListPage extends BasePage {
     this.outOfStockCard = this.productCards
       .filter({ has: this.outOfStockLabelSelector })
       .first();
-    // The catalog is shared, mutable production data, so any test that drives the cart
-    // must pick its product by stock rather than by grid position — an out-of-stock
-    // product PATCHed to the front of the grid disables those controls (§26/§28). The
-    // grid never contains rentals (the overview always queries `is_rental=false`), so
-    // "in stock" is the only predicate such a test needs.
     this.inStockCard = this.productCards
       .filter({ hasNot: this.outOfStockLabelSelector })
       .first();
@@ -120,14 +101,8 @@ export class ProductListPage extends BasePage {
     return this.productCardPrices.allTextContents();
   }
 
-  // Pagination controls are removed from the DOM entirely when the (possibly
-  // filtered) result set fits on a single page, so absence means "last page".
   async isOnLastPage(): Promise<boolean> {
     if ((await this.paginationNextItem.count()) === 0) return true;
-    // A late grid re-render can remove the pagination between the count() above
-    // and this read; the bounded timeout keeps that race from hanging the walk
-    // for the whole test timeout, and "gone" resolves to "last page" per the
-    // absence rule above.
     try {
       return (
         (
@@ -141,21 +116,10 @@ export class ProductListPage extends BasePage {
     }
   }
 
-  // The grid is rendered by a post-navigation XHR, so a walk started right after
-  // goto() can outrun the first paint: with no cards and no pagination yet,
-  // isOnLastPage() reads "no pagination => last page" and the walk bails on page
-  // one. Wait for the first card before walking a freshly-loaded listing.
-  // (Walks kicked off after a filter change instead already awaited that fetch,
-  // and must not wait here — their result set can legitimately be empty.)
   private async waitForGrid(): Promise<void> {
     await this.productCards.first().waitFor();
   }
 
-  // Every filter change and page turn re-fetches the grid from GET/QUERY
-  // /products; awaiting that response keeps reads in step with the server
-  // instead of racing the previous result set (which showed up as products
-  // from an unrelated filter leaking into a freshly-collected page). Search
-  // is the one action served by a different endpoint, hence the path override.
   private async triggerAndAwaitProducts(
     action: Promise<unknown>,
     path: string = API_PATHS.PRODUCTS,
@@ -163,14 +127,6 @@ export class ProductListPage extends BasePage {
     await Promise.all([waitForApi(this.page, path), action]);
   }
 
-  // Advance exactly one page, awaiting both the re-fetch (QUERY /products) and
-  // the subsequent re-render (the active page number incrementing). The old
-  // fire-and-forget `paginationNextLink.click()` let successive clicks overlap,
-  // so their /products responses could settle out of order and leave the walker
-  // short of — or bouncing off — the true last page; serialising the turn keeps
-  // every caller's next DOM read in step with the page actually shown. Callers
-  // must confirm `!isOnLastPage()` first: clicking a disabled next fires no
-  // request and would hang the awaited response.
   private async goToNextPage(): Promise<void> {
     const current = Number((await this.activePageItem.textContent())?.trim());
     await this.triggerAndAwaitProducts(this.paginationNextLink.click());
@@ -191,13 +147,6 @@ export class ProductListPage extends BasePage {
     );
   }
 
-  /**
-   * Uncheck every checked child category. `checkedChildCategoryCheckboxes` is a
-   * live `:checked`-filtered locator that shrinks as boxes are cleared, so any
-   * index-based iteration walks a moving set; always clearing the first
-   * remaining box until none are left is the stable form. Each uncheck
-   * re-fetches the grid and is awaited like any other filter change.
-   */
   async clearAllChildCategoryFilters(): Promise<void> {
     while ((await this.checkedChildCategoryCheckboxes.count()) > 0) {
       await this.triggerAndAwaitProducts(
@@ -210,13 +159,6 @@ export class ProductListPage extends BasePage {
     await this.triggerAndAwaitProducts(this.brandCheckboxes.nth(index).check());
   }
 
-  /**
-   * Walk the grid page by page, running `visit` on each until it returns true;
-   * false means the last page was reached without a hit. `waitForFirstCard`
-   * gates a walk over a freshly-loaded listing (see waitForGrid); walks kicked
-   * off after a filter change must pass false — that re-fetch was already
-   * awaited and its result set can legitimately be empty.
-   */
   private async walkPages(
     visit: () => Promise<boolean>,
     options: { waitForFirstCard: boolean },
@@ -230,8 +172,6 @@ export class ProductListPage extends BasePage {
     return false;
   }
 
-  // Collects from every page; callers run it after a filter/search change, so
-  // no first-card wait (the result set can legitimately be empty).
   async getAllProductNamesAcrossPages(): Promise<string[]> {
     const allNames: string[] = [];
     await this.walkPages(
@@ -244,13 +184,6 @@ export class ProductListPage extends BasePage {
     return allNames;
   }
 
-  /**
-   * Search re-renders the grid from GET /products/search; awaiting that
-   * response keeps the caller's next read in step with the searched result set
-   * (same rule as every filter change). Queries the client-side validation
-   * rejects (< 3 chars) fire no request at all — those must go through
-   * `submitSearch()`, or this wait would hang on a response that never comes.
-   */
   async search(query: string): Promise<void> {
     await this.searchInput.fill(query);
     await this.triggerAndAwaitProducts(
@@ -259,16 +192,11 @@ export class ProductListPage extends BasePage {
     );
   }
 
-  // Fill-and-submit with no response wait — only for queries the client-side
-  // validation rejects without firing a request (see `search`).
   async submitSearch(query: string): Promise<void> {
     await this.searchInput.fill(query);
     await this.searchSubmitButton.click();
   }
 
-  // Sorting re-fetches the grid like a filter change does; awaiting the response
-  // keeps a follow-up read from seeing the pre-sort grid (and keeps the sort's
-  // in-flight response from satisfying the next action's /products wait).
   async sortBy(value: string): Promise<void> {
     await this.triggerAndAwaitProducts(this.sortSelect.selectOption(value));
   }
@@ -287,10 +215,6 @@ export class ProductListPage extends BasePage {
     }
   }
 
-  // ngx-slider mounts its handles before stamping aria-valuenow, and callers
-  // feed the value to Number() — where a missing attribute would silently
-  // become 0, a wrong price bound. Wait for the attribute instead, and fail
-  // loudly if it never appears.
   private async getSliderValue(handle: Locator): Promise<string> {
     const handleWithValue = handle.and(this.page.locator('[aria-valuenow]'));
     await handleWithValue.waitFor();
@@ -309,10 +233,6 @@ export class ProductListPage extends BasePage {
     return this.getSliderValue(this.priceRangeMinHandle);
   }
 
-  // Like goToNextPage, a numbered page turn re-fetches the grid and re-renders;
-  // awaiting both keeps the caller's next read from seeing the previous page's
-  // cards (the old bare click() was the root cause behind flaky page-1 vs
-  // page-2 snapshot compares).
   async goToPage(pageNumber: number): Promise<void> {
     await this.triggerAndAwaitProducts(
       this.paginationPageLink(pageNumber).click(),
@@ -336,7 +256,6 @@ export class ProductListPage extends BasePage {
     });
   }
 
-  // Leaves the grid on the page holding the match, so callers click `inStockCard` next.
   async findInStockCardAcrossPages(): Promise<boolean> {
     return this.walkPages(async () => (await this.inStockCard.count()) > 0, {
       waitForFirstCard: true,

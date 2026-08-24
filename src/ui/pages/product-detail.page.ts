@@ -4,12 +4,6 @@ import { API_PATHS } from '@src/api/utils/api.util';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { waitForApi } from '@src/ui/utils/network.util';
 
-/**
- * A single product's detail page (`/product/<id>`). The id is dynamic and the
- * catalog is shared/mutable (TEST_PLAN.md §9), so this page is always reached by
- * clicking a product card from a listing rather than a hard-coded URL — PAGE_URL
- * is only the base path to satisfy BasePage, and goto() is not the entry point.
- */
 export class ProductDetailPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.PRODUCT;
   readonly productImage: Locator;
@@ -35,31 +29,21 @@ export class ProductDetailPage extends BasePage {
     // The main product image is the only `.figure-img`; related cards use `.card-img-top`.
     this.productImage = this.page.locator('img.figure-img');
     this.productName = this.page.getByTestId('product-name');
-    // Detail price is a bare number (e.g. "14.15"), unlike the listing card's "$X.XX".
     this.productPrice = this.page.getByTestId('unit-price');
     this.productDescription = this.page.getByTestId('product-description');
-    // Category/brand render as pill badges distinguished only by aria-label.
     this.categoryBadge = this.page.getByLabel('category');
     this.brandBadge = this.page.getByLabel('brand');
     this.quantityInput = this.page.getByTestId('quantity');
     this.increaseQuantityButton = this.page.getByTestId('increase-quantity');
     this.decreaseQuantityButton = this.page.getByTestId('decrease-quantity');
     this.addToCartButton = this.page.getByTestId('add-to-cart');
-    // The attribute is American, the visible label British ("Add to favourites").
     this.addToFavoritesButton = this.page.getByTestId('add-to-favorites');
-    // Rental products replace the quantity stepper with a 1–10h duration slider.
     this.durationSlider = this.page.getByRole('slider', { name: 'ngx-slider' });
     this.outOfStockLabel = this.page.getByTestId('out-of-stock');
     this.relatedProductsHeading = this.page.getByRole('heading', {
       name: 'Related products',
     });
-    // The only cards on a detail page are the related-products cards (plain
-    // `a.card`, unlike the listing's `a.card[data-test^="product-"]`).
     this.relatedProductCards = this.page.locator('a.card');
-    // ngx-toastr renders success and failure into identically-structured toasts that
-    // differ only by container class, and a toast raised by an earlier action can still
-    // be on screen when the next one arrives — so match the type rather than the generic
-    // `.toast-message`. The expected copy is asserted in the spec.
     this.successToast = this.page.locator('.ngx-toastr.toast-success');
     this.errorToast = this.page.locator('.ngx-toastr.toast-error');
   }
@@ -80,15 +64,6 @@ export class ProductDetailPage extends BasePage {
     await this.quantityInput.fill(value);
   }
 
-  /**
-   * Add the product to the cart and wait for the async write to land. The write
-   * is `POST /carts/{cartId}` (the very first add also fires `POST /carts` to
-   * create the cart, which must not satisfy this wait — hence the path match on
-   * the id segment). The shared prod backend intermittently 500s under parallel
-   * load (§33): a lost write never updates the cart badge, so the caller's
-   * `waitForCartQuantity` would hang for the whole test timeout — re-click on a
-   * failed response instead, and leave the final failure to the caller's wait.
-   */
   async addToCart(): Promise<void> {
     for (let attempt = 0; attempt < 3; attempt++) {
       const addedToCart = this.page.waitForResponse(
@@ -101,15 +76,6 @@ export class ProductDetailPage extends BasePage {
     }
   }
 
-  /**
-   * Favorite the product, returning the write's HTTP status.
-   *
-   * The favorite is persisted by an async `POST /favorites`; navigating straight to the
-   * favorites page after a bare click can outrun it, so the awaited response — not the
-   * toast — is the synchronisation point. The component fires that POST unconditionally
-   * and decides which toast to raise from the server's reply (201 added / 409 duplicate /
-   * 401 logged out), so the status is the caller's observable for all three outcomes.
-   */
   async addToFavorites(): Promise<number> {
     const [response] = await Promise.all([
       waitForApi(this.page, API_PATHS.FAVORITES, { method: 'POST' }),

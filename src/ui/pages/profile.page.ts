@@ -6,32 +6,8 @@ import { TOTP_SECRET_REGEX } from '@src/ui/constants/formats';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
 
-/**
- * Raw selector for the `waitForProfileLoaded()` gate, which feeds it to
- * `document.querySelector` inside `waitForFunction` (that only takes a selector
- * string, so it can't reuse the `getByTestId` locator).
- */
 const FIRST_NAME_SELECTOR = '[data-test="first-name"]';
 
-/**
- * Customer profile page (`/account/profile`), modelling the profile form, the
- * change-password form below it, and the "Set up Two-Factor Authentication" section
- * below that.
- *
- * The profile form is populated by an async `GET /users/me` that lands *after*
- * navigation resolves, and Angular writes only the inputs' `value` property (the
- * `value` attribute stays absent) — so a `fill()` issued too early is silently
- * overwritten. Callers must gate on `waitForProfileLoaded()` first.
- *
- * Loading the page also POSTs `/totp/setup`, which mints and persists a **new**
- * secret on every visit for an eligible account — so the secret must be read from
- * the DOM at the moment it is used, never cached across navigations. The seeded
- * `customer@`/`admin@` accounts are refused (403) and see only `totpError`.
- *
- * The profile and change-password forms each render their own `.alert-*` banners as
- * siblings, so every alert locator here is scoped to its own form rather than matched
- * page-wide.
- */
 export class ProfilePage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.PROFILE;
   readonly pageTitle: Locator;
@@ -45,7 +21,6 @@ export class ProfilePage extends BasePage {
   readonly stateInput: Locator;
   readonly countryInput: Locator;
   readonly updateProfileButton: Locator;
-  /** Editable fields keyed by name, so the required-field tests can blank one at a time. */
   readonly profileFields: Record<keyof ProfileDetails, Locator>;
   readonly profileForm: Locator;
   readonly profileSuccess: Locator;
@@ -61,13 +36,8 @@ export class ProfilePage extends BasePage {
   readonly totpHeading: Locator;
   readonly totpQrCode: Locator;
   readonly totpSecret: Locator;
-  /**
-   * The <p> is rendered before `/totp/setup` resolves, so it is briefly empty —
-   * this narrows to the populated state for use as a synchronization gate.
-   */
   readonly populatedTotpSecret: Locator;
   readonly totpForm: TotpFormComponent;
-  /** Both banners are prefixed in the template (`Error:` / `Success:`). */
   readonly totpError: Locator;
   readonly totpSuccess: Locator;
 
@@ -93,7 +63,6 @@ export class ProfilePage extends BasePage {
     this.postalCodeInput = this.page.getByTestId('postal_code');
     this.cityInput = this.page.getByTestId('city');
     this.stateInput = this.page.getByTestId('state');
-    // Free text here, unlike the billing step's <select> (TEST_PLAN.md §24).
     this.countryInput = this.page.getByTestId('country');
     this.updateProfileButton = this.page.getByTestId('update-profile-submit');
     this.profileFields = {
@@ -106,8 +75,6 @@ export class ProfilePage extends BasePage {
       state: this.stateInput,
       country: this.countryInput,
     };
-    // The sibling change-password form renders its own `.alert-*` banners, so both
-    // alerts are scoped to the profile form rather than matched page-wide.
     this.profileForm = this.page
       .locator('form')
       .filter({ has: this.updateProfileButton });
@@ -134,11 +101,6 @@ export class ProfilePage extends BasePage {
     this.passwordStrength = new PasswordStrengthComponent(this.passwordForm);
   }
 
-  /**
-   * Block until `GET /users/me` has populated the form. The inputs carry no text and
-   * no `value` attribute, so neither `waitFor()` nor `.filter()` can express this —
-   * only the live `value` property can. This is a wait, not an assertion.
-   */
   async waitForProfileLoaded(): Promise<void> {
     await this.page.waitForFunction((selector) => {
       const input = document.querySelector<HTMLInputElement>(selector);

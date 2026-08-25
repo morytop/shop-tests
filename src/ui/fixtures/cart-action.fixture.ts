@@ -45,7 +45,13 @@ export const cartActionTest = pageObjectTest.extend<CartActions>({
   addProductToCart: async ({ homePage, productDetailPage, navbar }, use) => {
     await use(async (index = 0, expectedBadgeCount = '1'): Promise<void> => {
       await homePage.goto();
-      await homePage.clickProductCard(index);
+      const found = await homePage.findInStockCardsAcrossPages(index + 1);
+      if (!found) {
+        throw new Error(
+          `fewer than ${index + 1} in-stock products found across pages`,
+        );
+      }
+      await homePage.inStockCards.nth(index).click();
       await productDetailPage.addToCart();
       await navbar.waitForCartQuantity(expectedBadgeCount);
     });

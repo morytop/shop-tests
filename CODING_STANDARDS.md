@@ -8,6 +8,14 @@
 - **Keep meaningful documentation**: Add JSDoc for architectural intent, context, or non-obvious design decisions
 - **Focus on "why", not "what"**: Explain reasoning, not mechanics
 
+### Agent-authored comments
+
+**Claude must never add comments to code it writes or edits in this
+repository.** If a change seems to genuinely warrant one (per the "why, not
+what" bar above), name the file/line and the proposed comment text in the
+turn's summary instead of writing it into the file — the user decides
+whether to add it.
+
 ### Guidelines
 
 **✅ DO:**

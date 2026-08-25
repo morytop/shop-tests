@@ -72,6 +72,7 @@ export class CartPage extends BasePage {
       await this.deleteButtons.nth(index).click();
       if ((await removed).ok()) return;
     }
+    throw new Error('failed to remove cart item after 3 attempts');
   }
 
   async proceedToCheckout(): Promise<void> {

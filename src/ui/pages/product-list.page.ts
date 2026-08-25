@@ -16,6 +16,7 @@ export class ProductListPage extends BasePage {
   readonly outOfStockLabels: Locator;
   readonly outOfStockCard: Locator;
   readonly inStockCard: Locator;
+  readonly inStockCards: Locator;
   readonly paginationNextLink: Locator;
   readonly paginationNextItem: Locator;
   readonly paginationPrevItem: Locator;
@@ -57,6 +58,9 @@ export class ProductListPage extends BasePage {
     this.inStockCard = this.productCards
       .filter({ hasNot: this.outOfStockLabelSelector })
       .first();
+    this.inStockCards = this.productCards.filter({
+      hasNot: this.outOfStockLabelSelector,
+    });
     this.paginationNextLink = this.page.getByTestId('pagination-next');
     this.paginationNextItem = this.paginationNextLink.locator('..');
     this.paginationPrevItem = this.page
@@ -269,5 +273,12 @@ export class ProductListPage extends BasePage {
     return this.walkPages(async () => (await this.inStockCard.count()) > 0, {
       waitForFirstCard: true,
     });
+  }
+
+  async findInStockCardsAcrossPages(minCount: number): Promise<boolean> {
+    return this.walkPages(
+      async () => (await this.inStockCards.count()) >= minCount,
+      { waitForFirstCard: true },
+    );
   }
 }

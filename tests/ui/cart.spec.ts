@@ -2,14 +2,6 @@ import { expect, test } from '@src/fixtures/merge.fixture';
 import { USD_PRICE_REGEX } from '@src/ui/constants/formats';
 import { parsePrice } from '@src/ui/utils/price.util';
 
-// User Stories v5 — Cart (TEST_PLAN.md §5.5), core subset AC1–AC5: columns,
-// quantity update + confirmation, delete, empty-cart message, Proceed gating.
-// AC6 (per-item discount badge) is unautomatable (server/IP-side is_location_offer,
-// §10/§12); AC7/AC8 (15% combination discount) are deferred — see
-// .ai-docs/cart-core-plan.md. The catalog is shared/mutable (§3, §9), so products
-// are chosen dynamically by card index (no hard-coded id/name/price) and prices
-// are read back from the DOM rather than asserted against fixed amounts.
-
 test.describe('Verify cart', () => {
   test(
     'cart lists an added item with Item/Quantity/Price/Total columns',
@@ -19,8 +11,6 @@ test.describe('Verify cart', () => {
 
       await cartPage.goto();
 
-      // The 5th (actions) column header is blank in production — the AC's
-      // "Actions" label does not exist (see TEST_PLAN.md §14).
       await expect(cartPage.columnHeaders).toHaveText([
         'Item',
         'Quantity',
@@ -33,6 +23,7 @@ test.describe('Verify cart', () => {
       await expect(cartPage.quantityInputs.first()).toHaveValue('1');
       await expect(cartPage.productPrices.first()).toHaveText(USD_PRICE_REGEX);
       await expect(cartPage.linePrices.first()).toHaveText(USD_PRICE_REGEX);
+      await expect(cartPage.cartTotal).toHaveText(USD_PRICE_REGEX);
       await expect(cartPage.deleteButtons).toHaveCount(1);
     },
   );
@@ -79,9 +70,6 @@ test.describe('Verify cart', () => {
     },
   );
 
-  // The empty-cart message renders only after the cart has been emptied (a
-  // pristine cart shows nothing), and reads "The cart is empty. Nothing to
-  // display." — not the documented "Your shopping cart is empty" (§14).
   test(
     'emptying the cart shows the empty-cart message',
     { tag: '@regression' },

@@ -74,6 +74,7 @@ export class ProductDetailPage extends BasePage {
       await this.addToCartButton.click();
       if ((await addedToCart).ok()) return;
     }
+    throw new Error('failed to add product to cart after 3 attempts');
   }
 
   async addToFavorites(): Promise<number> {

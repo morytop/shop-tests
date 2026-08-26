@@ -10,9 +10,11 @@ test.describe('Verify product overview / home', () => {
       await homePage.goto();
 
       await expect(homePage.productCards.first()).toBeVisible();
-      await expect(homePage.productCardImages.first()).toBeVisible();
-      await expect(homePage.productCardNames.first()).not.toBeEmpty();
-      await expect(homePage.productCardPrices.first()).toHaveText(
+      const index = await homePage.randomProductIndex();
+
+      await expect(homePage.productCardImages.nth(index)).toBeVisible();
+      await expect(homePage.productCardNames.nth(index)).not.toBeEmpty();
+      await expect(homePage.productCardPrices.nth(index)).toHaveText(
         USD_PRICE_REGEX,
       );
     },

@@ -12,9 +12,7 @@ test.describe('Verify product overview / home — search', () => {
       // matches product names only (verified live: a description-only word
       // returns zero hits), so "every card's name contains the term" is the
       // faithful invariant.
-      const searchTerm = (
-        await homePage.productCardNames.first().innerText()
-      ).trim();
+      const searchTerm = await homePage.randomSearchTerm();
 
       await homePage.search(searchTerm);
 
@@ -30,9 +28,7 @@ test.describe('Verify product overview / home — search', () => {
     { tag: ['@regression', '@product-overview'] },
     async ({ homePage }) => {
       await homePage.goto();
-      const searchTerm = (
-        await homePage.productCardNames.first().innerText()
-      ).trim();
+      const searchTerm = await homePage.randomSearchTerm();
       await homePage.filterByBrand(0);
       await expect(homePage.brandCheckboxes.first()).toBeChecked();
 

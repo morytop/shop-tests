@@ -1,4 +1,5 @@
 import { BasePage } from './base.page';
+import { faker } from '@faker-js/faker';
 import { Locator, Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
 import { waitForApi } from '@src/ui/utils/network.util';
@@ -261,6 +262,21 @@ export class ProductListPage extends BasePage {
 
   async clickProductCard(index: number): Promise<void> {
     await this.productCards.nth(index).click();
+  }
+
+  async randomProductIndex(): Promise<number> {
+    await this.waitForGrid();
+    const count = await this.productCards.count();
+    return faker.number.int({ min: 0, max: count - 1 });
+  }
+
+  async randomSearchTerm(): Promise<string> {
+    const index = await this.randomProductIndex();
+    const name = (await this.productCardNames.nth(index).innerText()).trim();
+    const words = name.split(/\s+/);
+    return words.reduce((longest, word) =>
+      word.length > longest.length ? word : longest,
+    );
   }
 
   async findOutOfStockCardAcrossPages(): Promise<boolean> {

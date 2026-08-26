@@ -2,7 +2,6 @@ import { expect, test } from '@src/fixtures/merge.fixture';
 import { categories } from '@src/ui/test-data/category.data';
 import { expectGridSorted } from '@src/ui/utils/grid-assert.util';
 
-// TEST_PLAN.md §5.2 Browse by Category
 test.describe('Verify browse by category', () => {
   for (const { name, url } of categories) {
     test(
@@ -34,14 +33,6 @@ test.describe('Verify browse by category', () => {
 
         await navbar.openCategories();
         await navLinks[name].click();
-
-        // The on-page "Category: <Name>" heading is the reliable cross-category
-        // title signal, so it is the assertion used for all four categories.
-        // The document <title> is intentionally not checked here: Special Tools
-        // renders the heading but never updates <title> (see TEST_PLAN.md §11),
-        // so a shared toHaveTitle would be a false negative for it. The <title>
-        // is instead covered by smoke/menu.spec.ts for Hand/Power/Other, which
-        // asserts Special Tools via its heading for that same reason.
         await expect(page).toHaveURL(url);
         await expect(categoryHeadings[name]).toBeVisible();
       },
@@ -61,10 +52,6 @@ test.describe('Verify browse by category', () => {
     },
   );
 
-  // Discrepancy vs TEST_PLAN.md §5.2 / §9: unlike the overview page, the
-  // category page's sidebar omits the Price Range slider and the Search box —
-  // it exposes only Sort, category/brand filters, and pagination. This codifies
-  // that absence so a future app change re-adding them is caught.
   test(
     'category page omits the price range slider and search box',
     { tag: ['@regression', '@category'] },

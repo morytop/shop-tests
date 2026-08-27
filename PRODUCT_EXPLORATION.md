@@ -86,6 +86,7 @@ Genuine defects in the deployed app, pinned in tests rather than worked around.
 | 8   | Invoices (§29/§33)          | **Billing-address column is unreliable / three inputs share `data-test="total"`.** See Discrepancies + Accessibility below.                                                                                                                                                                                                                                                                                                                                                                    |
 | 9   | Registration API (§API-C)   | **`POST /users/register` never validates the email format.** `email` is checked for presence only, so `"not-an-email"` registers and returns **201**. The account is real, logs in normally, and can never be sent a reset mail — `/users/forgot-password` for it succeeds (200) while delivering nowhere. Unreachable from the UI (the form validates client-side), so only the API exposes it. Pinned as an observed-201 test in `users.register.api.spec.ts`.                               |
 | 10  | Product search (§API-B)     | **`POST /products/search` returns zero hits on any multi-word `q` containing the stopword "with", even when `q` is a product's own exact name.** `q: "Claw Hammer with Shock Reduction Grip"` (the product's real name) → `total: 0`; the same words minus "with" match correctly (`"Claw Hammer"`, `"Shock Reduction Grip"`); the lone word `"with"` also → `total: 0`. Not pinned — `product-search.spec.ts` derives its term from a single content word, not the full name, to sidestep it. |
+| 11  | Chat widget (§36)           | **"Checkout" with an empty cart crashes client-side instead of replying "Your cart is empty."** `startCheckoutFlow` throws `TypeError: Cannot read properties of null (reading 'cart_items')` (no null-check on the cart response) and the widget shows **no bot reply at all** — not the copy the docs assume. Pinned in `chat-widget.spec.ts` as the actual (buggy) behavior.                                                                                                                |
 
 ---
 
@@ -313,6 +314,31 @@ field is required.`, `The address.street field is required.`, etc.), which is no
   `chat-input`/`chat-send` form is removed from the DOM; "Back to menu" restarts it and **appends a
   second greeting** rather than replacing the first. The ≤5 result cap is real. Menu labels are the
   actual copy: "Find a product" / "Order a product" / "Checkout" / "Create support ticket" (§9).
+- **Order-a-product reuses the Find-a-product search UI and result cards (§36)** — same
+  `[data-test="chat-product"]` cards, same ≤5 cap — but clicking a card here does **not** navigate;
+  it continues the chat flow into a quantity picker (`chat-action-select-quantity` for the fixed
+  1/2/3/5/10 choices, `chat-action-custom-quantity` for "Other", unexplored) → an order summary →
+  `chat-action-confirm-order` ("Yes, add to cart"), which is a **real** cart mutation (the navbar
+  badge genuinely increments).
+- **"Checkout via chat" is entirely free-text with no postcode lookup (§36; see also §18 and bug #11
+  above)** — first/last name, then street/city/state/country/postal code are each typed in turn
+  (`chat-input`/`chat-send`), ending at a "Please confirm your billing address:" step
+  (`chat-action-checkout-confirm-address`), then a payment-method choice (`chat-action-select-payment-method`:
+  Credit Card / Bank Transfer / Buy Now Pay Later / Gift Card / Cash on Delivery), then
+  `chat-action-checkout-confirm-order` ("Place Order"). Because there is no geocoding lookup here (unlike
+  the real checkout wizard's address step), **every hand-typed address is rejected** by the same
+  invoice-API cross-validation §18 already documented — confirmed with several distinct valid-looking
+  country/city pairs, all 422. A guest can therefore never complete a real order through this flow;
+  whether a logged-in user's already-geocoded saved address would succeed is unexplored. Separately, an
+  empty cart doesn't reach any of this — see bug #11.
+- **The support-ticket flow is a longer guided form than §5.21 implies (§36):** first name → last name →
+  email (free text) → subject (`chat-action-select-subject`: Customer service / Webmaster / Return /
+  Payments / Warranty / Status of my order) → a message with a real, enforced **50-character minimum**
+  ("Your message must be at least 50 characters long." on a short message, with the form staying open to
+  retry) → an attachment step (`chat-action-add-attachment` / `chat-action-skip-attachment`, plus a
+  `chat-file-input`) → immediate submission on Skip (no separate review step) → "Your support ticket has
+  been submitted successfully! We'll get back to you soon." Files a real, permanent row in the shared
+  backend, same trust level as `sendMessageWithApi()`.
 
 ### Multi-language
 

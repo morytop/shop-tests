@@ -4,7 +4,7 @@
 
 Repository: https://github.com/testsmith-io/practice-software-testing
 
-Site: https://practicesoftwaretesting.com/#/
+Site: https://practicesoftwaretesting.com/
 
 Follow instructions in app README
 

@@ -1,6 +1,6 @@
 # E2E Test Plan — Practice Software Testing (Tool Shop)
 
-**Application under test:** https://practicesoftwaretesting.com/#/
+**Application under test:** https://practicesoftwaretesting.com/
 **Documented behavior source:** [practice-software-testing](../practice-software-testing) repo, `docs/user-stories/v5.md` (full production feature set).
 **Observed behavior source:** `PRODUCT_EXPLORATION.md` (repo root) — the single consolidated record of what the live app actually does, every doc/behavior discrepancy, and the production bugs/smells found while building this suite.
 **Automation:** Playwright + TypeScript, Page Object Model (`src/ui/pages`), fixtures in `src/ui/fixtures`.
@@ -271,12 +271,12 @@ not a gap) · ⛔ unautomatable (see `PRODUCT_EXPLORATION.md` §7).
 
 - Toggle visible bottom-right; opening shows the 4-option menu ("Find a product" / "Order a product" / "Checkout" / "Create support ticket"). ✅
 - Find a product: search returns ≤ 5 cards; the card itself is the link — _(no "View Product" button)_. ✅
-- Order a product → quantity → confirm → in cart. ⏭
-- Checkout via chat (full flow). ⏭
-- Checkout via chat with empty cart → "Your cart is empty". ⏭
-- Support via chat (subject + message ≥ 50 + optional `.txt`). ⏭
+- Order a product → quantity → confirm → in cart. ✅
+- Checkout via chat (full flow). ⚠ _(a genuine successful order is unreachable for a guest — the address step is hand-typed with no postcode lookup, and the invoice API's city↔country cross-validation rejects every hand-typed address regardless of accuracy, per §18. Tested through to that real, reproducible rejection instead of a successful order; a logged-in user with an already-geocoded saved address is unexplored.)_
+- Checkout via chat with empty cart → "Your cart is empty". ⚠ _(the docs' assumed copy is wrong — the actual behavior is a client-side crash (`TypeError: Cannot read properties of null (reading 'cart_items')` in `startCheckoutFlow`) with no bot reply at all; see PRODUCT_EXPLORATION.md's Chat widget entry. Tested the real behavior.)_
+- Support via chat (subject + message ≥ 50 + optional `.txt`). ⚠ _(contact fields, subject selection, and the ≥50-char validation — both accept and reject — are covered; the optional `.txt` attachment upload path itself is untested, only "Skip".)_
 
-**Status:** ✅ shell + Find-a-product. ⏭ order / checkout / support flows.
+**Status:** ✅ shell + Find-a-product + order-a-product. ⚠ checkout via chat (blocked for guests by a real API validation rule) and empty-cart checkout (docs' copy is wrong, real behavior is a client-side crash) and support-ticket (attachment upload path untested) — see notes above.
 
 ### 5.22 Discounts (`discounts.spec.ts`)
 

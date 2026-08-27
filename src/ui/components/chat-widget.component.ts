@@ -4,12 +4,7 @@ import { waitForApi } from '@src/ui/utils/network.util';
 
 /**
  * The chat assistant (`<app-chat-widget>`), rendered outside the router outlet and so
- * present on every page — it is a component, not a page, and is injected as its own
- * fixture rather than hanging off a PAGE_URL (TEST_PLAN.md §32).
- *
- * The transcript accumulates: an earlier search's result cards stay in the DOM, and
- * "Back to menu" appends a fresh greeting rather than replacing the old one. Callers
- * that count messages or cards must therefore drive one flow per page load.
+ * present on every page, that's why it is a component not a page
  */
 export class ChatWidgetComponent {
   readonly page: Page;
@@ -17,8 +12,8 @@ export class ChatWidgetComponent {
   readonly window: Locator;
   readonly closeButton: Locator;
   readonly title: Locator;
+  readonly botMessage: Locator;
   readonly botMessages: Locator;
-  readonly menuActionButtons: Locator;
   readonly findProductAction: Locator;
   readonly orderProductAction: Locator;
   readonly checkoutAction: Locator;
@@ -32,6 +27,20 @@ export class ChatWidgetComponent {
   readonly productCardImages: Locator;
   readonly noProductsFoundMessage: Locator;
   readonly searchReply: Locator;
+  readonly quantityButtons: Locator;
+  readonly confirmOrderAction: Locator;
+  readonly addedToCartMessage: Locator;
+  readonly supportSubjectButtons: Locator;
+  readonly messageTooShortError: Locator;
+  readonly skipAttachmentAction: Locator;
+  readonly ticketSubmittedMessage: Locator;
+  readonly checkoutLoginAction: Locator;
+  readonly checkoutGuestAction: Locator;
+  readonly cartTotalMessage: Locator;
+  readonly confirmAddressAction: Locator;
+  readonly paymentMethodButtons: Locator;
+  readonly placeOrderAction: Locator;
+  readonly billingAddressErrorMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -42,13 +51,8 @@ export class ChatWidgetComponent {
     // The title is a bare <span> (no heading role), so it is matched by its visible copy.
     this.title = this.window.getByText('Chat Assistant');
     // Message bubbles carry no data-test; bot and user turns differ only by class.
-    this.botMessages = this.window.locator('.chat-message.bot-message');
-    // The greeting's four options. Scoped to the first bot message because "Back to menu"
-    // appends a second greeting with the same four buttons rather than reusing the first.
-    this.menuActionButtons = this.botMessages
-      .first()
-      .locator('.action-buttons')
-      .getByRole('button');
+    this.botMessages = this.page.getByText('Hi! How can I help you today?');
+    this.botMessage = this.botMessages.first();
     this.findProductAction = this.page.getByTestId('chat-action-find-product');
     this.orderProductAction = this.page.getByTestId(
       'chat-action-order-product',
@@ -74,6 +78,42 @@ export class ChatWidgetComponent {
     this.searchReply = this.productCards
       .first()
       .or(this.noProductsFoundMessage.first());
+    this.quantityButtons = this.page.getByTestId('chat-action-select-quantity');
+    this.confirmOrderAction = this.page.getByTestId(
+      'chat-action-confirm-order',
+    );
+    this.addedToCartMessage = this.window.getByText('Added to your cart!');
+    this.supportSubjectButtons = this.page.getByTestId(
+      'chat-action-select-subject',
+    );
+    this.messageTooShortError = this.window.getByText(
+      'Your message must be at least 50 characters long.',
+    );
+    this.skipAttachmentAction = this.page.getByTestId(
+      'chat-action-skip-attachment',
+    );
+    this.ticketSubmittedMessage = this.window.getByText(
+      "Your support ticket has been submitted successfully! We'll get back to you soon.",
+    );
+    this.checkoutLoginAction = this.page.getByTestId(
+      'chat-action-checkout-login',
+    );
+    this.checkoutGuestAction = this.page.getByTestId(
+      'chat-action-checkout-guest',
+    );
+    this.cartTotalMessage = this.window.getByText('Your cart total:');
+    this.confirmAddressAction = this.page.getByTestId(
+      'chat-action-checkout-confirm-address',
+    );
+    this.paymentMethodButtons = this.page.getByTestId(
+      'chat-action-select-payment-method',
+    );
+    this.placeOrderAction = this.page.getByTestId(
+      'chat-action-checkout-confirm-order',
+    );
+    this.billingAddressErrorMessage = this.window.getByText(
+      'There was an error processing your order:',
+    );
   }
 
   async open(): Promise<void> {
@@ -110,6 +150,118 @@ export class ChatWidgetComponent {
 
   async clickProductCard(index: number): Promise<void> {
     await this.productCards.nth(index).click();
+  }
+
+  async chooseOrderAProduct(): Promise<void> {
+    await this.orderProductAction.click();
+    await this.messageInput.waitFor();
+  }
+
+  async selectOrderQuantity(quantity: number): Promise<void> {
+    await this.quantityButtons.first().waitFor();
+    await this.quantityButtons
+      .getByText(`${quantity}`, { exact: true })
+      .click();
+    await this.confirmOrderAction.waitFor();
+  }
+
+  async confirmOrder(): Promise<void> {
+    await this.confirmOrderAction.click();
+    await this.addedToCartMessage.waitFor();
+  }
+
+  async chooseCheckout(): Promise<void> {
+    await this.checkoutAction.click();
+  }
+
+  async continueCheckoutAsGuest(email: string): Promise<void> {
+    await this.checkoutGuestAction.click();
+    await this.messageInput.waitFor();
+    await this.messageInput.fill(email);
+    await this.sendButton.click();
+    await this.window.getByText('Please enter your first name:').waitFor();
+  }
+
+  async provideCheckoutAddress(address: {
+    firstName: string;
+    lastName: string;
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+  }): Promise<void> {
+    const steps: [string, string][] = [
+      [address.firstName, 'Please enter your last name:'],
+      [address.lastName, 'Please enter your street address:'],
+      [address.street, 'Please enter your city:'],
+      [address.city, 'Please enter your state/province:'],
+      [address.state, 'Please enter your country:'],
+      [address.country, 'Please enter your postal code:'],
+      [address.postalCode, 'Please confirm your billing address:'],
+    ];
+    for (const [value, nextPrompt] of steps) {
+      await this.messageInput.fill(value);
+      await this.sendButton.click();
+      await this.window.getByText(nextPrompt).waitFor();
+    }
+  }
+
+  async confirmCheckoutAddress(): Promise<void> {
+    await this.confirmAddressAction.click();
+    await this.paymentMethodButtons.first().waitFor();
+  }
+
+  async selectPaymentMethod(method: string): Promise<void> {
+    await this.paymentMethodButtons.getByText(method, { exact: true }).click();
+    await this.placeOrderAction.waitFor();
+  }
+
+  async placeOrder(): Promise<void> {
+    await this.placeOrderAction.click();
+    await this.billingAddressErrorMessage.waitFor();
+  }
+
+  async chooseSupportTicket(): Promise<void> {
+    await this.supportTicketAction.click();
+    await this.messageInput.waitFor();
+  }
+
+  async provideSupportContact(
+    firstName: string,
+    lastName: string,
+    email: string,
+  ): Promise<void> {
+    await this.messageInput.fill(firstName);
+    await this.sendButton.click();
+    await this.window.getByText('What is your last name?').waitFor();
+    await this.messageInput.fill(lastName);
+    await this.sendButton.click();
+    await this.window.getByText('What is your email address?').waitFor();
+    await this.messageInput.fill(email);
+    await this.sendButton.click();
+    await this.supportSubjectButtons.first().waitFor();
+  }
+
+  async selectSupportSubject(subject: string): Promise<void> {
+    await this.supportSubjectButtons
+      .getByText(subject, { exact: true })
+      .click();
+    await this.messageInput.waitFor();
+  }
+
+  async submitSupportMessage(message: string): Promise<void> {
+    await this.messageInput.fill(message);
+    await this.sendButton.click();
+    await this.skipAttachmentAction
+      .or(this.messageTooShortError)
+      .first()
+      .waitFor();
+  }
+
+  async skipAttachment(): Promise<void> {
+    await this.skipAttachmentAction.click();
+    await this.ticketSubmittedMessage.waitFor();
   }
 
   /**

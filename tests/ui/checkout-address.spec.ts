@@ -4,18 +4,6 @@ import { makeValidAddress } from '@src/ui/factories/address.factory';
 import { AddressTextField } from '@src/ui/models/address.model';
 import { ADDRESS_MAX_LENGTHS } from '@src/ui/test-data/address.data';
 
-// User Stories v5 — Checkout Billing Address (TEST_PLAN.md §5.7). The billing step
-// is reached by advancing past the sign-in step: as a guest via the "Continue as
-// Guest" tab + details form, or (AC5) as an already-logged-in user via proceed-2.
-// The form is an Angular reactive form with no native maxlength and no visible
-// error text — an empty/over-long field only turns ng-invalid and keeps the
-// "Proceed to checkout" button (proceed-3) disabled (§16). Country is a <select>
-// with a "House number" sibling, not the free-text field the docs imply (§9), so
-// the max-length boundary excludes Country. AC5's documented "address is pre-filled
-// from account data" is FALSE in production — the fields render empty for a
-// logged-in user (§9/§16); that test pins the actual behavior. Products are chosen
-// dynamically by card index (§3, §9); see .ai-docs/checkout-address-plan.md.
-
 const validAddress = makeValidAddress();
 
 test.describe('Verify checkout billing address step', () => {
@@ -79,10 +67,55 @@ test.describe('Verify checkout billing address step', () => {
     },
   );
 
-  // AC3 — one boundary test per length-limited text field (Country excluded, §9).
-  // House number is undocumented (§9) but is a real required field, so its verified
-  // max is covered here too.
-  for (const field of Object.keys(ADDRESS_MAX_LENGTHS) as AddressTextField[]) {
+  // postalCode/houseNumber feed the async postcode-lookup call (fillAddress's
+  // waitForApi), so an over-long value there surfaces the backend's 422 message
+  // in postcode-lookup-error. street/city/state aren't part of that call and have
+  // no error-text template at all — ng-invalid is the only observable signal.
+  const LOOKUP_ERROR_LABELS: Record<'postalCode' | 'houseNumber', string> = {
+    postalCode: 'postcode',
+    houseNumber: 'house number',
+  };
+  const lookupErrorFields = Object.keys(LOOKUP_ERROR_LABELS) as Array<
+    keyof typeof LOOKUP_ERROR_LABELS
+  >;
+  const ngInvalidOnlyFields = (
+    Object.keys(ADDRESS_MAX_LENGTHS) as AddressTextField[]
+  ).filter((field) => !(field in LOOKUP_ERROR_LABELS));
+
+  for (const field of lookupErrorFields) {
+    const max = ADDRESS_MAX_LENGTHS[field];
+
+    test(
+      `${field} rejects input longer than ${max} characters`,
+      { tag: ['@checkout', '@regression'] },
+      async ({
+        addProductToCart,
+        cartPage,
+        checkoutSigninPage,
+        checkoutAddressPage,
+      }) => {
+        await addProductToCart();
+        await cartPage.goto();
+        await cartPage.proceedToCheckout();
+        await checkoutSigninPage.continueAsGuest(
+          faker.internet.email(),
+          faker.person.firstName(),
+          faker.person.lastName(),
+        );
+        await checkoutAddressPage.fillAddress(validAddress);
+        await expect(checkoutAddressPage.proceedButton).toBeEnabled();
+
+        await checkoutAddressPage.textFields[field].fill('a'.repeat(max + 1));
+
+        await expect(checkoutAddressPage.postcodeLookupError).toHaveText(
+          `The ${LOOKUP_ERROR_LABELS[field]} field must not be greater than ${max} characters.`,
+        );
+        await expect(checkoutAddressPage.proceedButton).toBeDisabled();
+      },
+    );
+  }
+
+  for (const field of ngInvalidOnlyFields) {
     const max = ADDRESS_MAX_LENGTHS[field];
 
     test(
@@ -140,14 +173,6 @@ test.describe('Verify checkout billing address step', () => {
     },
   );
 
-  // AC5 — a logged-in user's billing address IS pre-filled from account data. This
-  // pins that (correcting an earlier finding to the contrary; TEST_PLAN.md §9/§16).
-  // It runs under the @logged project, inheriting the storageState session from
-  // tests/setup/login.setup.ts (a user registered via the API with a full address),
-  // so it only advances to billing and asserts the pre-fill. The account's country
-  // is stored as the name "Germany" (not an ISO code), which matches no <select>
-  // option value, so the country dropdown alone stays empty while every free-text
-  // field is populated from the account.
   test(
     'logged-in user reaches billing with address pre-filled from account',
     { tag: ['@checkout', '@regression', '@logged'] },

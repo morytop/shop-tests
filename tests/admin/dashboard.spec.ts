@@ -1,21 +1,7 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 
-// User Stories v5 — Admin dashboard (TEST_PLAN.md §5.20), smoke level only. Covers the
-// first bullet ("admin login lands on /admin/dashboard with sales chart + recent invoices
-// list"), the menu that reaches every other section, and the non-admin negative path.
-//
-// Data safety (§3): the seeded admin is shared, READ-ONLY fixture data — these tests sign
-// in, look and assert; they never create, edit, delete or submit. They also never send a
-// wrong password: 3 failed attempts lock an account permanently (§20), and this one is
-// shared with every user of the public demo site. The non-admin path uses a throwaway
-// API-registered user rather than the seeded `customer@`, so no shared account is touched
-// at all. See TEST_PLAN.md §31 and .ai-docs/admin-dashboard-smoke-plan.md.
-
 test.describe('Verify admin dashboard', () => {
-  // AC1 — admin credentials redirect straight to the dashboard, which renders the sales
-  // chart (a bare <canvas>) under its "Sales over the years" title, plus the "Latest
-  // orders" section.
   test(
     'admin login lands on the dashboard with the sales chart',
     { tag: ['@smoke', '@admin', '@auth'] },
@@ -31,12 +17,6 @@ test.describe('Verify admin dashboard', () => {
     },
   );
 
-  // AC1 (second half) — the recent-invoices list loads. The dashboard renders "No recent
-  // invoices." while `GET /invoices` is still in flight (§31), so the page object awaits
-  // that response; the list then resolves to either the orders table or that same
-  // message, depending on whether anyone's order is currently AWAITING_FULFILLMENT.
-  // Which one is shared production data, so the assertion pins that it resolved, not how
-  // many rows other people left behind (§3).
   test(
     'dashboard loads the recent invoices list',
     { tag: ['@admin', '@regression'] },
@@ -50,9 +30,6 @@ test.describe('Verify admin dashboard', () => {
     },
   );
 
-  // The admin sections are reachable only from the account-name dropdown — there is no
-  // sidebar (§9, §31). This is the wiring the section specs bypass by navigating
-  // directly, so it is asserted once here.
   test(
     'admin menu links to every admin section',
     { tag: ['@admin', '@regression'] },
@@ -109,9 +86,6 @@ test.describe('Verify admin dashboard', () => {
     },
   );
 
-  // The back office is admin-only: a logged-in customer asking for the dashboard by URL
-  // is bounced to the login page (§9 said "redirected away"; the target is /auth/login —
-  // §31). A throwaway user proves it for any non-admin without touching a shared account.
   test(
     'non-admin user is redirected away from the admin dashboard',
     { tag: ['@admin', '@auth', '@regression'] },

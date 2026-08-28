@@ -1,18 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 
-// User Stories v5 — Checkout Payment (TEST_PLAN.md §5.8). The Payment step is the
-// last wizard step, reached by advancing a guest through cart → sign-in → billing
-// address (the `reachPaymentAsGuest` action fixture). The whole step is one Angular
-// reactive form: a `payment-method` <select> reveals a method-specific sub-form
-// (each behind an @if, so switching method removes the previous method's inputs),
-// and the "Confirm" button stays disabled until the form is valid. Per-field
-// validators and exact error copy were live-verified; §17 records where production
-// has drifted ahead of the pinned v5.0 source (gift-card rules, card-holder copy).
-// This pass covers the method dropdown + per-method field validation + form reset;
-// placing a real order is deliberately out of scope (would write invoices to shared
-// prod data). Products are chosen dynamically (§3, §9); see
-// .ai-docs/checkout-payment-plan.md.
-
 test.describe('Verify checkout payment step', () => {
   // AC1 — the method dropdown offers exactly the five documented payment methods,
   // and the form is invalid (Confirm disabled) until one is chosen.
@@ -35,7 +22,6 @@ test.describe('Verify checkout payment step', () => {
     },
   );
 
-  // AC7 — Cash on Delivery adds no fields and leaves the form immediately valid.
   test(
     'cash on delivery needs no extra details and enables confirming',
     { tag: ['@checkout', '@regression'] },
@@ -50,8 +36,6 @@ test.describe('Verify checkout payment step', () => {
     },
   );
 
-  // AC2 — Bank Transfer: bank name letters/spaces only, account name alphanumeric
-  // plus . ' -, account number digits only. One negative test per field.
   test(
     'bank transfer rejects a bank name containing digits',
     { tag: ['@checkout', '@regression'] },
@@ -118,8 +102,6 @@ test.describe('Verify checkout payment step', () => {
     },
   );
 
-  // AC3 — Credit Card: number XXXX-XXXX-XXXX-XXXX, CVV 3–4 digits, holder name
-  // letters/spaces only. (These fields are pattern-only, not required, per §17.)
   test(
     'credit card rejects a malformed card number',
     { tag: ['@checkout', '@regression'] },
@@ -150,8 +132,7 @@ test.describe('Verify checkout payment step', () => {
     },
   );
 
-  // The card-holder field is pattern-only and shows no error text on production —
-  // a violation only turns the input ng-invalid and disables Confirm (§17).
+  // The card-holder field is pattern-only and shows no error text on production
   test(
     'credit card rejects a holder name containing digits',
     { tag: ['@checkout', '@regression'] },
@@ -184,7 +165,6 @@ test.describe('Verify checkout payment step', () => {
     },
   );
 
-  // AC4 — a past (but well-formed) expiration date shows the dedicated message.
   test(
     'credit card rejects a past expiration date',
     { tag: ['@checkout', '@regression'] },
@@ -228,9 +208,6 @@ test.describe('Verify checkout payment step', () => {
     },
   );
 
-  // AC6 — Gift Card: gift card number + validation code, both required. On
-  // production the rule is stricter than the docs — exactly 16 and exactly 4
-  // letters/digits respectively (the code input also caps at maxlength=4), §17.
   test(
     'gift card rejects a non-alphanumeric gift card number',
     { tag: ['@checkout', '@regression'] },
@@ -279,8 +256,6 @@ test.describe('Verify checkout payment step', () => {
     },
   );
 
-  // AC5 — Buy Now Pay Later offers 3/6/9/12 monthly installments and requires a
-  // selection before confirming.
   test(
     'buy now pay later offers 3, 6, 9 and 12 monthly installments',
     { tag: ['@checkout', '@regression'] },
@@ -304,8 +279,6 @@ test.describe('Verify checkout payment step', () => {
     },
   );
 
-  // AC8 — switching payment method drops the previous method's inputs and errors,
-  // showing only the new method's fields (no stale values/errors carried over).
   test(
     'switching payment method clears the previous method fields and errors',
     { tag: ['@checkout', '@regression'] },

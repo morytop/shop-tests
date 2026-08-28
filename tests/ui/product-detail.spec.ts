@@ -1,24 +1,6 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { BARE_PRICE_REGEX } from '@src/ui/constants/formats';
 
-// User Stories v5 — Product Detail (TEST_PLAN.md §5.3), core subset:
-// display fields, quantity stepper + manual clamp, add-to-cart, out-of-stock,
-// related products, favorites. Discount and the rental slider are deferred (see
-// .ai-docs/product-detail-core-plan.md). Detail pages are reached by clicking a
-// live product card (never a hard-coded id) per §9.
-//
-// Card selection (§28): the catalog is shared, mutable production data, so the three
-// tests that drive *cart* controls pick their product by stock rather than by grid
-// position — an out-of-stock product PATCHed to the front of the grid disables those
-// controls, which is exactly how they broke once. Tests indifferent to stock (display
-// fields, related products, favorites) still take the first card.
-//
-// Favorites (§27): the component fires `POST /favorites` unconditionally and picks its
-// toast from the server's reply — 201 → success, 409 → duplicate, 401 → unauthorized —
-// so each favorites test asserts the status alongside the copy. Adding a favorite
-// mutates the account, so those tests mint and sign in their own throwaway user via
-// `loginAsFreshUser` (API register + token injection); never `testUser1` (it IS the
-// shared seeded `customer@` account) or the `@logged` storageState session user.
 test.describe('Verify product detail', () => {
   test(
     'detail page shows image, name, price, description, category and brand',
@@ -30,7 +12,6 @@ test.describe('Verify product detail', () => {
 
       await expect(productDetailPage.productImage).toBeVisible();
       await expect(productDetailPage.productName).not.toBeEmpty();
-      // Bare price, no `$` — see BARE_PRICE_REGEX (per-surface discrepancy).
       await expect(productDetailPage.productPrice).toHaveText(BARE_PRICE_REGEX);
       await expect(productDetailPage.productDescription).not.toBeEmpty();
       await expect(productDetailPage.categoryBadge).not.toBeEmpty();
@@ -60,9 +41,6 @@ test.describe('Verify product detail', () => {
     },
   );
 
-  // The §5.3 AC documents a [1, 999999999] clamp, but production actually clamps
-  // manual entry to [1, 99] (verified live — see TEST_PLAN.md §12). Assert the
-  // real bounds.
   test(
     'manual quantity entry is clamped to [1, 99]',
     { tag: '@regression' },
@@ -133,7 +111,6 @@ test.describe('Verify product detail', () => {
     },
   );
 
-  // §5.3 favorites, logged in — the happy path.
   test(
     'adding a product to favorites shows a success message',
     { tag: ['@auth', '@favorites', '@regression'] },
@@ -154,9 +131,6 @@ test.describe('Verify product detail', () => {
     },
   );
 
-  // §5.3 favorites, logged in — re-adding the same product. The server rejects the
-  // duplicate with 409; the success toast from the first add may still be on screen, so
-  // the assertion targets the error toast specifically (§27).
   test(
     'adding the same product to favorites twice reports it is already there',
     { tag: ['@auth', '@favorites', '@regression'] },
@@ -182,9 +156,6 @@ test.describe('Verify product detail', () => {
     },
   );
 
-  // §5.3 favorites, logged out. There is no client-side guard: the POST is fired and
-  // rejected server-side with 401, so "does not persist anything" is asserted as the
-  // rejected status plus the absence of a success toast (§27).
   test(
     'adding to favorites while logged out is rejected as unauthorized',
     { tag: ['@favorites', '@regression'] },

@@ -4,7 +4,6 @@ import {
   expectPricesAtMost,
 } from '@src/ui/utils/grid-assert.util';
 
-// TEST_PLAN.md §5.1 Product Overview / Home — category/brand filters, sorting, price range
 test.describe('Verify product overview / home — filters, sort, price range', () => {
   test(
     'selecting one category narrows the grid',
@@ -89,10 +88,6 @@ test.describe('Verify product overview / home — filters, sort, price range', (
         await homePage.getAllProductNamesAcrossPages(),
       );
 
-      // Category + brand together must yield exactly the set-intersection of
-      // the two filters applied alone — no more (union) and no less. Both sides
-      // are Set-deduplicated: names are not unique in the shared prod catalog,
-      // and set algebra only holds between two deduplicated sides.
       const expectedIntersection = [...categoryOnlyNames]
         .filter((name) => brandOnlyNames.has(name))
         .sort();
@@ -100,9 +95,6 @@ test.describe('Verify product overview / home — filters, sort, price range', (
     },
   );
 
-  // The four sort options share one shape — apply a sort, then assert the grid
-  // is ordered — so the cases reduce to field + direction; the name-vs-price
-  // read lives inside expectGridSorted, where conditionals are allowed.
   const sortCases = [
     ['name', 'asc', 'Name (A-Z)'],
     ['name', 'desc', 'Name (Z-A)'],

@@ -1,23 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 
-// User Stories v5 — Admin dashboard (TEST_PLAN.md §5.20), smoke level only. One test per
-// admin section, asserting it loads for an admin and renders its own shell: the page
-// title, and the list's column headers / the report's chart. CRUD (create/edit/delete a
-// test-created product, category, brand or user, order status changes, admin message
-// replies) is deliberately NOT covered — see §5.20 and §31 for what stays deferred.
-//
-// Data safety (§3): the seeded admin is shared, READ-ONLY fixture data. Every test here
-// navigates and asserts; none submits a form. The settings page in particular rewrites
-// APP-WIDE configuration for every user of the demo site, so it is only ever loaded.
-//
-// Sections are entered by direct URL; that the account dropdown actually links to each of
-// them is asserted once, in dashboard.spec.ts (§9, §31).
-//
-// The row assertions take a seeded demo shop to have at least one brand/category/product/
-// user/order/message. That is data-independent enough to be safe (§3 forbids pinning
-// counts, names or ids — none are pinned) and it is what proves the list's fetch landed
-// rather than just its empty shell.
-
 test.describe('Verify admin sections', () => {
   test(
     'brands list loads',
@@ -78,8 +60,6 @@ test.describe('Verify admin sections', () => {
     },
   );
 
-  // The page title here is the singular "Order", though the document title and the menu
-  // entry both say "Orders" — a real production inconsistency (§31).
   test(
     'orders list loads',
     { tag: ['@admin', '@regression'] },
@@ -120,8 +100,6 @@ test.describe('Verify admin sections', () => {
     },
   );
 
-  // Unlike the other five lists, this one has no trailing blank actions column — the row
-  // action is a "Details" link inside the Date column's row (§31).
   test(
     'messages list loads',
     { tag: ['@admin', '@regression'] },
@@ -141,9 +119,6 @@ test.describe('Verify admin sections', () => {
     },
   );
 
-  // ⚠ Read-only: submitting this form would change app-wide configuration for every user
-  // of the shared demo site (§3, §31). The test asserts the controls are there; it never
-  // touches them.
   test(
     'settings page loads',
     { tag: ['@admin', '@regression'] },
@@ -161,8 +136,6 @@ test.describe('Verify admin sections', () => {
     },
   );
 
-  // §5.20's "monthly/weekly/general statistics" is three separate pages, not one Reports
-  // page with three sections (§31). This is the "general" one.
   test(
     'statistics report renders its four sections',
     { tag: ['@admin', '@regression'] },

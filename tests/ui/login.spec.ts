@@ -5,7 +5,6 @@ import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { testUser1 } from '@src/ui/test-data/user.data';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 
-// Login AC1-AC3 (docs/user-stories/v5.md)
 test.describe('Verify login @login', () => {
   test('login with correct credentials', async ({ accountPage, loginPage }) => {
     const email = testUser1.email;
@@ -29,11 +28,6 @@ test.describe('Verify login @login', () => {
       .toHaveText('Invalid email or password');
   });
 
-  // Login AC3: lockout is permanent for the account and can only be undone by an
-  // administrator, so it must be driven against a disposable freshly-registered user
-  // — never testUser1 or the shared seeded accounts (TEST_PLAN.md §3). Verified live
-  // that the lock is keyed on the account, not the caller's IP or browser session, so
-  // this stays safe under fullyParallel (TEST_PLAN.md §20).
   test(
     'lock the account after three consecutive failed login attempts',
     { tag: ['@auth', '@login', '@regression'] },
@@ -47,8 +41,7 @@ test.describe('Verify login @login', () => {
         'Wr0ng-password!1',
         failedAttemptsBeforeLock,
       );
-      // The locking attempt uses the *correct* password: it proves the account is
-      // locked outright rather than the message merely tracking a wrong-password count.
+
       await loginPage.loginAndAwaitResponse(user.email, user.password);
 
       await expect(loginPage.loginError).toHaveText(
@@ -58,15 +51,6 @@ test.describe('Verify login @login', () => {
     },
   );
 
-  // Login AC: a TOTP-enabled account is prompted for a 6-digit code after valid
-  // credentials; a valid code authenticates, an invalid one shows "Invalid TOTP".
-  //
-  // Each test enrols its own disposable user over the API (register → login →
-  // /totp/setup → /totp/verify). Enabling TOTP is a permanent mutation, and
-  // testUser1 IS the shared seeded customer@ account, which the API refuses TOTP
-  // setup for anyway (403) — see TEST_PLAN.md §22/§23. The second leg reuses
-  // POST /users/login with {totp, access_token}, and its errors surface in the
-  // same [data-test="login-error"] element as the credential errors.
   test.describe('with a TOTP-enabled account', () => {
     test(
       'prompt for a TOTP code after valid credentials',
@@ -79,7 +63,6 @@ test.describe('Verify login @login', () => {
 
         await expect(loginPage.totpForm.codeInput).toBeVisible();
         await expect(loginPage.totpForm.verifyButton).toBeVisible();
-        // The credentials form is swapped out in place — same route, no redirect.
         await expect(loginPage.loginButton).toHaveCount(0);
         await expect(page).toHaveURL(PAGE_URLS.LOGIN);
       },
@@ -95,7 +78,6 @@ test.describe('Verify login @login', () => {
         await loginPage.login(user.email, user.password);
         await loginPage.totpForm.codeInput.waitFor();
 
-        // Codes rotate every 30s, so derive it immediately before submitting.
         await loginPage.totpForm.submitCode(generateTotpCode(user.secret));
 
         await expect(accountPage.pageTitle).toHaveText('My account');
@@ -116,7 +98,6 @@ test.describe('Verify login @login', () => {
 
         await expect(loginPage.loginError).toHaveText('Invalid TOTP');
         await expect(page).toHaveURL(PAGE_URLS.LOGIN);
-        // Unlike the profile page's setup form (§22), the prompt survives the error.
         await expect(loginPage.totpForm.codeInput).toBeVisible();
       },
     );

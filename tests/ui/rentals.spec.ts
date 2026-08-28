@@ -1,9 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 
-// User Stories v5 — Rentals (TEST_PLAN.md §5.4). AC1 listing, AC2 detail
-// duration slider, AC3 cart labelling. AC4 (location discount) is excluded —
-// unautomatable per §10. The catalog is shared/mutable (§3, §9), so rentals are
-// selected dynamically (first card) with no hard-coded id/name/price.
 test.describe('Verify rentals', () => {
   test(
     'rentals listing shows each rental with an image, name and description',
@@ -13,8 +9,6 @@ test.describe('Verify rentals', () => {
 
       await expect(rentalsPage.pageHeading).toBeVisible();
 
-      // The visible-card assertion doubles as the grid-paint sync: a bare
-      // count() right after goto() can race the rentals XHR and read 0.
       await expect(rentalsPage.rentalCards.first()).toBeVisible();
       const cardCount = await rentalsPage.rentalCards.count();
       await expect(rentalsPage.rentalCardImages).toHaveCount(cardCount);
@@ -39,8 +33,6 @@ test.describe('Verify rentals', () => {
     },
   );
 
-  // The §5.4 AC documents "This is a rental item", but the cart actually renders
-  // "Item for rent, price per hour" (verified live — see TEST_PLAN.md §13).
   test(
     'rental item added to cart is labelled as a rental',
     { tag: ['@smoke', '@regression'] },

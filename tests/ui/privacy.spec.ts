@@ -2,18 +2,7 @@ import { expect, test } from '@src/fixtures/merge.fixture';
 import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { privacySectionTitles } from '@src/ui/test-data/privacy.data';
 
-// User Stories v5 — Privacy policy (TEST_PLAN.md §5.24). The page is static prose, so the
-// AC is coverage of its content: the route loads, every documented section is present, and
-// the data-handling facts the policy commits to are actually stated.
-//
-// The section titles are `<strong>` tags — the page renders no headings and no `data-test`
-// attributes at all (§35) — so the assertions are on exact text, not roles.
-//
-// Data safety (§3): read-only static page, no account, no catalog, no cart. These tests are
-// deliberately not `@logged`, since the policy renders identically for guests.
-
 test.describe('Verify privacy policy page', () => {
-  // §5.24 — the route loads, both directly and from its only in-app entry point (the footer).
   test(
     'privacy policy loads on its own route',
     { tag: ['@privacy', '@regression'] },
@@ -39,8 +28,6 @@ test.describe('Verify privacy policy page', () => {
     },
   );
 
-  // §5.24 — every expected section is present, in order. Asserting the full ordered list (not
-  // just the six the AC names) means a section added or dropped upstream fails the test.
   test(
     'privacy policy lists every expected section',
     { tag: ['@privacy', '@regression'] },
@@ -51,8 +38,6 @@ test.describe('Verify privacy policy page', () => {
     },
   );
 
-  // §5.24 — the substance behind the section titles: what is collected via Google Sign-In, the
-  // hourly automatic wipe, third-party services, data security, and how to reach the operator.
   test(
     'privacy policy states the key data-handling facts',
     { tag: ['@privacy', '@regression'] },

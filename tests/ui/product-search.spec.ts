@@ -1,6 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
 
-// TEST_PLAN.md §5.1 Product Overview / Home — search
 test.describe('Verify product overview / home — search', () => {
   test(
     'valid search query filters the grid to matching products only',
@@ -8,10 +7,6 @@ test.describe('Verify product overview / home — search', () => {
     async ({ homePage }) => {
       await homePage.goto();
       await expect(homePage.productCards.first()).toBeVisible();
-      // The term is read off a live card, never hard-coded (§3). Server search
-      // matches product names only (verified live: a description-only word
-      // returns zero hits), so "every card's name contains the term" is the
-      // faithful invariant.
       const searchTerm = await homePage.randomSearchTerm();
 
       await homePage.search(searchTerm);

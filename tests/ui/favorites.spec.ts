@@ -2,25 +2,7 @@ import { addFavoritesWithApi } from '@src/api/factories/favorite.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { truncate } from '@src/ui/utils/text.util';
 
-// User Stories v5 — Favorites (TEST_PLAN.md §5.16). The favorites page is entered via
-// `gotoAndAwaitLoaded()` in every test: the component renders its empty-state message
-// while `GET /favorites` is still in flight, so a bare `goto()` makes "not loaded yet"
-// look exactly like "no favorites" (§26).
-//
-// Data safety (§3): all three ACs mutate the account's favorites, so each mints and
-// signs in its own throwaway user via `loginAsFreshUser` (API register + token
-// injection). None may use `testUser1` (it IS the shared seeded `customer@` account)
-// or ride the `@logged` storageState session, which `tests/setup/login.setup.ts`
-// shares across every `@logged` spec in a run. AC1 also needs a guaranteed-empty
-// list, which only a fresh user gives.
-//
-// The catalog is shared, mutable production data (§3/§9), so product names and
-// descriptions are read off the live detail page rather than hard-coded.
-//
-// See TEST_PLAN.md §26 and .ai-docs/favorites-plan.md.
-
 test.describe('Verify favorites', () => {
-  // AC1 — a user with no favorites sees the empty-state message and no cards.
   test(
     'show the empty state for a user with no favorites',
     { tag: ['@auth', '@favorites', '@regression'] },
@@ -35,11 +17,6 @@ test.describe('Verify favorites', () => {
     },
   );
 
-  // AC2 — a product favorited from its detail page surfaces on the favorites page with
-  // its image, name, and description. The card's description is cut by the app's
-  // `truncate: 250` pipe, so the expected text is derived from the full description
-  // rather than asserted verbatim — this holds for short descriptions too, where the
-  // pipe is the identity (§26).
   test(
     'show a product favorited from its detail page',
     { tag: ['@auth', '@favorites', '@regression'] },
@@ -74,14 +51,6 @@ test.describe('Verify favorites', () => {
     },
   );
 
-  // AC3 — removing a favorite updates the list in place. Deletion refetches the whole
-  // list rather than splicing optimistically, so the auto-retrying count assertion is
-  // what proves the card disappeared without a reload. The two names are read off the
-  // rendered list rather than assumed from insertion order.
-  //
-  // The two favorites are arranged over the API (Phase G): favoriting through the UI
-  // is AC2's subject, so here the add loop is pure precondition and the UI only drives
-  // what this AC is about — the removal.
   test(
     'remove a favorite and update the list immediately',
     { tag: ['@auth', '@favorites', '@regression'] },

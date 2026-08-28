@@ -5,16 +5,6 @@ import { prepareRandomUser } from '@src/ui/factories/user.factory';
 import { INVALID_EMAILS, VALID_EMAILS } from '@src/ui/test-data/email.data';
 import { REQUIRED_FIELD_ERRORS } from '@src/ui/test-data/register.data';
 
-// User Stories v5 — Registration (TEST_PLAN.md §5.10). The register form is one
-// Angular reactive form built with `updateOn: 'blur'`, so validators, the inline
-// error blocks and the password requirements-list highlighting only recompute once
-// focus leaves a field — and every error block is additionally gated behind a
-// submit (`@if (f['x'].invalid && submitted)`), so there is no live per-field
-// validation before the first submit. Behaviour and exact copy were verified against
-// the live site and the sprint5 source; see TEST_PLAN.md §19 for the confirmed
-// production discrepancies (broken strength meter, duplicate-email copy). Users are
-// generated per-test with faker (§3); see .ai-docs/register-validation-plan.md.
-
 test.describe('Verify register @register', () => {
   test('register with correct data and login', async ({
     registerPage,
@@ -31,8 +21,6 @@ test.describe('Verify register @register', () => {
     await expect(accountPage.pageTitle).toHaveText('My account');
   });
 
-  // AC1 — every field is required; submitting the empty form reveals each field's
-  // required message (errors are submit-gated, so nothing shows before this click).
   test(
     'submitting the empty form flags every required field',
     { tag: ['@auth', '@register', '@regression'] },
@@ -49,8 +37,6 @@ test.describe('Verify register @register', () => {
     },
   );
 
-  // AC6 — malformed emails are rejected client-side. Only the email is filled, so the
-  // form stays invalid and never reaches the API (no account is created).
   for (const email of INVALID_EMAILS) {
     test(
       `rejects the malformed email "${email}"`,
@@ -68,8 +54,6 @@ test.describe('Verify register @register', () => {
     );
   }
 
-  // AC6 — valid edge-case addresses pass the format check: with only the email set,
-  // the email control is valid so its error block never renders.
   for (const email of VALID_EMAILS) {
     test(
       `accepts the valid email format "${email}"`,
@@ -85,10 +69,6 @@ test.describe('Verify register @register', () => {
     );
   }
 
-  // AC4 — registering an already-used email is rejected. A throwaway user is created
-  // via the API first, then the UI re-registers that email. NB: production shows
-  // "A customer with this email address already exists." — the API no longer returns
-  // the `Duplicate Entry` code the source maps to "Email is already in use." (§19).
   test(
     'rejects registration with an already-used email',
     { tag: ['@auth', '@register', '@regression'] },
@@ -109,8 +89,6 @@ test.describe('Verify register @register', () => {
     },
   );
 
-  // AC2 — the password requirements list highlights each rule (green `.text-success`)
-  // as it is satisfied and un-highlights it when it is not, live as the user types.
   test(
     'password requirements list highlights each satisfied rule',
     { tag: ['@auth', '@register', '@regression'] },
@@ -141,12 +119,6 @@ test.describe('Verify register @register', () => {
     },
   );
 
-  // AC3 — the strength indicator is BROKEN in production and this pins that behaviour
-  // (TEST_PLAN.md §19). The template updates it on the input event but reads the
-  // control's value, which — because the form is `updateOn:'blur'` — is still stale
-  // at that moment, so `passwordStrength()` always sees the empty pre-blur value:
-  // the bar never leaves 0% and no strength label ever activates, even for a fully
-  // valid password that should read "Excellent" / 100%.
   test(
     'password strength meter stays empty (known production bug)',
     { tag: ['@auth', '@register', '@regression'] },

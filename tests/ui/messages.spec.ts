@@ -6,30 +6,7 @@ import { CONTACT_SUBJECTS } from '@src/ui/test-data/contact.data';
 import { DATE_TIME_REGEX } from '@src/ui/utils/date.util';
 import { truncate } from '@src/ui/utils/text.util';
 
-// User Stories v5 — Messages (TEST_PLAN.md §5.18). All three ACs: the submitted contact
-// message appears in the list (AC1), the detail page shows the full original message and
-// its replies in chronological order (AC2), and a reply is appended to the thread (AC3).
-//
-// Data safety (§3): submitting a contact message permanently mutates the account's
-// message list (there is no customer-side delete), so each test mints and signs in its
-// own throwaway user via `loginAsFreshUser` (API register + token injection) — never
-// `testUser1` (it IS the shared seeded `customer@`) and never the `@logged`
-// storageState session, which is shared across every `@logged` spec in a run. A fresh
-// user also guarantees a single-message list, which is what makes the row assertions
-// deterministic.
-//
-// Message bodies come from `prepareRandomMessage()`, which respects the app's 50–250
-// character window (the 250 ceiling is undocumented — §30); the messages list is entered
-// via `gotoAndAwaitLoaded()`, since like invoices and favorites the table renders before
-// `GET /messages` lands (§29/§26). See TEST_PLAN.md §30 and .ai-docs/messages-plan.md.
-
 test.describe('Verify messages', () => {
-  // AC1 — the submitted message shows up in the list with its subject, the body truncated
-  // at 50 chars by the app's `TruncatePipe`, a NEW status badge, and a date. The Subject
-  // column renders the select's *value* (`warranty`), not its label ("Warranty") — §30.
-  // The row is keyed by its Subject cell and the remaining values are asserted as cells
-  // of that row, independent of column order. The NEW badge only holds until someone
-  // replies (a reply flips it to IN_PROGRESS), so this test must not post one.
   test(
     'submitted contact message appears in the message list',
     { tag: ['@auth', '@messages', '@regression'] },
@@ -60,16 +37,6 @@ test.describe('Verify messages', () => {
     },
   );
 
-  // AC2 — the detail page shows the original message in full (untruncated, unlike the
-  // list) plus its replies oldest-first. Two replies are posted so the ordering is
-  // actually observable; a customer can reply to their own thread with no admin
-  // involvement (§30). The original message is asserted *before* replying: the reply form
-  // renders while `GET /messages/{id}` is still in flight, and a reply posted then does
-  // not land (§30).
-  //
-  // The message is filed over the API (Phase G): submitting the contact form is AC1's
-  // subject, and this AC is about the detail view — so the arrange skips the form and
-  // the UI drives only the list → detail → reply flow.
   test(
     'message detail shows the full message and replies in chronological order',
     { tag: ['@auth', '@messages', '@regression'] },
@@ -105,13 +72,6 @@ test.describe('Verify messages', () => {
     },
   );
 
-  // AC3 — a reply is appended to a thread that had none. The thread's status flips from
-  // NEW to IN_PROGRESS on the first reply (§30), which is asserted here as the
-  // server-side effect of the reply landing. Asserting the NEW badge first also gates on
-  // the thread having loaded, without which the reply is dropped (§30).
-  //
-  // Like AC2, the thread being replied to is arranged over the API (Phase G) — the reply
-  // itself, the thing under test, still goes through the UI.
   test(
     'submitting a reply appends it to the thread',
     { tag: ['@auth', '@messages', '@regression'] },

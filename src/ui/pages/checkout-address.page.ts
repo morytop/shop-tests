@@ -14,6 +14,7 @@ export class CheckoutAddressPage extends BasePage {
   readonly streetInput: Locator;
   readonly cityInput: Locator;
   readonly stateInput: Locator;
+  readonly postcodeLookupError: Locator;
   readonly proceedButton: Locator;
   //Text fields keyed by name, so the boundary tests can drive one at a time.
   readonly textFields: Record<AddressTextField, Locator>;
@@ -27,6 +28,7 @@ export class CheckoutAddressPage extends BasePage {
     this.streetInput = this.page.getByTestId('street');
     this.cityInput = this.page.getByTestId('city');
     this.stateInput = this.page.getByTestId('state');
+    this.postcodeLookupError = this.page.getByTestId('postcode-lookup-error');
     this.proceedButton = this.page.getByTestId('proceed-3');
     this.textFields = {
       postalCode: this.postalCodeInput,

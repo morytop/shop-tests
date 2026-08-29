@@ -1,8 +1,3 @@
-/**
- * Required register-form fields keyed by their `data-test` id → the message shown
- * on empty submit. Errors are submit-gated (`@if (f['x'].invalid && submitted)`),
- * so nothing shows before the first submit (see register.spec.ts).
- */
 export const REQUIRED_FIELD_ERRORS: Record<string, string> = {
   'first-name': 'First name is required',
   'last-name': 'Last name is required',

@@ -5,12 +5,6 @@ import {
 
 /**
  * `POST /payment/check` validation tables.
- *
- * The endpoint validates `payment_details` against a per-method rule set — but
- * only once it recognises the method. It never checks that `payment_method` is
- * one of the five below (§API-E), so these tables cover the recognised methods
- * only; the unvalidated-method paths are pinned as their own tests in
- * `payment.check.api.spec.ts`.
  */
 export interface PaymentMethodCase {
   label: string;
@@ -67,11 +61,6 @@ export const validPaymentCases: PaymentMethodCase[] = [
   },
 ];
 
-/**
- * One rejected payload. `field` is the dotted key the 422 body reports errors
- * under — the API flattens the nested details object into
- * `payment_details.<field>` rather than nesting the error to match the request.
- */
 export interface InvalidPaymentCase extends PaymentMethodCase {
   field: string;
   expectedMessage: string;

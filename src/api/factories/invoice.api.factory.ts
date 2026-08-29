@@ -19,16 +19,6 @@ import { PostcodeRequest } from '@src/api/requests/postcode.request';
 import { ProductsRequest } from '@src/api/requests/products.request';
 import { expect } from '@src/fixtures/merge.fixture';
 
-/**
- * Build a billing address the invoice endpoint will accept, by geocoding one
- * through the postcode lookup.
- *
- * This indirection is not incidental: `POST /invoices` cross-validates city
- * against country and rejects a hand-typed pair with 422 — even a real one
- * ("Berlin"/"DE" fails, §18). Only the lookup's own output is internally
- * consistent, so any orderable address has to come from here rather than from a
- * literal or from faker.
- */
 export async function getGeocodedBillingAddress(
   postcodeRequest: PostcodeRequest,
 ): Promise<BillingAddress> {
@@ -67,8 +57,6 @@ export function buildInvoicePayload(
     cart_id: cartId,
   };
 }
-
-/** The order facts an API-placed COD order surfaces, for asserting on its invoice in the UI. */
 export interface ApiPlacedOrder {
   invoiceNumber: string;
   /** The invoice total as the API reports it — a plain number, unformatted. */
@@ -76,14 +64,6 @@ export interface ApiPlacedOrder {
   product: CartWithProduct['product'];
 }
 
-/**
- * Place a complete Cash-on-Delivery order over the API — cart with one live
- * product, geocoded billing, invoice — for `credentials`' account. The arrange
- * for UI invoice-page tests that don't need to re-drive the checkout wizard
- * (which stays covered by `checkout-e2e` and the invoice list AC — Phase G).
- *
- * Orders are permanent, so `credentials` must be a throwaway user.
- */
 export async function createInvoiceWithApi(
   request: APIRequestContext,
   credentials: LoginData,

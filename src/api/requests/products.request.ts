@@ -3,11 +3,6 @@ import { Headers } from '@src/api/models/headers.api.model';
 import { BaseRequest } from '@src/api/requests/base.request';
 import { apiUrls } from '@src/api/utils/api.util';
 
-/**
- * `/products` plus its nested spec sub-resource. Spec payloads stay untyped
- * (`object`): the catalog is shared production data, so spec writes are only
- * ever exercised as negative cases with deliberately invalid bodies.
- */
 export class ProductsRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,

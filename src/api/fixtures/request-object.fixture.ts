@@ -18,7 +18,6 @@ import { ReportsRequest } from '@src/api/requests/reports.request';
 import { UsersRequest } from '@src/api/requests/users.request';
 import { adminUser } from '@src/ui/test-data/user.data';
 
-/** Anonymous request objects — no auth header, safe for any spec. */
 export interface Requests {
   usersRequest: UsersRequest;
   loginRequest: LoginRequest;

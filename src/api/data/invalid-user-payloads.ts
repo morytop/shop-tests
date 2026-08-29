@@ -3,24 +3,9 @@ import {
   UserRegisterPayload,
 } from '@src/api/models/user.api.model';
 
-/**
- * One row of the register-validation table: a mutation of an otherwise-valid
- * payload, plus the field the API is expected to name in the 422 body.
- *
- * `build` takes the valid payload rather than generating one, so the table stays a
- * pure data module and `prepareRandomUserPayload()` remains the single source of
- * user data (the spec supplies it).
- *
- * Fields are omitted by setting them to `undefined`: the request body is
- * JSON-serialised, and `JSON.stringify` drops undefined values, so the key is
- * absent on the wire rather than sent as null (which the API validates
- * differently).
- */
 export interface InvalidUserCase {
   label: string;
-  /** Key the 422 body must carry an error array under. */
   field: keyof UserRegisterPayload;
-  /** Substring the reported message must contain. */
   expectedMessage: string;
   build: (valid: UserRegisterPayload) => InvalidUserRegisterPayload;
 }
@@ -102,12 +87,6 @@ export const invalidUserCases: InvalidUserCase[] = [
   },
 ];
 
-/**
- * The register endpoint's optional fields. Each is dropped in turn and the request
- * is still expected to succeed — the API accepts the account without them, storing
- * a null address. Documents the gap against the UI, which marks all of these
- * required.
- */
 export const optionalUserFields: (keyof UserRegisterPayload)[] = [
   'dob',
   'phone',

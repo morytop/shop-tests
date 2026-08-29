@@ -4,18 +4,6 @@ import {
   InvalidCartItemPayload,
 } from '@src/api/models/cart.api.model';
 
-/**
- * One row of the add-item validation table: a mutation of an otherwise-valid
- * payload, plus the field the API must name in the 422 body.
- *
- * `build` takes the valid payload rather than resolving a product id itself, so
- * the table stays a pure data module — the spec resolves the live id (§3) and
- * passes it in.
- *
- * Fields are omitted by setting them to `undefined`: the body is JSON-serialised
- * and `JSON.stringify` drops undefined values, so the key is absent on the wire
- * rather than sent as null (which the API validates differently).
- */
 export interface InvalidCartItemCase {
   label: string;
   /** Key the 422 body must carry an error array under. */

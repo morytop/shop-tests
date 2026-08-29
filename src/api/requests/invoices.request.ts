@@ -7,11 +7,6 @@ import {
 import { BaseRequest } from '@src/api/requests/base.request';
 import { apiUrls } from '@src/api/utils/api.util';
 
-/**
- * `/invoices` — creation from a cart (authenticated or guest), the owner-scoped
- * reads via the generics, and the PDF download pair, which is keyed by invoice
- * *number* rather than id.
- */
 export class InvoicesRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,

@@ -2,9 +2,9 @@ import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { PasswordStrengthComponent } from '@src/ui/components/password-strength.component';
 import { TotpFormComponent } from '@src/ui/components/totp-form.component';
-import { TOTP_SECRET_REGEX } from '@src/ui/constants/formats';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ProfileDetails } from '@src/ui/models/user.model';
+import { TOTP_SECRET_REGEX } from '@src/ui/utils/formats.util';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 // Matches `firstNameInput` below (`getByTestId('first-name')`, testIdAttribute
 // `data-test` per playwright.config.ts) — kept as a plain selector because

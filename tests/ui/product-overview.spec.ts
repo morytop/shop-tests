@@ -1,6 +1,6 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { USD_PRICE_REGEX } from '@src/ui/constants/formats';
-import { PRODUCT_DETAIL_URL_REGEX } from '@src/ui/constants/page-urls';
+import { USD_PRICE_REGEX } from '@src/ui/utils/formats.util';
+import { PRODUCT_DETAIL_URL_REGEX } from '@src/ui/utils/page-urls.util';
 
 test.describe('Verify product overview / home', () => {
   test(

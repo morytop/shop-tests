@@ -1,9 +1,9 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 import { INVALID_EMAILS } from '@src/ui/test-data/email.data';
 import { FORGOT_PASSWORD_CONFIRMATION_TEXT } from '@src/ui/test-data/forgot-password.data';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 test.describe('Verify forgot password @forgot-password', () => {
   test(

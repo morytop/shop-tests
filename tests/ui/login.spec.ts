@@ -1,8 +1,8 @@
 import { registerUserWithTotpEnabled } from '@src/api/factories/totp-user.api.factory';
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { testUser1 } from '@src/ui/test-data/user.data';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 
 test.describe('Verify login @login', () => {

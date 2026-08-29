@@ -1,8 +1,8 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { PasswordStrengthComponent } from '@src/ui/components/password-strength.component';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { RegisterUser } from '@src/ui/models/user.model';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 export class RegisterPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.REGISTER;

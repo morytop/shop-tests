@@ -1,9 +1,9 @@
 import { registerUserWithApi } from '@src/api/factories/user-register.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { strengthBarWidthRegex } from '@src/ui/constants/formats';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 import { INVALID_EMAILS, VALID_EMAILS } from '@src/ui/test-data/email.data';
 import { REQUIRED_FIELD_ERRORS } from '@src/ui/test-data/register.data';
+import { strengthBarWidthRegex } from '@src/ui/utils/formats.util';
 
 test.describe('Verify register @register', () => {
   test('register with correct data and login', async ({

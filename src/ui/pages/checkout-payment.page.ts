@@ -1,8 +1,8 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { ORDER_CONFIRMATION_REGEX } from '@src/ui/constants/formats';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { PaymentMethod } from '@src/ui/models/payment.model';
+import { ORDER_CONFIRMATION_REGEX } from '@src/ui/utils/formats.util';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 /**
  * The "Payment" step of the checkout wizard (`/checkout`), reached by advancing

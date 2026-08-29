@@ -1,6 +1,6 @@
 import { expect } from '@src/fixtures/merge.fixture';
 import { ProductListPage } from '@src/ui/pages/product-list.page';
-import { parsePrice } from '@src/ui/utils/price.util';
+import { parsePrice } from '@src/ui/utils/formats.util';
 import { isSorted, isSortedByString } from '@src/ui/utils/sort.util';
 
 /**

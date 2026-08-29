@@ -3,8 +3,7 @@ import { sendMessageWithApi } from '@src/api/factories/message.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
 import { prepareRandomMessage } from '@src/ui/factories/contact.factory';
 import { CONTACT_SUBJECTS } from '@src/ui/test-data/contact.data';
-import { DATE_TIME_REGEX } from '@src/ui/utils/date.util';
-import { truncate } from '@src/ui/utils/text.util';
+import { DATE_TIME_REGEX, truncate } from '@src/ui/utils/formats.util';
 
 test.describe('Verify messages', () => {
   test(

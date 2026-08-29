@@ -1,7 +1,7 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 export class FavoritesPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.FAVORITES;

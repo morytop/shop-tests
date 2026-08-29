@@ -1,5 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { BARE_PRICE_REGEX } from '@src/ui/constants/formats';
+import { BARE_PRICE_REGEX } from '@src/ui/utils/formats.util';
 
 test.describe('Verify product detail', () => {
   test(

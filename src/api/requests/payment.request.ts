@@ -4,7 +4,6 @@ import { PaymentPayload } from '@src/api/models/payment.api.model';
 import { BaseRequest } from '@src/api/requests/base.request';
 import { apiUrls } from '@src/api/utils/api.util';
 
-/** `POST /payment/check` — a single stateless endpoint, so `post()` is all there is. */
 export class PaymentRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,

@@ -10,19 +10,6 @@ import { UsersRequest } from '@src/api/requests/users.request';
 import { expect } from '@src/fixtures/merge.fixture';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 
-/**
- * Register a throwaway user and enrol it in TOTP, entirely over the API: register →
- * log in → `/totp/setup` → `/totp/verify`. Returns the credentials plus the secret,
- * so a spec can derive a fresh code at submit time.
- *
- * Building the precondition here (rather than by driving the profile page) keeps the
- * login specs failing only on the behaviour they assert. Assertions in an API factory
- * are the sanctioned exception to the "no expect outside specs" rule, so callers fail
- * fast on a broken arrange.
- *
- * Never point this at a shared account: the seeded `customer@`/`admin@` users are
- * refused TOTP setup (403), and enabling TOTP is a permanent mutation.
- */
 export async function registerUserWithTotpEnabled(
   request: APIRequestContext,
   usersRequest: UsersRequest,

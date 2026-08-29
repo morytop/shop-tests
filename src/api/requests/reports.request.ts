@@ -3,11 +3,6 @@ import { Headers } from '@src/api/models/headers.api.model';
 import { BaseRequest } from '@src/api/requests/base.request';
 import { apiUrls } from '@src/api/utils/api.util';
 
-/**
- * The seven admin-only `/reports/*` reads. There is no `/reports` index route,
- * so like `TotpRequest` the inherited `url` goes unused and every endpoint is
- * addressed explicitly. Admin-token GETs only — reports are never mutated.
- */
 export class ReportsRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,

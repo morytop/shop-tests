@@ -7,12 +7,6 @@ import { Headers } from '@src/api/models/headers.api.model';
 import { BaseRequest } from '@src/api/requests/base.request';
 import { apiUrls } from '@src/api/utils/api.util';
 
-/**
- * `/carts` — the verbs are irregular: creating a cart is a body-less
- * `POST /carts` (inherited `post()`), but adding an item is a POST on the cart
- * id itself, and the line-item verbs live under `/carts/{cartId}/product`.
- * `getOne`/`delete` from the base cover fetching and dropping a whole cart.
- */
 export class CartsRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,

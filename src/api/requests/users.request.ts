@@ -8,14 +8,6 @@ import {
 import { BaseRequest } from '@src/api/requests/base.request';
 import { apiUrls } from '@src/api/utils/api.util';
 
-/**
- * The `/users` resource. The collection root is `/users`, so the inherited
- * generics cover the admin list (`get()`) and the per-id verbs
- * (`getOne`/`put`/`patch`/`delete` on `/users/{id}`); the auth-flow endpoints
- * that hang off `/users/*` get explicit methods. `post()` is the one deliberate
- * irregular: it registers (`/users/register`), the object's original role and
- * what every existing call site expects.
- */
 export class UsersRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,

@@ -1,9 +1,5 @@
 import { API_URL } from '@config/env.config';
 
-// Endpoint paths, defined once: the absolute `apiUrls` below (request objects) and
-// the UI-side response waits (`waitForApi` in `src/ui/utils/network.util.ts`) both
-// derive from this map, so a path can't drift between the API layer and a page
-// object's wait.
 export const API_PATHS = {
   BRANDS: '/brands',
   BRANDS_SEARCH: '/brands/search',

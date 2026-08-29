@@ -46,9 +46,8 @@ export class NavbarComponent {
     this.cartLink = this.page.getByTestId('nav-cart');
     this.cartQuantity = this.page.getByTestId('cart-quantity');
 
-    // Account dropdown, labelled with the signed-in user's name. For an admin it also
-    // holds every admin section link — there is no sidebar (TEST_PLAN.md §9, §31). The
-    // links are in the DOM but hidden until the dropdown is opened.
+    // Account dropdown, labelled with the signed-in user's name. The links are in
+    // the DOM but hidden until the dropdown is opened.
     this.userMenu = this.page.getByTestId('nav-menu');
     this.signOutNavLink = this.page.getByTestId('nav-sign-out');
     this.adminDashboardNavLink = this.page.getByTestId('nav-admin-dashboard');
@@ -67,10 +66,6 @@ export class NavbarComponent {
       'nav-average-week-sales',
     );
 
-    // Language dropdown: the toggle shows the active code ("EN"), and its menu is
-    // labelled by it (`aria-labelledby`), which scopes the option menuitems away from
-    // the main menubar's own menuitems. The nav's `data-test` ids are language-agnostic,
-    // so every other locator here keeps working after a switch (TEST_PLAN.md §34).
     this.languageSelect = this.page.getByTestId('language-select');
     this.languageMenu = this.page.getByRole('menu', {
       name: 'Select language',
@@ -98,9 +93,7 @@ export class NavbarComponent {
   }
 
   /**
-   * Wait for the cart badge to show exactly `count`. The cart write is async, so
-   * this both confirms an add landed and serialises consecutive adds — a second
-   * add fired before the badge updates is otherwise silently lost.
+   * Wait for the cart badge to show exactly `count`. The cart write is async.
    */
   async waitForCartQuantity(count: string): Promise<void> {
     await this.cartQuantity

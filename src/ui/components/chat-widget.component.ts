@@ -45,7 +45,6 @@ export class ChatWidgetComponent {
   constructor(page: Page) {
     this.page = page;
     this.toggleButton = this.page.getByTestId('chat-toggle');
-    // The toggle is swapped out for the window while open, so the two are never both present.
     this.window = this.page.getByTestId('chat-window');
     this.closeButton = this.page.getByTestId('chat-close');
     // The title is a bare <span> (no heading role), so it is matched by its visible copy.
@@ -65,7 +64,7 @@ export class ChatWidgetComponent {
     this.messageInput = this.page.getByTestId('chat-input');
     this.sendButton = this.page.getByTestId('chat-send');
     // Result cards are clickable in their own right — there is no "View Product" button
-    // (TEST_PLAN.md §32). Their name/price are plain classes, not the grid's data-test ids.
+    // Their name/price are plain classes, not the grid's data-test ids.
     this.productCards = this.page.getByTestId('chat-product');
     this.productCardNames = this.productCards.locator('.product-name');
     this.productCardPrices = this.productCards.locator('.product-price');
@@ -130,15 +129,6 @@ export class ChatWidgetComponent {
     await this.messageInput.waitFor();
   }
 
-  /**
-   * Submit a product search and wait for the bot's reply to render.
-   *
-   * The widget queries its own endpoint (`QUERY /products/search`, not the grid's
-   * `/products`) and renders the reply from that response, so awaiting the response alone
-   * would still race the paint — the four prior pre-load races in this suite (§10, §26,
-   * §29, §30, §31) are all that same bug. Waiting on the rendered reply covers both the
-   * "found" and "no match" branches.
-   */
   async searchForProduct(query: string): Promise<void> {
     await this.messageInput.fill(query);
     await Promise.all([
@@ -264,11 +254,6 @@ export class ChatWidgetComponent {
     await this.ticketSubmittedMessage.waitFor();
   }
 
-  /**
-   * Whether the toggle sits in the bottom-right quadrant of the viewport (its documented
-   * placement). Kept here rather than in the spec so the nullable box/viewport reads stay
-   * out of a test body, where `?.`/`??` trip `playwright/no-conditional-in-test`.
-   */
   async isToggleInBottomRightQuadrant(): Promise<boolean> {
     const box = await this.toggleButton.boundingBox();
     const viewport = this.page.viewportSize();

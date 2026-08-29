@@ -43,11 +43,6 @@ export function prepareRandomUser(): RegisterUser {
   };
 }
 
-/**
- * Build a fresh set of values for the profile form. Unlike registration, the profile
- * country/postcode are plain text inputs with no `<select>` option list and no
- * postcode lookup behind them (TEST_PLAN.md §23), so both can be faker-random.
- */
 export function prepareRandomProfileDetails(): ProfileDetails {
   return {
     firstName: faker.person.firstName(),
@@ -61,10 +56,6 @@ export function prepareRandomProfileDetails(): ProfileDetails {
   };
 }
 
-/**
- * Generates a user, drives the register form, and returns the data used — so a
- * caller can register a fresh account in one call and keep its credentials.
- */
 export class UserFactory {
   async randomUser(page: Page): Promise<RegisterUser> {
     const user = prepareRandomUser();

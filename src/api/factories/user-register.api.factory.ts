@@ -4,8 +4,6 @@ import { UsersRequest } from '@src/api/requests/users.request';
 import { expect } from '@src/fixtures/merge.fixture';
 import { prepareRandomUser } from '@src/ui/factories/user.factory';
 
-// Remap the UI RegisterUser (the single source of random user data) to the API's
-// snake_case wire payload, so both layers register the same shape of user.
 export function prepareRandomUserPayload(): UserRegisterPayload {
   const user = prepareRandomUser();
 
@@ -27,18 +25,6 @@ export function prepareRandomUserPayload(): UserRegisterPayload {
   };
 }
 
-// Register a fresh user via the API and return the payload used (its email/password
-// double as login credentials). Assertion here is the sanctioned api-layer exception
-// to the "no expect outside specs" rule, so setup/callers fail fast on a bad register.
-//
-// The shared prod backend rejects a register non-deterministically under parallel
-// load (§33): intermittent 500s, and occasional 409s when the faker email collides
-// with one of the many accounts other runs have accumulated on the shared DB. Both
-// heal with a fresh payload, so any non-201 is retried a couple of times before
-// failing (a systematically broken payload still fails, just after 3 attempts).
-//
-// Note there is no cleanup counterpart: a customer cannot delete their own account
-// (403 — deletion is admin-only, §API-C), so every user this registers is permanent.
 export async function registerUserWithApi(
   usersRequest: UsersRequest,
 ): Promise<UserRegisterPayload> {

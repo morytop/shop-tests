@@ -4,10 +4,6 @@ import { ContactPayload } from '@src/api/models/message.api.model';
 import { BaseRequest } from '@src/api/requests/base.request';
 import { apiUrls } from '@src/api/utils/api.util';
 
-/**
- * `/messages` (the contact form) — anonymous create plus the multipart
- * attach-file follow-up; the admin-side reads come from the inherited generics.
- */
 export class MessagesRequest extends BaseRequest {
   constructor(
     protected request: APIRequestContext,

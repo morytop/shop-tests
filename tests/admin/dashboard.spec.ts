@@ -1,5 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 test.describe('Verify admin dashboard', () => {
   test(

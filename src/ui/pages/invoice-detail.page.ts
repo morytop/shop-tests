@@ -1,6 +1,6 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 const LINE_ITEM_COLUMNS = ['quantity', 'product', 'price', 'total'] as const;
 export type LineItemColumn = (typeof LINE_ITEM_COLUMNS)[number];

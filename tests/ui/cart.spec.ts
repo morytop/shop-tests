@@ -1,6 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { USD_PRICE_REGEX } from '@src/ui/constants/formats';
-import { parsePrice } from '@src/ui/utils/price.util';
+import { USD_PRICE_REGEX, parsePrice } from '@src/ui/utils/formats.util';
 
 test.describe('Verify cart', () => {
   test(

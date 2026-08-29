@@ -1,4 +1,4 @@
-import { PageUrl } from '@src/ui/constants/page-urls';
+import { PageUrl } from '@src/ui/utils/page-urls.util';
 
 export type CategoryName =
   | 'Hand Tools'

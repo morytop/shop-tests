@@ -1,5 +1,5 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { parsePrice } from '@src/ui/utils/price.util';
+import { parsePrice } from '@src/ui/utils/formats.util';
 
 const PRODUCT_CARD_INDEX = 0;
 const RENTAL_CARD_INDEX = 0;

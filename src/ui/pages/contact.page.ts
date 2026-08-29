@@ -1,7 +1,7 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { ContactSubject } from '@src/ui/test-data/contact.data';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 export class ContactPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CONTACT;

@@ -1,5 +1,5 @@
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { Category } from '@src/ui/models/category.model';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 export const categories: Category[] = [
   { name: 'Hand Tools', slug: 'hand-tools', url: PAGE_URLS.HAND_TOOLS },

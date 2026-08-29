@@ -1,6 +1,6 @@
 import { addFavoritesWithApi } from '@src/api/factories/favorite.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { truncate } from '@src/ui/utils/text.util';
+import { truncate } from '@src/ui/utils/formats.util';
 
 test.describe('Verify favorites', () => {
   test(

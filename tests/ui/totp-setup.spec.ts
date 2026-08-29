@@ -1,6 +1,6 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { TOTP_SECRET_REGEX } from '@src/ui/constants/formats';
 import { testUser1 } from '@src/ui/test-data/user.data';
+import { TOTP_SECRET_REGEX } from '@src/ui/utils/formats.util';
 import { generateTotpCode } from '@src/ui/utils/totp.util';
 
 test.describe('Verify TOTP setup @totp', () => {

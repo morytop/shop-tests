@@ -1,7 +1,6 @@
 import { test as base } from '@playwright/test';
 import { ChatWidgetComponent } from '@src/ui/components/chat-widget.component';
 import { NavbarComponent } from '@src/ui/components/navbar.component';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { AccountPage } from '@src/ui/pages/account.page';
 import { AdminDashboardPage } from '@src/ui/pages/admin-dashboard.page';
 import { AdminListPage } from '@src/ui/pages/admin-list.page';
@@ -30,6 +29,7 @@ import { ProfilePage } from '@src/ui/pages/profile.page';
 import { RegisterPage } from '@src/ui/pages/register.page';
 import { RentalsPage } from '@src/ui/pages/rentals.page';
 import { SpecialToolsPage } from '@src/ui/pages/special-tools.page';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 export type Pages = {
   accountPage: AccountPage;

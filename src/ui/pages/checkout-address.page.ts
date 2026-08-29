@@ -1,9 +1,9 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
 import { API_PATHS } from '@src/api/utils/api.util';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { Address, AddressTextField } from '@src/ui/models/address.model';
 import { waitForApi } from '@src/ui/utils/network.util';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 export class CheckoutAddressPage extends BasePage {
   readonly PAGE_URL = PAGE_URLS.CHECKOUT;

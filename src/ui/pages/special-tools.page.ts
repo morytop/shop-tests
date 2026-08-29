@@ -1,6 +1,6 @@
 import { ProductListPage } from './product-list.page';
 import { Locator, Page } from '@playwright/test';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 export class SpecialToolsPage extends ProductListPage {
   readonly heading: Locator;

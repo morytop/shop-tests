@@ -1,11 +1,11 @@
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { strengthBarWidthRegex } from '@src/ui/constants/formats';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
 import { prepareRandomPassword } from '@src/ui/factories/user.factory';
 import {
   CHANGE_PASSWORD_ERRORS,
   PASSWORD_STRENGTH_LEVELS,
 } from '@src/ui/test-data/user.data';
+import { strengthBarWidthRegex } from '@src/ui/utils/formats.util';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 test.describe('Verify change password', () => {
   test(

@@ -1,6 +1,6 @@
 import { createInvoiceWithApi } from '@src/api/factories/invoice.api.factory';
 import { expect, test } from '@src/fixtures/merge.fixture';
-import { DATE_TIME_REGEX } from '@src/ui/utils/date.util';
+import { DATE_TIME_REGEX } from '@src/ui/utils/formats.util';
 
 test.describe('Verify invoices', () => {
   test(

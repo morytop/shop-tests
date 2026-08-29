@@ -1,7 +1,7 @@
 import { BasePage } from './base.page';
 import { Locator, Page } from '@playwright/test';
-import { PAGE_URLS } from '@src/ui/constants/page-urls';
-import { parsePrice } from '@src/ui/utils/price.util';
+import { parsePrice } from '@src/ui/utils/formats.util';
+import { PAGE_URLS } from '@src/ui/utils/page-urls.util';
 
 /** The cart's per-line prices plus the Subtotal/Discount/Total breakdown, parsed to numbers. */
 export interface CartFinancialSummary {

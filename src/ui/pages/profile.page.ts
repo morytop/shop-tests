@@ -25,6 +25,7 @@ export class ProfilePage extends BasePage {
   readonly countryInput: Locator;
   readonly updateProfileButton: Locator;
   readonly profileFields: Record<keyof ProfileDetails, Locator>;
+  readonly invalidProfileField: (field: keyof ProfileDetails) => Locator;
   readonly profileForm: Locator;
   readonly profileSuccess: Locator;
   readonly profileError: Locator;
@@ -77,6 +78,8 @@ export class ProfilePage extends BasePage {
       state: this.stateInput,
       country: this.countryInput,
     };
+    this.invalidProfileField = (field: keyof ProfileDetails): Locator =>
+      this.profileFields[field].and(this.page.locator('.ng-invalid'));
     this.profileForm = this.page
       .locator('form')
       .filter({ has: this.updateProfileButton });

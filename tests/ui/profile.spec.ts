@@ -108,13 +108,11 @@ test.describe('Verify customer profile', () => {
         await profilePage.profileFields[field].clear();
         await profilePage.submitProfile();
 
-        await expect(profilePage.profileError).toContainText(
+        await expect(profilePage.profileError).toHaveText(
           PROFILE_VALIDATION_ERROR,
         );
         await expect(profilePage.profileSuccess).toHaveCount(0);
-        await expect(profilePage.profileFields[field]).toHaveClass(
-          /ng-invalid/,
-        );
+        await expect(profilePage.invalidProfileField(field)).toBeVisible();
 
         await profilePage.goto();
         await profilePage.waitForProfileLoaded();

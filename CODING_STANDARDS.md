@@ -374,11 +374,12 @@ Fixtures inject ready-to-use objects into a test's arguments, so specs never wri
 
 ### How the fixtures are layered
 
-The project composes three fixture files into one `test` (`src/fixtures/merge.fixture.ts` → `mergeTests(cartActionTest, requestObjectTest)`):
+The project composes several fixture files into one `test` (`src/fixtures/merge.fixture.ts` → `mergeTests(cartActionTest, adminActionTest, userActionTest, requestObjectTest, loggedSessionTest)`):
 
 - **Page-object fixtures** (`src/ui/fixtures/page-object.fixture.ts`) — one instance of each `*.page.ts` per test (`homePage`, `cartPage`, …). This is the default home for a new page object.
-- **Action fixtures** (`src/ui/fixtures/cart-action.fixture.ts`) — `cartActionTest` extends the page-object fixtures and adds a reusable cross-page _flow_ as a callable: `addProductToCart(index?, expectedBadgeCount?)`. Because it extends `pageObjectTest`, it re-exports every page object too.
-- **Request-object fixtures** (`src/api/fixtures/request-object.fixture.ts`) — one instance of each API request object (`usersRequest`, `loginRequest`).
+- **Action fixtures** (`src/ui/fixtures/cart-action.fixture.ts`, `admin-action.fixture.ts`, `user-action.fixture.ts`) — each extends the page-object fixtures and adds a reusable arrange step as a callable: `addProductToCart(index?, expectedBadgeCount?)`, `loginAsAdmin()`, `loginAsFreshUser()` / `loginAs(user)`. Because they extend `pageObjectTest`, they re-export every page object too.
+- **Request-object fixtures** (`src/api/fixtures/request-object.fixture.ts`) — one instance of each API request object (`usersRequest`, `loginRequest`, …).
+- **Logged-session fixture** (`src/ui/fixtures/logged-session.fixture.ts`) — re-logs-in via the API before each `@logged` spec and injects a fresh token as in-memory `storageState`.
 
 ```typescript
 // cart-action.fixture.ts — a flow used by several specs, injected as a callable
